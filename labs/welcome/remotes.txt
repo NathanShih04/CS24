@@ -1,0 +1,4 @@
+origin	git@github.com:NathanShih04/CS24.git (fetch)
+origin	git@github.com:NathanShih04/CS24.git (push)
+upstream	https://github.com/ucsb-cs24/s24.git (fetch)
+upstream	https://github.com/ucsb-cs24/s24.git (push)
