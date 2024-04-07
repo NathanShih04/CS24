@@ -1,32 +1,49 @@
 #include <iostream>
 #include <string>
+#include <bits/stdc++.h>
 using namespace std;
 
 string censor(int num, string message){
-    int counter = 0;
+    vector<string> words;
     string result = "";
+    string word;
+    stringstream newMessage(message);
+    unsigned int letters = num;
 
-    for(unsigned int i = 0; i < message.length(); i++){
-        if(message[i] != ' '){
-            counter++;
+    if(newMessage)
 
-            if((counter == num && i == message.length()) || (counter == num && message[i + 1] == ' ')){
-                for(int j = num; j >= 0; j--){
-                    result += message[i - j];
-                }
-                result += ' ';
-            }
-        }
+    // Split the message by spaces and store the words in a vector
+    while(newMessage >> word){
 
-        else{
-            counter = 0;
-        }
+        words.push_back(word);
     }
+
+    // for(unsigned int i = 0; i < message.length(); i++){
+    //     if(message[i] != ' '){
+    //         counter++;
+
+    //         if((counter == num && i == message.length() - 1) || (counter == num && message[i + 1] == ' ')){
+    //             for(int j = num; j >= 0; j--){
+    //                 result += message[i - j];
+    //             }
+    //             result += ' ';
+    //         }
+    //     }
+
+    //     else{
+    //         counter = 0;
+    //     }
+    // }
     
     // remove end space
-    if(result[result.length()] == ' '){
-        result.pop_back();
+    for(unsigned int i = 0; i < words.size(); i++){
+        if(words[i].size() != letters){
+            result += words[i];
+            result += ' ';
+        }
     }
+
+    result.pop_back();
 
     return result;
 }
