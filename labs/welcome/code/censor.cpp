@@ -35,7 +35,6 @@ string censor(int num, string message){
     //     }
     // }
     
-    // remove end space
     for(unsigned int i = 0; i < words.size(); i++){
         if(words[i].size() != letters){
             result += words[i];
@@ -43,6 +42,7 @@ string censor(int num, string message){
         }
     }
 
+    // remove end space
     result.pop_back();
 
     return result;
