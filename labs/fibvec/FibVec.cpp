@@ -50,9 +50,11 @@ int FibVec::remove(size_t index){
         std::out_of_range;
     }
 
-    for(unsigned int i = 0; i < vCount - index; i++){
-        int holder = vec[i];
+    int holder = vec[index];
+
+    for(unsigned int i = index; i < vCount - index; i++){
         vec[i] = vec[i + 1];
-        return holder;
     }
+    
+    return holder;
 }
