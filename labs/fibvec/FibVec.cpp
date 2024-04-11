@@ -51,6 +51,8 @@ int FibVec::remove(size_t index){
     }
 
     for(unsigned int i = 0; i < vCount - index; i++){
+        int holder = vec[i];
         vec[i] = vec[i + 1];
+        return holder;
     }
 }
