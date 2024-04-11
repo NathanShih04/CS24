@@ -7,7 +7,7 @@
 int main() {
   FibVec fibvec;
 
-  std::cout << "This program doesn't do anything interesting yet...\n";
+  fibvec.capacity();
 
   return 0;
 }

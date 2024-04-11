@@ -7,10 +7,10 @@
 // FibVec Function Implementations
 
 FibVec::FibVec(){
-    int *vec;
-    size_t vCapacity = 1; // size of storage buffer
-    size_t vCount = 0; // num items
-    size_t vNum;
+    vCapacity = 1; // size of storage buffer
+    vec = new[vCapacity];
+    vCount = 0; // num items
+    vNum = 1;
 }
 
 FibVec::~FibVec(){
