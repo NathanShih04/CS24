@@ -38,7 +38,7 @@ int FibVec::lookup(size_t index) const{
 }
 
 int FibVec::pop(){
-    remove(vCount);
+    return remove(vCount);
 }
 
 void FibVec::push(int value){
@@ -50,7 +50,7 @@ int FibVec::remove(size_t index){
         std::out_of_range;
     }
 
-    for(int i = 0; i < vCount - index; i++){
+    for(unsigned int i = 0; i < vCount - index; i++){
         vec[i] = vec[i + 1];
     }
 }
