@@ -31,7 +31,7 @@ void FibVec::insert(int value, size_t index){
 
 int FibVec::lookup(size_t index) const{
     if(index > vCount){
-        std::out_of_range;
+        std::out_of_range("Out of range.");
     }
 
     return vec[index];
@@ -47,7 +47,7 @@ void FibVec::push(int value){
 
 int FibVec::remove(size_t index){
     if(index > vCount){
-        std::out_of_range;
+        std::out_of_range("Out of range.");
     }
 
     int holder = vec[index];
@@ -55,6 +55,6 @@ int FibVec::remove(size_t index){
     for(unsigned int i = index; i < vCount - index; i++){
         vec[i] = vec[i + 1];
     }
-    
+
     return holder;
 }
