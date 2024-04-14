@@ -72,13 +72,12 @@ int FibVec::remove(size_t index){
     }
 
     int holder = vec[index];
+    vCount--;
+    vCapacity = fibHelp(vCount + 1);
 
     for(unsigned int i = index; i < vCount - index; i++){
         vec[i] = vec[i + 1];
     }
-
-    vCount--;
-    vCapacity = fibHelp(vCount + 1);
 
     return holder;
 }
