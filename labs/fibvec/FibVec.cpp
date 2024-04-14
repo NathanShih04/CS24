@@ -30,7 +30,7 @@ void FibVec::insert(int value, size_t index){
 }
 
 int FibVec::lookup(size_t index) const{
-    if(index > vCount){
+    if(index >= vCount){
         std::out_of_range("Out of range.");
     }
 
@@ -50,7 +50,7 @@ void FibVec::push(int value){
 }
 
 int FibVec::remove(size_t index){
-    if(index > vCount){
+    if(index >= vCount){
         std::out_of_range("Out of range.");
     }
 
