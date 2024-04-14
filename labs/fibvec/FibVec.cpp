@@ -67,7 +67,10 @@ int FibVec::pop(){
 }
 
 void FibVec::push(int value){
+    vCount++;
+    vCapacity = fibHelp(vCount + 1);
 
+    vec[vCount] = value;
 }
 
 int FibVec::remove(size_t index){
