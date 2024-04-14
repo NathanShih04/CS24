@@ -4,6 +4,15 @@
 #include <stdexcept>
 
 
+// Fibonacci Helper
+int fibHelp(int num){ 
+    if(num <= 1){
+        return num; 
+    }
+
+    return fibHelp(num - 1) + fibHelp(num - 2); 
+}
+
 // FibVec Function Implementations
 
 FibVec::FibVec(){
@@ -26,7 +35,14 @@ size_t FibVec::count() const{
 }
 
 void FibVec::insert(int value, size_t index){
+    if(index >= vCount){
+        std::out_of_range("Out of range.");
+    }
 
+    for(unsigned int i = index; i < vCount - index; i++){
+        int holder = vec[i];
+        vec[index] = value;    
+    }
 }
 
 int FibVec::lookup(size_t index) const{
@@ -59,6 +75,9 @@ int FibVec::remove(size_t index){
     for(unsigned int i = index; i < vCount - index; i++){
         vec[i] = vec[i + 1];
     }
+
+    vCount--;
+    vCapacity = fibHelp(vCount + 1);
 
     return holder;
 }
