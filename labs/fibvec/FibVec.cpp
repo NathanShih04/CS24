@@ -42,9 +42,12 @@ void FibVec::insert(int value, size_t index){
     vCount++;
     vCapacity = fibHelp(vCount + 1);
 
-    for(unsigned int i = index; i < vCount - index; i++){
-        
+    for(unsigned int i = vCount; i > index; i++){
+        vec[i + 1] = remove(i);
     }
+
+    vec[index] = value;
+
 }
 
 int FibVec::lookup(size_t index) const{
@@ -76,7 +79,9 @@ int FibVec::remove(size_t index){
     vCount--;
 
     for(unsigned int i = index; i < vCount; i++){
-        vec[i] = vec[i + 1];
+        if(isdigit(vec[i + 1])){
+            vec[i] = vec[i + 1];
+        }
     }
 
     vCapacity = fibHelp(vCount + 1);
