@@ -30,14 +30,18 @@ void FibVec::insert(int value, size_t index){
 }
 
 int FibVec::lookup(size_t index) const{
-    if(index > vCount){
+    if(index > vCount || index < 0){
         std::out_of_range("Out of range.");
     }
 
-    return vec[index];
+    return vec[index];  
 }
 
 int FibVec::pop(){
+    if(vCount == 0){
+        std::underflow_error("Underflow error.");
+    }
+    
     return remove(vCount);
 }
 
@@ -46,7 +50,7 @@ void FibVec::push(int value){
 }
 
 int FibVec::remove(size_t index){
-    if(index > vCount){
+    if(index > vCount || index < 0){
         std::out_of_range("Out of range.");
     }
 
