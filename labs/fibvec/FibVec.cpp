@@ -35,16 +35,16 @@ size_t FibVec::count() const{
 }
 
 void FibVec::insert(int value, size_t index){
-    // if(index >= vCount){
-    //     std::out_of_range("Out of range.");
-    // }
+    if(index >= vCount){
+        std::out_of_range("Out of range.");
+    }
 
-    // vCount++;
-    // vCapacity = fibHelp(vCount + 1);
+    vCount++;
+    vCapacity = fibHelp(vCount + 1);
 
-    // for(unsigned int i = index; i < vCount - index; i++){
+    for(unsigned int i = index; i < vCount - index; i++){
         
-    // }
+    }
 }
 
 int FibVec::lookup(size_t index) const{
