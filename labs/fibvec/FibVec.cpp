@@ -41,7 +41,7 @@ size_t FibVec::count() const{
 
 void FibVec::insert(int value, size_t index){
     if(index > vCount){
-        std::out_of_range("Out of range.");
+        throw std::out_of_range("Out of range.");
     }
 
     // change capacity
@@ -69,7 +69,7 @@ void FibVec::insert(int value, size_t index){
 
 int FibVec::lookup(size_t index) const{
     if(index >= vCount){
-        std::out_of_range("Out of range.");
+        throw std::out_of_range("Out of range.");
     }
 
     return vec[index];  
@@ -77,7 +77,7 @@ int FibVec::lookup(size_t index) const{
 
 int FibVec::pop(){
     if(vCount == 0){
-        std::underflow_error("Underflow error.");
+        throw std::underflow_error("Underflow error.");
     }
 
     return remove(vCount);
@@ -89,7 +89,7 @@ void FibVec::push(int value){
 
 int FibVec::remove(size_t index){
     if(index > vCount){
-        std::out_of_range("Out of range.");
+        throw std::out_of_range("Out of range.");
     }
 
     int holder = vec[index];

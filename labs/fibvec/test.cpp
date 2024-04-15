@@ -6,7 +6,9 @@
 
 int main() {
   FibVec fibvec;
-  fibvec.capacity();
+  
+  fibvec.insert(0, 0);
+  fibvec.insert(0, 17);
 
   return 0;
 }
