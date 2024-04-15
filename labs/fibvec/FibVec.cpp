@@ -88,7 +88,7 @@ void FibVec::push(int value){
 }
 
 int FibVec::remove(size_t index){
-    if(index > vCount){
+    if(index >= vCount){
         throw std::out_of_range("Out of range.");
     }
 
@@ -96,9 +96,7 @@ int FibVec::remove(size_t index){
     vCount--;
 
     for(unsigned int i = index; i < vCount; i++){
-        if(isdigit(vec[i + 1])){
-            vec[i] = vec[i + 1];
-        }
+        vec[i] = vec[i + 1];
     }
 
     if(vCount < fibHelp(vCount - 2)){
