@@ -83,24 +83,11 @@ int FibVec::pop(){
 }
 
 void FibVec::push(int value){
-    vCount++;
-    vCapacity = fibHelp(vCount + 1);
-
-    int* largerVec = resize(vCapacity);
-
-    // copy into array
-    for(unsigned int i = 0; i < vCount; i++){
-        largerVec[i] = vec[i];
-    }
-
-    delete[] vec;
-    vec = largerVec;
-
-    vec[vCount] = value;
+    insert(value, vCount);
 }
 
 int FibVec::remove(size_t index){
-    if(index >= vCount){
+    if(index > vCount){
         std::out_of_range("Out of range.");
     }
 
@@ -121,7 +108,7 @@ int FibVec::remove(size_t index){
             largerVec[i] = vec[i];
         }
 
-        delete[] vec;
+        delete[] vec;   
         vec = largerVec;
     }
 
