@@ -43,7 +43,7 @@ void FibVec::insert(int value, size_t index){
     vCapacity = fibHelp(vCount + 1);
 
     for(unsigned int i = vCount; i > index; i--){
-        vec[i + 1] = remove(i);
+        vec[i + 1] = vec[i];
     }
 
     vec[index] = value;
