@@ -40,7 +40,7 @@ size_t FibVec::count() const{
 }
 
 void FibVec::insert(int value, size_t index){
-    if(index >= vCount){
+    if(index > vCount){
         std::out_of_range("Out of range.");
     }
 
