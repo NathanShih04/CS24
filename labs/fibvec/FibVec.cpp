@@ -24,7 +24,7 @@ FibVec::FibVec(){
     vCapacity = 1; // size of storage buffer
     vec = new int[vCapacity];
     vCount = 0; // num items
-    fibNum = 1;
+    fibNum = 2;
 }
 
 FibVec::~FibVec(){
@@ -45,7 +45,8 @@ void FibVec::insert(int value, size_t index){
     }
 
     if(vCount == vCapacity){
-        int* largerVec = resize(fibHelp(vCount + 2));
+        fibNum++;
+        int* largerVec = resize(fibHelp(fibNum));
          // copy into array
         for(unsigned int i = 0; i < vCount; i++){
             largerVec[i] = vec[i];
@@ -55,16 +56,14 @@ void FibVec::insert(int value, size_t index){
         vec = largerVec;
     }
 
-    vCount++;
-    vCapacity = fibHelp(vCount + 1);
-
-   
+    vCapacity = fibHelp(fibNum);
 
     for(unsigned int i = vCount; i > index; i--){
         vec[i + 1] = vec[i];
     }
 
     vec[index] = value;
+    vCount++;
 }
 
 int FibVec::lookup(size_t index) const{
@@ -108,9 +107,15 @@ int FibVec::remove(size_t index){
     int holder = vec[index];
     vCount--;
 
+    for(unsigned int i = index; i < vCount; i++){
+        if(isdigit(vec[i + 1])){
+            vec[i] = vec[i + 1];
+        }
+    }
 
     if(vCount < fibHelp(vCount - 2)){
-        int* largerVec = resize(fibHelp(vCount -1));
+        fibNum--;
+        int* largerVec = resize(fibHelp(fibNum));
          // copy into array
         for(unsigned int i = 0; i < vCount; i++){
             largerVec[i] = vec[i];
@@ -118,12 +123,6 @@ int FibVec::remove(size_t index){
 
         delete[] vec;
         vec = largerVec;
-    }
-
-    for(unsigned int i = index; i < vCount; i++){
-        if(isdigit(vec[i + 1])){
-            vec[i] = vec[i + 1];
-        }
     }
 
     return holder;
