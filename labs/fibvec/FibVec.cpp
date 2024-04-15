@@ -80,7 +80,7 @@ int FibVec::pop(){
         throw std::underflow_error("Underflow error.");
     }
 
-    return remove(vCount);
+    return remove(vCount - 1);
 }
 
 void FibVec::push(int value){
@@ -99,13 +99,15 @@ int FibVec::remove(size_t index){
         vec[i] = vec[i + 1];
     }
 
-    if(vCount < fibHelp(vCount - 2)){
+    if(vCount < fibHelp(fibNum - 2)){
         fibNum--;
         int* largerVec = resize(fibHelp(fibNum));
          // copy into array
         for(unsigned int i = 0; i < vCount; i++){
             largerVec[i] = vec[i];
         }
+        
+        vCapacity = fibHelp(fibNum);
 
         delete[] vec;   
         vec = largerVec;
