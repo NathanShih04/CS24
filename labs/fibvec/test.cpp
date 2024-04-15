@@ -6,7 +6,6 @@
 
 int main() {
   FibVec fibvec;
-
   fibvec.capacity();
 
   return 0;

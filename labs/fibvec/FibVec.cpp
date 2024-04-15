@@ -44,6 +44,7 @@ void FibVec::insert(int value, size_t index){
         std::out_of_range("Out of range.");
     }
 
+    // change capacity
     if(vCount == vCapacity){
         fibNum++;
         int* largerVec = resize(fibHelp(fibNum));
@@ -59,7 +60,7 @@ void FibVec::insert(int value, size_t index){
     vCapacity = fibHelp(fibNum);
 
     for(unsigned int i = vCount; i > index; i--){
-        vec[i + 1] = vec[i];
+        vec[i] = vec[i - 1];
     }
 
     vec[index] = value;
