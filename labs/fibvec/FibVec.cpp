@@ -5,7 +5,7 @@
 
 
 // Fibonacci Helper
-int fibHelp(int num){ 
+size_t fibHelp(size_t num){ 
     if(num <= 1){
         return num; 
     }
