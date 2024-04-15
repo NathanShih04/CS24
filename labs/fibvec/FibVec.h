@@ -9,6 +9,7 @@ class FibVec {
   int *vec;
   size_t vCapacity;
   size_t vCount;
+  size_t fibNum;
   // Helper Functions
 
 public:

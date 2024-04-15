@@ -13,12 +13,18 @@ size_t fibHelp(size_t num){
     return fibHelp(num - 1) + fibHelp(num - 2); 
 }
 
+int* resize(int capacity){
+    int resized[capacity];
+    return resized;
+}
+
 // FibVec Function Implementations
 
 FibVec::FibVec(){
     vCapacity = 1; // size of storage buffer
     vec = new int[vCapacity];
     vCount = 0; // num items
+    fibNum = 1;
 }
 
 FibVec::~FibVec(){
@@ -39,10 +45,20 @@ void FibVec::insert(int value, size_t index){
     }
 
     if(vCount == vCapacity){
-        vCapacity = fibHelp(vCount + 2);
+        int* largerVec = resize(fibHelp(vCount + 2));
+         // copy into array
+        for(unsigned int i = 0; i < vCount; i++){
+            largerVec[i] = vec[i];
+        }
+
+        delete[] vec;
+        vec = largerVec;
     }
 
     vCount++;
+    vCapacity = fibHelp(vCount + 1);
+
+   
 
     for(unsigned int i = vCount; i > index; i--){
         vec[i + 1] = vec[i];
@@ -70,6 +86,16 @@ int FibVec::pop(){
 void FibVec::push(int value){
     vCount++;
     vCapacity = fibHelp(vCount + 1);
+
+    int* largerVec = resize(vCapacity);
+
+    // copy into array
+    for(unsigned int i = 0; i < vCount; i++){
+        largerVec[i] = vec[i];
+    }
+
+    delete[] vec;
+    vec = largerVec;
 
     vec[vCount] = value;
 }
