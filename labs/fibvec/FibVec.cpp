@@ -38,10 +38,11 @@ void FibVec::insert(int value, size_t index){
         std::out_of_range("Out of range.");
     }
 
-    vCount++;
     if(vCount == vCapacity){
-        vCapacity = fibHelp(vCount + 1);
+        vCapacity = fibHelp(vCount + 2);
     }
+
+    vCount++;
 
     for(unsigned int i = vCount; i > index; i--){
         vec[i + 1] = vec[i];
@@ -87,7 +88,9 @@ int FibVec::remove(size_t index){
         }
     }
 
-    vCapacity = fibHelp(vCount + 1);
+    if(vCount < fibHelp(vCount - 2)){
+        vCapacity = fibHelp(vCount - 1);
+    }
 
     return holder;
 }
