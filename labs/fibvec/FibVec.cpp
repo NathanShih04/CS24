@@ -19,7 +19,6 @@ FibVec::FibVec(){
     vCapacity = 1; // size of storage buffer
     vec = new int[vCapacity];
     vCount = 0; // num items
-    vNum = 1;
 }
 
 FibVec::~FibVec(){
@@ -40,7 +39,9 @@ void FibVec::insert(int value, size_t index){
     }
 
     vCount++;
-    vCapacity = fibHelp(vCount + 1);
+    if(vCount == vCapacity){
+        vCapacity = fibHelp(vCount + 1);
+    }
 
     for(unsigned int i = vCount; i > index; i--){
         vec[i + 1] = vec[i];
