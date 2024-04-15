@@ -14,7 +14,7 @@ size_t fibHelp(size_t num){
 }
 
 int* resize(int capacity){
-    int resized[capacity];
+    int* resized = new int[capacity];
     return resized;
 }
 
@@ -108,14 +108,22 @@ int FibVec::remove(size_t index){
     int holder = vec[index];
     vCount--;
 
+
+    if(vCount < fibHelp(vCount - 2)){
+        int* largerVec = resize(fibHelp(vCount -1));
+         // copy into array
+        for(unsigned int i = 0; i < vCount; i++){
+            largerVec[i] = vec[i];
+        }
+
+        delete[] vec;
+        vec = largerVec;
+    }
+
     for(unsigned int i = index; i < vCount; i++){
         if(isdigit(vec[i + 1])){
             vec[i] = vec[i + 1];
         }
-    }
-
-    if(vCount < fibHelp(vCount - 2)){
-        vCapacity = fibHelp(vCount - 1);
     }
 
     return holder;
