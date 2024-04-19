@@ -21,7 +21,11 @@ Move::Move(const std::string& input){
 
     // checks to see if format is correct
 
-    if(commands.size() < 3){
+    if(input[0] == ' '){
+        throw ParseError("Parse error.");
+    }
+
+    else if(commands.size() < 3){
         throw ParseError("Parse error.");
     }
 
@@ -56,7 +60,7 @@ Move::Move(const std::string& input){
 
     // set vector elements to member variables
     number = stoi(commands[0]);
-    player = commands[1][0];
+    player = toupper(commands[1][0]);
 
     if(tolower(commands[2][0]) == 'a'){
         commands[2][0] = 1;
