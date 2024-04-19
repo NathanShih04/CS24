@@ -26,7 +26,7 @@ Move::Move(const std::string& input){
         throw ParseError("Parse error.");
     }
 
-    else if(commands[0].length() != 1 || isdigit(commands[0][0]) == false){
+    else if(commands[0].length() != 1 || isdigit(commands[0][0]) == false || commands[0][0] == '0'){
         throw ParseError("Parse error.");
     }
 
@@ -72,10 +72,22 @@ Move::Move(const std::string& input){
 
 // Helper to render a Move as text.
 string Move::to_string() const{
+    char rowLetter;
+
+    if(row == 1){
+        rowLetter = 'A';
+    }
+    else if(row == 2){
+        rowLetter = 'B';
+    }
+    if(row == 3){
+        rowLetter = 'C';
+    }
+
 
     std::stringstream finalString;
 
-    finalString << number << " " << player << " " << row << " " << column;
+    finalString << number << " " << player << " " << row << column;
 
     string final = finalString.str();
 
