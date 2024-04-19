@@ -58,3 +58,15 @@ Move::Move(const std::string& input){
     column = commands[2][1] - '0';
 
 }
+
+// Helper to render a Move as text.
+string Move::to_string() const{
+
+    std::stringstream finalString;
+
+    finalString << number << " " << player << " " << row << " " << column;
+
+    string final = finalString.str();
+
+    return final;
+}
