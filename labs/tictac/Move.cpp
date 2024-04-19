@@ -46,7 +46,7 @@ Move::Move(const std::string& input){
     }
 
     else if(commands.size() > 3){
-        if(commands[3].size() > 1){
+        if(commands[3].length() > 1){
             throw ParseError("Parse error.");
         }
         else if(commands[3][0] != '#'){
