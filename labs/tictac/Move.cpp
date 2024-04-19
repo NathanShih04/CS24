@@ -21,7 +21,6 @@ Move::Move(const std::string& input){
 
     // checks to see if format is correct
 
-    // not enough inputs
     if(commands.size() < 3){
         throw ParseError("Parse error.");
     }
@@ -31,6 +30,10 @@ Move::Move(const std::string& input){
     }
 
     else if((tolower(commands[1][0]) != 'x' && tolower(commands[1][0]) != 'o') || commands[1].length() != 1){
+        throw ParseError("Parse error.");
+    }
+
+    else if(commands[2].length() != 2){
         throw ParseError("Parse error.");
     }
 
