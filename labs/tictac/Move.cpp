@@ -87,7 +87,7 @@ string Move::to_string() const{
 
     std::stringstream finalString;
 
-    finalString << number << " " << player << " " << row << column;
+    finalString << number << " " << player << " " << rowLetter << column;
 
     string final = finalString.str();
 
