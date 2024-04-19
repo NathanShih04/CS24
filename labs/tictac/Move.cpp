@@ -40,6 +40,15 @@ Move::Move(const std::string& input){
         throw ParseError("Parse error.");
     }
 
+    else if(commands.size() > 3){
+        if(commands[3].size() > 1){
+            throw ParseError("Parse error.");
+        }
+        else if(commands[3][0] != '#'){
+            throw ParseError("Parse error.");
+        }
+    }
+
     // set vector elements to member variables
     number = stoi(commands[0]);
     player = commands[1][0];
