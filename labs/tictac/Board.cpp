@@ -26,7 +26,7 @@ void Board::check(Move move){
         throw InvalidMove("Invalid move.");
     }
 
-    board[move.row][move.column];
+    board[move.row][move.column] = move.player;
     moveNum++;
     player = move.player;
 
