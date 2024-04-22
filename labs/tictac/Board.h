@@ -18,6 +18,8 @@ struct Board{
     void check(Move move);
 
     void winner();
+
+    void gameEval();
 };
 
 

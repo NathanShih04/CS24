@@ -57,7 +57,10 @@ void Board::winner(){
         exit(0);
     }
 
-    // Rest of the game conditions
+}
+
+void Board::gameEval(){
+
     if(moveNum == 0){
         cout << "Game in progress: New game.\n";
         exit(0);
@@ -74,5 +77,4 @@ void Board::winner(){
         cout << "Game over: Draw.\n";
         exit(0);
     }
-
 }
