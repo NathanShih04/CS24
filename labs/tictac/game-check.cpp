@@ -17,14 +17,16 @@ int main() {
             board.winner();
             return 0;
         } 
-        catch(const ParseError& e) {
-            cout << "Parse error.\n";
-            return 1;
-        }
         catch(const InvalidMove& e) {
             cout << "Invalid move error.\n";
             return 2;
         }
+        
+        catch(const ParseError& e) {
+            cout << "Parse error.\n";
+            return 1;
+        }
+
 
     }
 
