@@ -8,8 +8,16 @@
 
 struct Board{
 
+    char board[3][3];
+    int moveNum;
+    char player;
+
     // Constructor finds and displays game status.
-    Board(const std::string& input);
+    Board();
+
+    void check(Move move);
+
+    void winner();
 };
 
 
