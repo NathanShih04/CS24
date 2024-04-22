@@ -6,13 +6,17 @@ using namespace std;
 
 // Space for implementing Board functions.
 Board::Board(){
-    char board[3][3] = {
-        {' ', ' ', ' '},
-        {' ', ' ', ' '},
-        {' ', ' ', ' '}
-    };
-    int moveNum = 0;
-    char player = ' ';
+    board = new char*[3];
+    for (int i = 0; i < 3; i++) {
+        board[i] = new char[3];
+    }
+    for(int i = 0; i < 3; i++){
+        for(int j = 0; j < 3; j++){
+            board[i][j] = ' ';
+        }
+    }
+    moveNum = 0;
+    player = ' ';
 }
 
 void Board::check(Move move){

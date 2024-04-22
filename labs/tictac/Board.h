@@ -8,7 +8,7 @@
 
 struct Board{
 
-    char board[3][3];
+    char **board;
     int moveNum;
     char player;
 
