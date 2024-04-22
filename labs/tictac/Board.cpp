@@ -26,13 +26,13 @@ void Board::check(Move move){
     else if(move.player == player){
         throw InvalidMove("Invalid move.");
     }
-    else if(board[move.row][move.column] != ' '){
+    else if(board[move.row - 1][move.column - 1] != ' '){
         throw InvalidMove("Invalid move.");
     }
 
-    board[move.row][move.column] = move.player;
     moveNum++;
     player = move.player;
+    board[move.row - 1][move.column - 1] = move.player;
 
 }
 
