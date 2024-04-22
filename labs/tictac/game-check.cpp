@@ -13,7 +13,7 @@ int main() {
     while(getline(cin, userMove)){
         try {
             Move move(userMove);
-            board.check(userMove);
+            board.check(move);
             board.winner();
             return 0;
         } 
@@ -21,7 +21,7 @@ int main() {
             cout << "Parse error.\n";
             return 1;
         }
-        catch (const InvalidMove& e) {
+        catch(const InvalidMove& e) {
             cout << "Invalid move error.\n";
             return 2;
         }
