@@ -13,6 +13,7 @@ int main() {
     while (getline(cin, userMove)) {
         try {  
             board.check(userMove);
+            board.winner();
         } 
         catch(const std::exception& e) {
             // Some error thingies???
@@ -21,6 +22,6 @@ int main() {
 
     board.winner();
     board.gameEval();
-    
+
     return 0;
 }
