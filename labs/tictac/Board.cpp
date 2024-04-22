@@ -38,23 +38,23 @@ void Board::winner(){
     for(int i = 0; i < 3; i++){
         if((board[i][0] == 'X' && board[i][1] == 'X' && board[i][2] == 'X') || (board[0][i] == 'X' && board[1][i] == 'X' && board[2][i] == 'X')){
             cout << "Game over: X wins.\n";
-            exit(0);
+            return;
         }
         else if((board[i][0] == 'O' && board[i][1] == 'O' && board[i][2] == 'O') || (board[0][i] == 'O' && board[1][i] == 'O' && board[2][i] == 'O')){
             cout << "Game over: O wins.\n";
-            exit(0);
+            return;
         }
     }
 
     // diagonals for player X and O
     if((board[0][0] == 'X' && board[1][1] == 'X' && board[2][2] == 'X') || (board[0][2] == 'X' && board[1][1] == 'X' && board[2][0] == 'X')) {
         cout << "Game over: X wins.\n";
-        exit(0);
+        return;
     }
 
     else if((board[0][0] == 'O' && board[1][1] == 'O' && board[2][2] == 'O') || (board[0][2] == 'O' && board[1][1] == 'O' && board[2][0] == 'O')){
         cout << "Game over: O wins.\n";
-        exit(0);
+        return;
     }
 
 }
@@ -63,18 +63,18 @@ void Board::gameEval(){
 
     if(moveNum == 0){
         cout << "Game in progress: New game.\n";
-        exit(0);
+        return;
     }
     else if(player == 'X'){
         cout << "Game in progress: O's turn.\n";
-        exit(0);
+        return;
     }
     else if(player == 'O'){
         cout << "Game in progress: X's turn.\n";
-        exit(0);
+        return;
     }
     else if(moveNum == 9){
         cout << "Game over: Draw.\n";
-        exit(0);
+        return;
     }
 }
