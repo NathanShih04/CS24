@@ -15,7 +15,6 @@ int main() {
             Move move(userMove);
             board.check(move);
             board.gameEval();  
-            return 0;
         } 
         
         catch(const ParseError& e) {
