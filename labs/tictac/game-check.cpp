@@ -31,8 +31,11 @@ int main() {
     if(board.winner() == 0){
         board.gameEval();   
     }
-    else{
-        board.winner();
+    else if(board.winner() == 1){
+        cout << "Game over: X wins.\n";
+    }
+    else if(board.winner() == 2){
+        cout << "Game over: O wins.\n";
     }
 
     return 0;
