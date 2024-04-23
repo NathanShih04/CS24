@@ -69,6 +69,10 @@ void Board::gameEval(){
         cout << "Game in progress: New game.\n";
         return;
     }
+    else if(moveNum == 9){
+        cout << "Game over: Draw.\n";
+        return;
+    }
     else if(player == 'X'){
         cout << "Game in progress: O's turn.\n";
         return;
@@ -77,8 +81,5 @@ void Board::gameEval(){
         cout << "Game in progress: X's turn.\n";
         return;
     }
-    else if(moveNum == 9){
-        cout << "Game over: Draw.\n";
-        return;
-    }
+
 }

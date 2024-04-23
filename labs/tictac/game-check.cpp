@@ -13,10 +13,10 @@ int main() {
     while(getline(cin, userMove)){
         try {
             Move move(userMove);
-            board.check(move);
             if(board.winner() != 0){
                 throw InvalidMove("Invalid move.");
             }
+            board.check(move);
         } 
         
         catch(const ParseError& e) {
