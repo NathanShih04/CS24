@@ -14,6 +14,9 @@ int main() {
         try {
             Move move(userMove);
             board.check(move);
+            if(board.winner() != 0){
+                throw InvalidMove("Invalid move.");
+            }
         } 
         
         catch(const ParseError& e) {
