@@ -36,31 +36,35 @@ void Board::check(Move move){
 
 }
 
-void Board::winner(){
+int Board::winner(){
+    // 0: no win
+    // 1: X win
+    // 2: O win
 
     // side to side and up and down for player X and O
     for(int i = 0; i < 3; i++){
         if((board[i][0] == 'X' && board[i][1] == 'X' && board[i][2] == 'X') || (board[0][i] == 'X' && board[1][i] == 'X' && board[2][i] == 'X')){
             cout << "Game over: X wins.\n";
-            return;
+            return 1;
         }
         else if((board[i][0] == 'O' && board[i][1] == 'O' && board[i][2] == 'O') || (board[0][i] == 'O' && board[1][i] == 'O' && board[2][i] == 'O')){
             cout << "Game over: O wins.\n";
-            return;
+            return 2; 
         }
     }
 
     // diagonals for player X and O
     if((board[0][0] == 'X' && board[1][1] == 'X' && board[2][2] == 'X') || (board[0][2] == 'X' && board[1][1] == 'X' && board[2][0] == 'X')) {
         cout << "Game over: X wins.\n";
-        return;
+        return 1; 
     }
 
     else if((board[0][0] == 'O' && board[1][1] == 'O' && board[2][2] == 'O') || (board[0][2] == 'O' && board[1][1] == 'O' && board[2][0] == 'O')){
         cout << "Game over: O wins.\n";
-        return;
+        return 2; 
     }
 
+    return 0;
 }
 
 void Board::gameEval(){

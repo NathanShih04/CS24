@@ -17,7 +17,7 @@ struct Board{
 
     void check(Move move);
 
-    void winner();
+    int winner();
 
     void gameEval();
 };
