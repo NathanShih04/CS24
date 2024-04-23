@@ -22,7 +22,7 @@ int main() {
         }
 
         catch(const InvalidMove& e) {
-            cout << "Invalid move error.\n";
+            cout << "Invalid move.\n";
             return 2;
         }
 
@@ -30,7 +30,6 @@ int main() {
 
     if(board.winner() == 0){
         board.gameEval();   
-
     }
     else{
         board.winner();
