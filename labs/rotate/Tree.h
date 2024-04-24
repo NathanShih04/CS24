@@ -5,7 +5,8 @@
 
 class Tree {
   // Member Variables
-
+  Node* root;
+  size_t size;
   // Private Helper Functions
 
 public:

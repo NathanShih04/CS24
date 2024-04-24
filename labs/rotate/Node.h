@@ -2,9 +2,18 @@
 #define NODE_H
 
 #include <string>
+using namespace std;
 
 struct Node {
-  // TODO!
+  Node* next;
+  string word;
+  Node* left;
+  Node* right;
+
+  Node();
+
+  Node(string data);
+  
 };
 
 #endif
