@@ -55,11 +55,11 @@ size_t Tree::count() const{
 // ---------------------------------------
 
 bool Tree::contains(const std::string& s) const{
-
+    return true;
 }
 
 size_t Tree::find(const std::string& s) const{
-
+    return 1;
 }
 
 void Tree::insert(const std::string& s){
@@ -67,7 +67,7 @@ void Tree::insert(const std::string& s){
 }
 
 string Tree::lookup(size_t index) const{
-
+    return " ";
 }
 
 void Tree::print() const{
