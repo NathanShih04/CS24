@@ -6,21 +6,17 @@ using namespace std;
 // Helper functions
 
 Node* indexHelper(Node* root, size_t index){
-    try{
-        if(root->left->weight == index){
-            return root;
-        }
-        else if(root->left != nullptr && root->left->weight > index){
-            indexHelper(root->left, index - 1);
-        }
-        else if(root->right->weight < index){
-            indexHelper(root->right, index - root->left->weight - 1);
-        }
+    if(root->left->weight == index){
+        return root;
     }
-    catch(const std::out_of_range& e) {
-        cout << "Caught an out_of_range exception: " << e.what();
-        return nullptr;
+    else if(root->left != nullptr && root->left->weight > index){
+        indexHelper(root->left, index - 1);
     }
+    else if(root->right->weight < index){
+        indexHelper(root->right, index - root->left->weight - 1);
+    }
+    
+    return nullptr;
 }
 
 // Tree Function Implementations
