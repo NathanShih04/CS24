@@ -19,6 +19,7 @@ Node* indexHelper(Node* root, size_t index){
     }
     catch(const std::out_of_range& e) {
         cout << "Caught an out_of_range exception: " << e.what();
+        return nullptr;
     }
 }
 
