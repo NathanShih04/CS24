@@ -5,7 +5,7 @@
 using namespace std;
 
 struct Node {
-  Node* next;
+  size_t weight;
   string word;
   Node* left;
   Node* right;

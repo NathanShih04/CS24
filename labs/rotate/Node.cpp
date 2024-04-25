@@ -2,7 +2,7 @@
 
 // Node Function Implementations
 Node::Node(){
-    next = nullptr;
+    size_t weight = 0;
     word = "";
     left = nullptr;
     right = nullptr;
@@ -10,7 +10,7 @@ Node::Node(){
 }
 
 Node::Node(string data){
-    next = nullptr;
+    size_t weight = 1;
     word = data;
     left = nullptr;
     right = nullptr;
