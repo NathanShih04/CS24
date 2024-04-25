@@ -10,7 +10,7 @@ Node::Node(){
 }
 
 Node::Node(string data){
-    size_t weight = 1;
+    weight = 1;
     word = data;
     left = nullptr;
     right = nullptr;
