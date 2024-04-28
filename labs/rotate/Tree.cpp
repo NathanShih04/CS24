@@ -130,13 +130,13 @@ Node* insertHelper(Node* root, string s){
 
     if (root == nullptr) {
         root = new Node(s);
-        std::cout << root->weight << std::endl;
+        // std::cout << root->weight << std::endl;
     }
     if(root->word > s) {
         // addLeft = true;
         if(root->left == nullptr){
             root->left = new Node(s);
-            std::cout << root->weight << std::endl;
+            // std::cout << root->weight << std::endl;
         }
         root->left = insertHelper(root->left, s);
         
@@ -145,7 +145,7 @@ Node* insertHelper(Node* root, string s){
         // addRight = true;
         if(root->right == nullptr){
             root->right = new Node(s);
-            std::cout << root->weight << std::endl;
+            // std::cout << root->weight << std::endl;
         }
         root-> right = insertHelper(root->right, s);
     }
