@@ -137,6 +137,11 @@ void printHelper(Node* root){
         return;
     }
 
+    if(root->word == ""){
+        cout << "-";
+        return;
+    }
+
     if(root->left == nullptr && root->right == nullptr){
         std::cout << root->word;
         return;
