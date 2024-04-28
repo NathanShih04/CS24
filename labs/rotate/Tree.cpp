@@ -35,15 +35,12 @@ Tree::Tree(){
 
 // ---------------------------------------
 
-void destructorHelper(Node* root){
+Tree::~Tree(){
     if(root != nullptr){
+        clearHelper(root);
         delete root;
         root = nullptr;
     }
-}
-
-Tree::~Tree(){
-    destructorHelper(root);
 }
 
 // ---------------------------------------
