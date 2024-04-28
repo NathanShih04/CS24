@@ -146,10 +146,12 @@ string printHelper(Node* root){
 
     if(root == nullptr){
         final += "-";
+        return final;
     }
 
     if(root->word == ""){
         final += "-";
+        return final;
     }
 
     if(root->left == nullptr && root->right == nullptr){
@@ -168,7 +170,7 @@ string printHelper(Node* root){
 }
 
 void Tree::print() const{
-    printHelper(root);
+    cout << printHelper(root);
 }
 
 // ---------------------------------------
