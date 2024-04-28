@@ -7,6 +7,9 @@ using namespace std;
 
 Node* indexHelper(Node* root, size_t index){
 
+    if(root == nullptr){
+        throw std::out_of_range("Out of range.");
+    }
     if(root->left != nullptr && root->left->weight == index){
         return root;
     }
@@ -17,7 +20,7 @@ Node* indexHelper(Node* root, size_t index){
         indexHelper(root->right, index - root->left->weight - 1);
     }
     
-    return nullptr;
+    throw std::out_of_range("Out of range.");
 }
 
 // Tree Function Implementations
