@@ -102,7 +102,7 @@ size_t Tree::find(const std::string& s) const{
 // ---------------------------------------
 
 void insertHelper(Node* root, string s){
-    if(root->left->word > s) {
+    if(root->word > s) {
         if(root->left == nullptr){
             root->left = new Node(s);
             root->weight += root->left->weight;
@@ -110,7 +110,7 @@ void insertHelper(Node* root, string s){
         insertHelper(root->left, s);
         
     }
-    if(root->right->word < s) {
+    if(root->word < s) {
         if(root->right == nullptr){
             root->left = new Node(s);
             root->weight += root->right->weight;
@@ -133,7 +133,7 @@ string Tree::lookup(size_t index) const{
 
 void printHelper(Node* root){
     if (root == nullptr){
-        cout << "\n";
+        cout << "-\n";
         return;
     }
 
