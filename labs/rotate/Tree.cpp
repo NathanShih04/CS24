@@ -132,12 +132,12 @@ string Tree::lookup(size_t index) const{
 // ---------------------------------------
 
 void printHelper(Node* root){
-    if (root == nullptr) {
+    if(root == nullptr){
         std::cout << "-";
         return;
     }
 
-    if (root->left == nullptr && root->right == nullptr) {
+    if(root->left == nullptr && root->right == nullptr){
         std::cout << root->word;
         return;
     }
