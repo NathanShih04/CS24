@@ -112,7 +112,7 @@ void insertHelper(Node* root, string s){
     }
     if(root->word < s) {
         if(root->right == nullptr){
-            root->left = new Node(s);
+            root->right = new Node(s);
             root->weight += root->right->weight;
         }
         insertHelper(root->right, s);
@@ -133,7 +133,7 @@ string Tree::lookup(size_t index) const{
 
 void printHelper(Node* root){
     if(root == nullptr){
-        std::cout << "-";
+        cout << "-";
         return;
     }
 
@@ -142,11 +142,11 @@ void printHelper(Node* root){
         return;
     }
 
-    std::cout << "(";
+    cout << "(";
     printHelper(root->left);
-    std::cout << " " << root->word << " ";
+    cout << " " << root->word << " ";
     printHelper(root->right);
-    std::cout << ")";
+    cout << ")";
 }
 
 void Tree::print() const{
