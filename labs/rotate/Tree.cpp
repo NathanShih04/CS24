@@ -203,7 +203,14 @@ void Tree::insert(const std::string& s){
 // ---------------------------------------
 
 string Tree::lookup(size_t index) const{
-    return indexHelper(root, index)->word;
+    std::string empty = "";
+    Node* ret =  indexHelper(root, index);
+
+    if(ret != nullptr){
+        return ret->word;
+    }
+
+    return empty;
 }
 
 // ---------------------------------------
