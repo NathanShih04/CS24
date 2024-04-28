@@ -34,8 +34,16 @@ Tree::Tree(){
 }
 
 // ---------------------------------------
+
+void destructorHelper(Node* root){
+    if(root != nullptr){
+        delete root;
+        root = nullptr;
+    }
+}
+
 Tree::~Tree(){
-    clearHelper(root);
+    destructorHelper(root);
 }
 
 // ---------------------------------------
