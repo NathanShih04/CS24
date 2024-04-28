@@ -128,19 +128,15 @@ size_t Tree::find(const std::string& s) const{
 
 Node* insertHelper(Node* root, string s){
 
-    // bool addLeft = false;
-    // bool addRight = false;
-
     if (root == nullptr) {
         root = new Node(s);
-        std::cout << "root: " << root->weight << std::endl;
+        std::cout << root->weight << std::endl;
     }
     if(root->word > s) {
         // addLeft = true;
         if(root->left == nullptr){
             root->left = new Node(s);
-            // root->weight += root->left->weight;
-            std::cout << "root2: " << root->weight << std::endl;
+            std::cout << root->weight << std::endl;
         }
         root->left = insertHelper(root->left, s);
         
@@ -149,26 +145,24 @@ Node* insertHelper(Node* root, string s){
         // addRight = true;
         if(root->right == nullptr){
             root->right = new Node(s);
-            // root->weight += root->right->weight;
-            std::cout << "root3: " << root->weight << std::endl;
+            std::cout << root->weight << std::endl;
         }
         root-> right = insertHelper(root->right, s);
     }
     
-    if ((root->left != nullptr) &(root->right != nullptr)) {
-        // std::cout << "111" << std::endl;
+    if ((root->left != nullptr) && (root->right != nullptr)){
         root->weight = root->left->weight + root->right->weight + 1;
-    } else if ((root->right == nullptr) & (root->left != nullptr)) {
-        // std::cout << "222" << std::endl;
+    } 
+    else if((root->right == nullptr) && (root->left != nullptr)) {
         root->weight = root->left->weight + 1;
-    } else if ((root->left == nullptr) & (root->right != nullptr)) {
-        // std::cout << "333" << std::endl;
+    }
+    else if((root->left == nullptr) && (root->right != nullptr)) {
         root->weight = root->right->weight + 1;
-    } else {
-        // std::cout << "444" << std::endl;
+    }
+    else {
         root->weight = 1;
     }
-    // std::cout << "root final: " << root->weight << std::endl;
+
     return root;
 }
 
@@ -185,23 +179,33 @@ string Tree::lookup(size_t index) const{
 // ---------------------------------------
 
 std::string printNode(Node* root) {
-    if (root->left == nullptr && root->right == nullptr) {
+    if(root == nullptr){
+        return "-";
+    }
+
+    if(root->word == ""){
+        return "-";
+    }
+
+    if(root->left == nullptr && root->right == nullptr){
         return root->word;
     }
 
     std::string output = "(";
-    if (root->left) {
+    if(root->left){
         output += printNode(root->left);
-    } else {
+    }
+    else {
         output += "-";
     }
     output+= " ";
     output += root->word;
     output += " ";
 
-    if (root->right) {
+    if (root->right){
         output += printNode(root->right);
-    } else {
+    }
+    else{
         output += "-";
     }
 
