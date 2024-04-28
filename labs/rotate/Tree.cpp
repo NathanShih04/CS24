@@ -7,7 +7,7 @@ using namespace std;
 
 Node* indexHelper(Node* root, size_t index){
     size_t left_weight = 0;
-    if (root->left != nullptr) {
+    if (root != nullptr && root->left != nullptr) {
         left_weight += root->left->weight;
     }
 
