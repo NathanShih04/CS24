@@ -112,7 +112,7 @@ Node* insertHelper(Node* root, string s){
     if(root->word > s){
         if(root->left == nullptr){
             root->left = new Node(s);
-            root->weight += root->left->weight;
+            root->weight += root->left->weight + 1;
         }
         insertHelper(root->left, s);
     }
@@ -120,7 +120,7 @@ Node* insertHelper(Node* root, string s){
     if(root->word < s){
         if(root->right == nullptr){
             root->right = new Node(s);
-            root->weight += root->right->weight;
+            root->weight += root->right->weight + 1;
         }
         insertHelper(root->right, s);
     }
