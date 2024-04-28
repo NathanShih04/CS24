@@ -46,12 +46,15 @@ Tree::~Tree(){
 // ---------------------------------------
 
 void clearHelper(Node* root){
-    if(root->left != nullptr) {
+    if(root == nullptr){
+        return;
+    }
+    if(root->left != nullptr){
         clearHelper(root->left);
         delete root->left;
         root->left = nullptr;
     }
-    if (root->right != nullptr) {
+    if(root->right != nullptr){
         clearHelper(root->right);
         delete root->right;
         root->right = nullptr;
