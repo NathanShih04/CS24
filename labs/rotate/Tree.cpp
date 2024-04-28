@@ -6,21 +6,25 @@ using namespace std;
 // Helper functions
 
 Node* indexHelper(Node* root, size_t index){
+    size_t left_weight = 0;
+    if (root->left != nullptr) {
+        left_weight += root->left->weight;
+    }
 
-    if(root == nullptr){
-        throw std::out_of_range("Out of range.");
-    }
-    if(root->left != nullptr && root->left->weight == index){
+    if (left_weight == index){
+        // std::cout << "8888" << std::endl;
         return root;
-    }
-    else if(root->left != nullptr && root->left->weight > index){
-        indexHelper(root->left, index - 1);
-    }
-    else if(root->right != nullptr && root->right->weight < index){
-        indexHelper(root->right, index - root->left->weight - 1);
+    } else if((root->left != nullptr) && (left_weight > index)){
+        // std::cout << "9999" << std::endl;
+        Node* ret = indexHelper(root->left, index);
+        return ret;
+    } else if (root->right != nullptr) {
+        // std::cout << "10101010" << std::endl;
+        Node* ret = indexHelper(root->right, index - left_weight - 1);
+        return ret;
     }
     
-    throw std::out_of_range("Out of range.");
+    return nullptr;
 }
 
 // Tree Function Implementations
@@ -59,6 +63,9 @@ void clearHelper(Node* root){
         delete root->right;
         root->right = nullptr;
     }
+
+    delete root;
+    root = nullptr;
 }
 
 void Tree::clear(){
@@ -102,8 +109,15 @@ bool Tree::contains(const std::string& s) const{
 
 // --------------------------------------- 
 size_t findHelper(Node* node, const std::string& s, size_t skipped) {
+
+    if (node == nullptr) {
+        return 0xffffffffffffffff;
+    }
+
     if (node->word == s) {
+        // std::cout << "111" << std::endl;
         if (node->left != nullptr) {
+            // std::cout << "222" << std::endl;
             return node->left->weight + skipped;
         }
 
@@ -111,21 +125,34 @@ size_t findHelper(Node* node, const std::string& s, size_t skipped) {
     } 
 
     if (node->word > s) {
+        // std::cout << "333" << std::endl;
+
+        if (node->left == nullptr) {
+            return 0xffffffffffffffff;
+        }
         return findHelper(node->left, s, skipped);
     }
 
     if (node->word < s) {
+        // std::cout << "444" << std::endl;
         if (node->left != nullptr) {
+            // std::cout << "555" << std::endl;
             skipped += node->left->weight;
         }
 
+
         skipped += 1;
+
+        if (node->right == nullptr) {
+            return 0xffffffffffffffff;
+        }
 
         return findHelper(node->right, s, skipped);
     }
 
-    return 0;
+    return 55555;
 }
+
 
 size_t Tree::find(const std::string& s) const{
     return findHelper(root, s, 0);
