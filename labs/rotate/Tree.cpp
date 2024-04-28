@@ -6,7 +6,7 @@ using namespace std;
 // Helper functions
 
 Node* indexHelper(Node* root, size_t index){
-    if(root->left->weight == index){
+    if(root->left != nullptr && root->left->weight == index){
         return root;
     }
     else if(root->left != nullptr && root->left->weight > index){
@@ -17,6 +17,10 @@ Node* indexHelper(Node* root, size_t index){
     }
     
     return nullptr;
+}
+
+void balanceHelper(Node* root){
+
 }
 
 // Tree Function Implementations
