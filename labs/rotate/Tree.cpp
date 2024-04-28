@@ -156,11 +156,15 @@ string printHelper(Node* root){
         final += root->word;
     }
 
-    cout << "(";
+    final += "(";
     printHelper(root->left);
-    cout << " " << root->word << " ";
+    final += " ";
+    final += root->word;
+    final += " ";
     printHelper(root->right);
-    cout << ")";
+    final += ")";
+
+    return final;
 }
 
 void Tree::print() const{
