@@ -35,16 +35,6 @@ Tree::Tree(){
 
 // ---------------------------------------
 
-Tree::~Tree(){
-    if(root != nullptr){
-        clearHelper(root);
-        delete root;
-        root = nullptr;
-    }
-}
-
-// ---------------------------------------
-
 void clearHelper(Node* root){
     if(root == nullptr){
         return;
@@ -66,6 +56,16 @@ void clearHelper(Node* root){
 
 void Tree::clear(){
     clearHelper(root);
+}
+
+// ---------------------------------------
+
+Tree::~Tree(){
+    if(root != nullptr){
+        clearHelper(root);
+        delete root;
+        root = nullptr;
+    }
 }
 
 // ---------------------------------------
