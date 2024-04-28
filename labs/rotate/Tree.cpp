@@ -25,8 +25,7 @@ void balanceHelper(Node* root){
 
 // Tree Function Implementations
 Tree::Tree(){
-    root = new Node;
-    size = 1;
+    root = nullptr;
 }
 
 // ---------------------------------------
@@ -105,22 +104,28 @@ size_t Tree::find(const std::string& s) const{
 
 // ---------------------------------------
 
-void insertHelper(Node* root, string s){
-    if(root->word > s) {
+Node* insertHelper(Node* root, string s){
+    if(root == nullptr){
+        root = new Node;
+    }
+
+    if(root->word > s){
         if(root->left == nullptr){
             root->left = new Node(s);
             root->weight += root->left->weight;
         }
         insertHelper(root->left, s);
-        
     }
-    if(root->word < s) {
+
+    if(root->word < s){
         if(root->right == nullptr){
             root->right = new Node(s);
             root->weight += root->right->weight;
         }
         insertHelper(root->right, s);
     }
+
+    return root;
 }
 
 void Tree::insert(const std::string& s){
@@ -136,6 +141,7 @@ string Tree::lookup(size_t index) const{
 // ---------------------------------------
 
 void printHelper(Node* root){
+    
     if(root == nullptr){
         cout << "-";
         return;
