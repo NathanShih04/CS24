@@ -13,7 +13,7 @@ Node* indexHelper(Node* root, size_t index){
     else if(root->left != nullptr && root->left->weight > index){
         indexHelper(root->left, index - 1);
     }
-    else if(root->right->weight < index){
+    else if(root->right != nullptr && root->right->weight < index){
         indexHelper(root->right, index - root->left->weight - 1);
     }
     
