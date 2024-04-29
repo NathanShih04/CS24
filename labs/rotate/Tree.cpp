@@ -57,11 +57,12 @@ void Tree::clear(){
 // ---------------------------------------
 
 Tree::~Tree(){
-    if (root != nullptr) {
-        clearHelper(root);
-        delete root;
-        root = nullptr;
-    }
+    clear();
+    // if (root != nullptr) {
+    //     clearHelper(root);
+    //     delete root;
+    //     root = nullptr;
+    // }
 
 }
 
