@@ -150,16 +150,16 @@ Node* insertHelper(Node* root, string s){
         root = new Node(s);
     }
 
-    if(root->word == s){
-        if(root->left == nullptr){
-            root->left = new Node(s);
-        }
-        else{
-            string holder = root->left->word;
-            root->left->word = s;
-            root->left->left = new Node(holder);
-        }
-    }
+    // if(root->word == s){
+    //     if(root->left == nullptr){
+    //         root->left = new Node(s);
+    //     }
+    //     else{
+    //         string holder = root->left->word;
+    //         root->left->word = s;
+    //         insertHelper(root->left, holder);
+    //     }
+    // }
     if(root->word > s) {
         if(root->left == nullptr){
             root->left = new Node(s);
