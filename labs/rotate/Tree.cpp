@@ -82,18 +82,6 @@ size_t Tree::count() const{
 
 // ---------------------------------------
 
-bool Tree::contains(const std::string& s) const{
-    size_t output = findHelper(root, s, 0);
-
-    if((output != 0xffffffffffffffff) || (output != 55555)){
-        return false;
-    }
-
-    return true;
-
-}
-
-// --------------------------------------- 
 size_t findHelper(Node* node, const std::string& s, size_t skipped) {
 
     if (node == nullptr) {
@@ -145,6 +133,19 @@ size_t Tree::find(const std::string& s) const{
 }
 
 // ---------------------------------------
+
+bool Tree::contains(const std::string& s) const{
+    size_t output = findHelper(root, s, 0);
+
+    if((output != 0xffffffffffffffff) || (output != 55555)){
+        return false;
+    }
+
+    return true;
+
+}
+
+// --------------------------------------- 
 
 Node* insertHelper(Node* root, string s){
 
