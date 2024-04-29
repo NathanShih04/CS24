@@ -111,7 +111,6 @@ size_t findHelper(Node* node, const std::string& s, size_t skipped) {
             skipped += node->left->weight;
         }
 
-
         skipped += 1;
 
         if (node->right == nullptr) {
@@ -134,7 +133,7 @@ size_t Tree::find(const std::string& s) const{
 bool Tree::contains(const std::string& s) const{
     size_t output = findHelper(root, s, 0);
 
-    if((output != 0xffffffffffffffff) || (output != 55555)){
+    if((output == 0xffffffffffffffff) || (output == 55555)){
         return false;
     }
 
@@ -164,7 +163,7 @@ Node* insertHelper(Node* root, string s){
             root->left = new Node(s);
         }
         else{
-            root->left = insertHelper(root->left, s);\
+            root->left = insertHelper(root->left, s);
         }
         
     }
