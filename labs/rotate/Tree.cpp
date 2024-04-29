@@ -87,14 +87,12 @@ size_t Tree::count() const{
 
 size_t findHelper(Node* node, const std::string& s, size_t skipped) {
 
-    if (node == nullptr) {
+    if(node == nullptr){
         return 0xffffffffffffffff;
     }
 
-    if (node->word == s) {
-        // std::cout << "111" << std::endl;
-        if (node->left != nullptr) {
-            // std::cout << "222" << std::endl;
+    if(node->word == s){
+        if(node->left != nullptr){
             return node->left->weight + skipped;
         }
 
@@ -102,8 +100,6 @@ size_t findHelper(Node* node, const std::string& s, size_t skipped) {
     } 
 
     if (node->word > s) {
-        // std::cout << "333" << std::endl;
-
         if (node->left == nullptr) {
             return 0xffffffffffffffff;
         }
@@ -111,9 +107,7 @@ size_t findHelper(Node* node, const std::string& s, size_t skipped) {
     }
 
     if (node->word < s) {
-        // std::cout << "444" << std::endl;
         if (node->left != nullptr) {
-            // std::cout << "555" << std::endl;
             skipped += node->left->weight;
         }
 
@@ -152,38 +146,43 @@ bool Tree::contains(const std::string& s) const{
 
 Node* insertHelper(Node* root, string s){
 
-    if (root == nullptr) {
+    if(root == nullptr) {
         root = new Node(s);
-        // std::cout << root->weight << std::endl;
     }
     if(root->word > s) {
-        // addLeft = true;
         if(root->left == nullptr){
             root->left = new Node(s);
-            // std::cout << root->weight << std::endl;
         }
         root->left = insertHelper(root->left, s);
         
     }
     if(root->word < s) {
-        // addRight = true;
         if(root->right == nullptr){
             root->right = new Node(s);
-            // std::cout << root->weight << std::endl;
         }
-        root-> right = insertHelper(root->right, s);
+        root->right = insertHelper(root->right, s);
+    }
+    if(root->word == s){
+        if(root->left = nullptr){
+            root->left = new Node(s);
+        }
+        else{
+            string holder = root->left->word;
+            root->left->word = s;
+            insertHelper(root, holder);
+        }
     }
     
-    if ((root->left != nullptr) && (root->right != nullptr)){
+    if((root->left != nullptr) && (root->right != nullptr)){
         root->weight = root->left->weight + root->right->weight + 1;
     } 
-    else if((root->right == nullptr) && (root->left != nullptr)) {
+    else if((root->right == nullptr) && (root->left != nullptr)){
         root->weight = root->left->weight + 1;
     }
-    else if((root->left == nullptr) && (root->right != nullptr)) {
+    else if((root->left == nullptr) && (root->right != nullptr)){
         root->weight = root->right->weight + 1;
     }
-    else {
+    else{
         root->weight = 1;
     }
 
