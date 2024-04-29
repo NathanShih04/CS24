@@ -157,7 +157,7 @@ Node* insertHelper(Node* root, string s){
         else{
             string holder = root->left->word;
             root->left->word = s;
-            insertHelper(root->left, holder);
+            root->left->left = new Node(holder);
         }
     }
     if(root->word > s) {
