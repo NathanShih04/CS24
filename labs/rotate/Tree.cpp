@@ -197,14 +197,14 @@ void Tree::insert(const std::string& s){
 // ---------------------------------------
 
 string Tree::lookup(size_t index) const{
-    std::string empty = "";
+    string empty = "";
     Node* ret =  indexHelper(root, index);
 
     if(ret != nullptr){
         return ret->word;
     }
 
-    return empty;
+    throw std::out_of_range("Out of range.");
 }
 
 // ---------------------------------------
