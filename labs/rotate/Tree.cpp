@@ -174,6 +174,7 @@ Node* insertHelper(Node* root, string s){
         if(root->left == nullptr){
             root->left = new Node(s);
         }
+        root->left = insertHelper(root->left, s);
     }
     
     if ((root->left != nullptr) && (root->right != nullptr)){
