@@ -159,7 +159,7 @@ Node* insertHelper(Node* root, string s){
         }
         
     }
-    if(root->word < s) {
+    else if(root->word < s) {
         if(root->right == nullptr){
             root->right = new Node(s);
         }
@@ -167,7 +167,7 @@ Node* insertHelper(Node* root, string s){
             root->right = insertHelper(root->right, s);
         }
     }
-    if(root->word == s){
+    else if(root->word == s){
         if(root->left == nullptr){
             root->left = new Node(s);
         }
