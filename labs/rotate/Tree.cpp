@@ -7,6 +7,7 @@ using namespace std;
 
 Node* indexHelper(Node* root, size_t index){
     size_t left_weight = 0;
+
     if(root != nullptr && root->left != nullptr){
         left_weight += root->left->weight;
     }
@@ -14,11 +15,11 @@ Node* indexHelper(Node* root, size_t index){
     if(left_weight == index){
         return root;
     } 
-    else if((root->left != nullptr) && (left_weight > index)){
+    else if((root != nullptr) && (root->left != nullptr) && (left_weight > index)){
         Node* ret = indexHelper(root->left, index);
         return ret;
     } 
-    else if(root->right != nullptr){
+    else if(root != nullptr && root->right != nullptr){
         Node* ret = indexHelper(root->right, index - left_weight - 1);
         return ret;
     }
