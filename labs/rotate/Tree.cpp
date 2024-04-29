@@ -7,19 +7,18 @@ using namespace std;
 
 Node* indexHelper(Node* root, size_t index){
     size_t left_weight = 0;
-    if (root != nullptr && root->left != nullptr) {
+    if(root != nullptr && root->left != nullptr){
         left_weight += root->left->weight;
     }
 
-    if (left_weight == index){
-        // std::cout << "8888" << std::endl;
+    if(left_weight == index){
         return root;
-    } else if((root->left != nullptr) && (left_weight > index)){
-        // std::cout << "9999" << std::endl;
+    } 
+    else if((root->left != nullptr) && (left_weight > index)){
         Node* ret = indexHelper(root->left, index);
         return ret;
-    } else if (root->right != nullptr) {
-        // std::cout << "10101010" << std::endl;
+    } 
+    else if(root->right != nullptr){
         Node* ret = indexHelper(root->right, index - left_weight - 1);
         return ret;
     }
@@ -36,6 +35,9 @@ Tree::Tree(){
 // ---------------------------------------
 
 void clearHelper(Node* root){
+    if(root == nullptr){
+        return;
+    }
     if(root->left != nullptr) {
         clearHelper(root->left);
         delete root->left;
