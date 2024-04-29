@@ -82,22 +82,15 @@ size_t Tree::count() const{
 
 // ---------------------------------------
 
-bool containsHelper(Node* root, string s){
-    if(root->word == s){
-        return true;
-    }
-    else if(root->left != nullptr && s < root->word){
-        containsHelper(root->left, s);
-    }
-    else if(root->right != nullptr && s > root->word){
-        containsHelper(root->right, s);
-    }
-    
-    return false;
-}
-
 bool Tree::contains(const std::string& s) const{
-    return containsHelper(root, s);
+    size_t output = findHelper(root, s, 0);
+
+    if((output != 0xffffffffffffffff) || (output != 55555)){
+        return false;
+    }
+
+    return true;
+
 }
 
 // --------------------------------------- 
