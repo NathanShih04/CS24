@@ -8,7 +8,11 @@ int main() {
   Tree tree;
 
   // Do tree things!
-  
+  tree.insert("badger");
+  tree.insert("mushroom");
+  tree.insert("mushroom");
+  tree.print();
+  cout << "Found at index: " << tree.find("mushroom") << "\n";
 
   return 0;
 }

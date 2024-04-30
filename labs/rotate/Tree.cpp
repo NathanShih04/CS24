@@ -108,28 +108,28 @@ size_t findHelper(Node* node, const std::string& s, size_t skipped) {
     }
 
     if(node->word == s){
-        if(node->left != nullptr){
+        if((node->left != nullptr) && (node->left->word != s)){
             return node->left->weight + skipped;
         }
 
         return skipped;
     } 
 
-    if (node->word > s) {
-        if (node->left == nullptr) {
+    if(node->word > s){
+        if(node->left == nullptr){
             return 0xffffffffffffffff;
         }
         return findHelper(node->left, s, skipped);
     }
 
-    if (node->word < s) {
-        if (node->left != nullptr) {
+    if(node->word < s){
+        if(node->left != nullptr){
             skipped += node->left->weight;
         }
 
         skipped += 1;
 
-        if (node->right == nullptr) {
+        if(node->right == nullptr){
             return 0xffffffffffffffff;
         }
 
@@ -262,8 +262,8 @@ std::string printNode(Node* root) {
 }
 
 void Tree::print() const{
-    std::string result = printNode(root);
-    std::cout << result << std::endl;
+    string result = printNode(root);
+    cout << result << std::endl;
 }
 
 // ---------------------------------------
