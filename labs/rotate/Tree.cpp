@@ -275,18 +275,18 @@ void removeHelper(Node* root, size_t index){
     else if(indexHelper(root, index) == nullptr){
         throw std::out_of_range("Index out of range.");
     }
-    else if((indexHelper(root, index)->left == nullptr) && (indexHelper(root, index)->right == nullptr)){
-        delete root;
-        root = nullptr;
-    }
-    // one left child
-    else if((indexHelper(root, index)->left != nullptr) && (indexHelper(root, index)->right == nullptr)){
+    // else if((indexHelper(root, index)->left == nullptr) && (indexHelper(root, index)->right == nullptr)){
+    //     delete root;
+    //     root = nullptr;
+    // }
+    // // one left child
+    // else if((indexHelper(root, index)->left != nullptr) && (indexHelper(root, index)->right == nullptr)){
 
-    }
-    // one right child
-    else if((indexHelper(root, index)->right != nullptr) && (indexHelper(root, index)->left == nullptr)){
+    // }
+    // // one right child
+    // else if((indexHelper(root, index)->right != nullptr) && (indexHelper(root, index)->left == nullptr)){
 
-    }
+    // }
 
 }
 
