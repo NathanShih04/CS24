@@ -27,6 +27,22 @@ Node* indexHelper(Node* root, size_t index){
     return nullptr;
 }
 
+Node* rightRotate(Node* root){
+    Node* holder;
+    holder = root->right;
+    root->right = holder->left;
+    holder->left = root;
+    return holder;
+}
+
+Node* leftRotate(Node* root){
+    Node* holder;
+    holder = root->left;
+    root->left = holder->right;
+    holder->right = root;
+    return holder;
+}
+
 // Tree Function Implementations
 Tree::Tree(){
     root = nullptr;
@@ -148,16 +164,7 @@ Node* insertHelper(Node* root, string s){
     if(root == nullptr) {
         root = new Node(s);
     }
-    // else if(root->word == s){
-    //     if(root->left == nullptr){
-    //         root->left = new Node(s);
-    //     }
-    //     else{
-    //         string holder = root->left->word;
-    //         root->left->word = s;
-    //         insertHelper(root->left, holder);
-    //     }
-    // }
+
     else if(root->word >= s) {
         if(root->left == nullptr){
             root->left = new Node(s);
@@ -187,6 +194,13 @@ Node* insertHelper(Node* root, string s){
     }
     else{
         root->weight = 1;
+    }
+
+    if(root->left->weight > root->right->weight){
+        root = leftRotate(root);
+    }
+    else if(root->right->weight > root->left->weight){
+        root = rightRotate(root);
     }
 
     return root;
