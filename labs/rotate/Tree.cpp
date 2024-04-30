@@ -148,17 +148,17 @@ Node* insertHelper(Node* root, string s){
     if(root == nullptr) {
         root = new Node(s);
     }
-    else if(root->word == s){
-        if(root->left == nullptr){
-            root->left = new Node(s);
-        }
-        else{
-            string holder = root->left->word;
-            root->left->word = s;
-            insertHelper(root->left, holder);
-        }
-    }
-    else if(root->word > s) {
+    // else if(root->word == s){
+    //     if(root->left == nullptr){
+    //         root->left = new Node(s);
+    //     }
+    //     else{
+    //         string holder = root->left->word;
+    //         root->left->word = s;
+    //         insertHelper(root->left, holder);
+    //     }
+    // }
+    else if(root->word >= s) {
         if(root->left == nullptr){
             root->left = new Node(s);
         }
@@ -253,6 +253,25 @@ void Tree::print() const{
 }
 
 // ---------------------------------------
+
+void removeHelper(Node* root, size_t index){
+    if(indexHelper(root, index) == nullptr){
+        throw std::out_of_range("Out of range.");
+    }
+    else if((indexHelper(root, index)->left == nullptr) && (indexHelper(root, index)->right == nullptr)){
+        delete root;
+        root = nullptr;
+    }
+    // one left child
+    else if((indexHelper(root, index)->left != nullptr) && (indexHelper(root, index)->right == nullptr)){
+
+    }
+    // one right child
+    else if((indexHelper(root, index)->right != nullptr) && (indexHelper(root, index)->left == nullptr)){
+
+    }
+
+}
 
 void Tree::remove(size_t index){
 
