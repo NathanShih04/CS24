@@ -196,12 +196,12 @@ Node* insertHelper(Node* root, string s){
         root->weight = 1;
     }
 
-    if((root->left != nullptr && root->right != nullptr) && (root->left->weight > root->right->weight)){
-        root = leftRotate(root);
-    }
-    else if((root->left != nullptr && root->right != nullptr) && root->right->weight > root->left->weight){
-        root = rightRotate(root);
-    }
+    // if((root->left != nullptr && root->right != nullptr) && (root->left->weight > root->right->weight)){
+    //     root = leftRotate(root);
+    // }
+    // else if((root->left != nullptr && root->right != nullptr) && root->right->weight > root->left->weight){
+    //     root = rightRotate(root);
+    // }
 
     return root;
 }
