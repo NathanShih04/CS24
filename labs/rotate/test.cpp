@@ -10,11 +10,14 @@ int main() {
   // Do tree things!
   tree.insert("badger");
   tree.insert("badger");
+  tree.insert("badger");
+  tree.insert("mushroom");
+  tree.insert("mushroom");
+  tree.insert("mushroom");
   tree.insert("snake");
-  tree.insert("mushroom");
-  tree.insert("mushroom");
+  tree.insert("snake");
   tree.print();
-  cout << "Mushroom found at index: " << tree.find("mushroom") << "\n";
+  cout << "Mushroom found at index: " << tree.find("snake") << "\n";
 
   return 0;
 }
