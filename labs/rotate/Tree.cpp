@@ -269,7 +269,10 @@ void Tree::print() const{
 // ---------------------------------------
 
 void removeHelper(Node* root, size_t index){
-    if(indexHelper(root, index) == nullptr){
+    if(root == nullptr){
+        throw std::out_of_range("Index out of range.");
+    }
+    else if(indexHelper(root, index) == nullptr){
         throw std::out_of_range("Index out of range.");
     }
     else if((indexHelper(root, index)->left == nullptr) && (indexHelper(root, index)->right == nullptr)){
