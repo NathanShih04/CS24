@@ -64,6 +64,9 @@ Node* copyTree(Node* root) {
 // -----------------------------------------------------------
 
 void rightRotate(Node* root){
+    if(root == nullptr || root->right == nullptr){
+        return;
+    }
     Node* holder;
     holder = root->right;
     root->right = holder->left;
@@ -72,6 +75,9 @@ void rightRotate(Node* root){
 // -----------------------------------------------------------
 
 void leftRotate(Node* root){
+    if(root == nullptr || root->left == nullptr){
+        return;
+    }
     Node* holder;
     holder = root->left;
     root->left = holder->right;
@@ -81,15 +87,51 @@ void leftRotate(Node* root){
 void balancer(Node* root){
     size_t dif;
     size_t newDif;
+    size_t leftWeight;
+    size_t rightWeight;
+    size_t copiedLeftWeight;
+    size_t copiedRightWeight;
+
     // Make a tree copy
     Node* copiedRootLeft = copyTree(root);
     Node* copiedRootRight = copyTree(root);
 
+    if(root == nullptr){
+        return;
+    }
+
+    if(root->left == nullptr){
+        leftWeight == 0;
+    }
+    else{
+        leftWeight == root->left->weight;
+    }
+    if(root->right == nullptr){
+        rightWeight == 0;
+    }
+    else{
+        rightWeight == root->right->weight;
+    }
+    
+
     // Check to see if rotating helps left
-    if(root->left->weight > root->right->weight){
-        dif = root->left->weight - root->right->weight;
+    if(leftWeight > rightWeight){
+        dif = leftWeight - rightWeight;
         leftRotate(copiedRootLeft);
         calculateWeights(copiedRootLeft);
+
+        if(root->left == nullptr){
+            copiedLeftWeight == 0;
+        }
+        else{
+            copiedLeftWeight == root->left->weight;
+        }
+        if(root->right == nullptr){
+            copiedRightWeight == 0;
+        }
+        else{
+            copiedRightWeight == root->right->weight;
+        }
         newDif = copiedRootLeft->left->weight - copiedRootLeft->right->weight;
         
         if(newDif < dif){
@@ -97,8 +139,8 @@ void balancer(Node* root){
         }
     }
     // Check to see if rotating helps right
-    else if(root->right->weight > root->left->weight){
-        dif = root->right->weight - root->left->weight;
+    else if(rightWeight > leftWeight){
+        dif = rightWeight - leftWeight;
         leftRotate(copiedRootRight);
         calculateWeights(copiedRootRight);
         newDif = copiedRootRight->right->weight - copiedRootRight->left->weight;
@@ -266,7 +308,7 @@ Node* insertHelper(Node* root, string s){
     }
 
     // REBALANCING AND ROTATING
-    balancer(root);
+    // balancer(root);
 
     return root;
 }
