@@ -101,16 +101,16 @@ void balancer(Node* root){
     }
 
     if(root->left == nullptr){
-        leftWeight == 0;
+        leftWeight = 0;
     }
     else{
-        leftWeight == root->left->weight;
+        leftWeight = root->left->weight;
     }
     if(root->right == nullptr){
-        rightWeight == 0;
+        rightWeight = 0;
     }
     else{
-        rightWeight == root->right->weight;
+        rightWeight = root->right->weight;
     }
     
 
@@ -119,19 +119,6 @@ void balancer(Node* root){
         dif = leftWeight - rightWeight;
         leftRotate(copiedRootLeft);
         calculateWeights(copiedRootLeft);
-
-        if(root->left == nullptr){
-            copiedLeftWeight == 0;
-        }
-        else{
-            copiedLeftWeight == root->left->weight;
-        }
-        if(root->right == nullptr){
-            copiedRightWeight == 0;
-        }
-        else{
-            copiedRightWeight == root->right->weight;
-        }
         newDif = copiedRootLeft->left->weight - copiedRootLeft->right->weight;
         
         if(newDif < dif){
