@@ -85,129 +85,78 @@ void leftRotate(Node* root){
 }
 // -----------------------------------------------------------
 void balancer(Node* root){
-    Node* copiedRoot = copyTree(root);
-    int leftWeight;
-    int rightWeight;
-    int copiedLeft;
-    int copiedRight;
-    int oldDif;
-    int newDif;
-
-    if(root == nullptr){
-        return;
-    }
-
-    if(root->left != nullptr){
-        leftWeight = root->left->weight;
-    }
-    else{
-        leftWeight = 0;
-    }
-
-    if(root->right != nullptr){
-        rightWeight = root->right->weight;
-    }
-    else{
-        rightWeight = 0;
-    }
-
-    oldDif = leftWeight - rightWeight;
-    if(oldDif < -1){
-        rightRotate(copiedRoot);
-        calculateWeights(copiedRoot);
-
-        if(copiedRoot->left != nullptr){
-            copiedLeft = copiedRoot->left->weight;
-        }
-        else{
-            copiedLeft = 0;
-        }
-
-        if(copiedRoot->right != nullptr){
-            copiedRight = copiedRoot->right->weight;
-        }
-        else{
-            copiedRight = 0;
-        }
-        
-        newDif = copiedLeft - copiedRight;
-        if(newDif > oldDif){
-            rightRotate(root);
-        }
-
-    }
-
-    else if(oldDif > 1){
-        leftRotate(copiedRoot);
-        calculateWeights(copiedRoot);
-
-        if(copiedRoot->left != nullptr){
-            copiedLeft = copiedRoot->left->weight;
-        }
-        else{
-            copiedLeft = 0;
-        }
-
-        if(copiedRoot->right != nullptr){
-            copiedRight = copiedRoot->right->weight;
-        }
-        else{
-            copiedRight = 0;
-        }
-        
-        newDif = copiedLeft - copiedRight;
-        if(newDif < oldDif){
-            rightRotate(root);
-        }
-    }
-    // size_t dif;
-    // size_t newDif;
-    // size_t leftWeight;
-    // size_t rightWeight;
-    // size_t copiedLeftWeight;
-    // size_t copiedRightWeight;
-
-    // // Make a tree copy
-    // Node* copiedRootLeft = copyTree(root);
-    // Node* copiedRootRight = copyTree(root);
+    // Node* copiedRoot = copyTree(root);
+    // int leftWeight;
+    // int rightWeight;
+    // int copiedLeft;
+    // int copiedRight;
+    // int oldDif;
+    // int newDif;
 
     // if(root == nullptr){
     //     return;
     // }
 
-    // if(root->left == nullptr){
-    //     leftWeight = 0;
-    // }
-    // else{
+    // if(root->left != nullptr){
     //     leftWeight = root->left->weight;
     // }
-    // if(root->right == nullptr){
-    //     rightWeight = 0;
-    // }
     // else{
+    //     leftWeight = 0;
+    // }
+
+    // if(root->right != nullptr){
     //     rightWeight = root->right->weight;
     // }
-    
-
-    // // Check to see if rotating helps left
-    // if(leftWeight > rightWeight){
-    //     dif = leftWeight - rightWeight;
-    //     leftRotate(copiedRootLeft);
-    //     calculateWeights(copiedRootLeft);
-    //     newDif = copiedRootLeft->left->weight - copiedRootLeft->right->weight;
-        
-    //     if(newDif < dif){
-    //         leftRotate(root);
-    //     }
+    // else{
+    //     rightWeight = 0;
     // }
-    // // Check to see if rotating helps right
-    // else if(rightWeight > leftWeight){
-    //     dif = rightWeight - leftWeight;
-    //     leftRotate(copiedRootRight);
-    //     calculateWeights(copiedRootRight);
-    //     newDif = copiedRootRight->right->weight - copiedRootRight->left->weight;
+
+    // oldDif = leftWeight - rightWeight;
+    // if(oldDif < -1){
+    //     rightRotate(copiedRoot);
+    //     calculateWeights(copiedRoot);
+
+    //     if(copiedRoot->left != nullptr){
+    //         copiedLeft = copiedRoot->left->weight;
+    //     }
+    //     else{
+    //         copiedLeft = 0;
+    //     }
+
+    //     if(copiedRoot->right != nullptr){
+    //         copiedRight = copiedRoot->right->weight;
+    //     }
+    //     else{
+    //         copiedRight = 0;
+    //     }
         
-    //     if(newDif < dif){
+    //     newDif = copiedLeft - copiedRight;
+    //     if(newDif > oldDif){
+    //         rightRotate(root);
+    //     }
+
+    // }
+
+    // else if(oldDif > 1){
+    //     leftRotate(copiedRoot);
+    //     calculateWeights(copiedRoot);
+
+    //     if(copiedRoot->left != nullptr){
+    //         copiedLeft = copiedRoot->left->weight;
+    //     }
+    //     else{
+    //         copiedLeft = 0;
+    //     }
+
+    //     if(copiedRoot->right != nullptr){
+    //         copiedRight = copiedRoot->right->weight;
+    //     }
+    //     else{
+    //         copiedRight = 0;
+    //     }
+        
+    //     newDif = copiedLeft - copiedRight;
+    //     if(newDif < oldDif){
     //         rightRotate(root);
     //     }
     // }
@@ -462,3 +411,56 @@ void removeHelper(Node* root, size_t index){
 void Tree::remove(size_t index){
     removeHelper(root, index);
 }
+
+// Rotate checker old code
+    // size_t dif;
+    // size_t newDif;
+    // size_t leftWeight;
+    // size_t rightWeight;
+    // size_t copiedLeftWeight;
+    // size_t copiedRightWeight;
+
+    // // Make a tree copy
+    // Node* copiedRootLeft = copyTree(root);
+    // Node* copiedRootRight = copyTree(root);
+
+    // if(root == nullptr){
+    //     return;
+    // }
+
+    // if(root->left == nullptr){
+    //     leftWeight = 0;
+    // }
+    // else{
+    //     leftWeight = root->left->weight;
+    // }
+    // if(root->right == nullptr){
+    //     rightWeight = 0;
+    // }
+    // else{
+    //     rightWeight = root->right->weight;
+    // }
+    
+
+    // // Check to see if rotating helps left
+    // if(leftWeight > rightWeight){
+    //     dif = leftWeight - rightWeight;
+    //     leftRotate(copiedRootLeft);
+    //     calculateWeights(copiedRootLeft);
+    //     newDif = copiedRootLeft->left->weight - copiedRootLeft->right->weight;
+        
+    //     if(newDif < dif){
+    //         leftRotate(root);
+    //     }
+    // }
+    // // Check to see if rotating helps right
+    // else if(rightWeight > leftWeight){
+    //     dif = rightWeight - leftWeight;
+    //     leftRotate(copiedRootRight);
+    //     calculateWeights(copiedRootRight);
+    //     newDif = copiedRootRight->right->weight - copiedRootRight->left->weight;
+        
+    //     if(newDif < dif){
+    //         rightRotate(root);
+    //     }
+    // }
