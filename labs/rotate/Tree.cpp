@@ -85,7 +85,6 @@ void leftRotate(Node* root){
 }
 // -----------------------------------------------------------
 void balancer(Node* root){
-    Node* copiedRoot = copyTree(root);
     int leftWeight;
     int rightWeight;
     int copiedLeft;
@@ -113,6 +112,8 @@ void balancer(Node* root){
 
     oldDif = leftWeight - rightWeight;
     if(oldDif < -1){
+        Node* copiedRoot = copyTree(root);
+
         rightRotate(copiedRoot);
         calculateWeights(copiedRoot);
 
@@ -142,6 +143,8 @@ void balancer(Node* root){
     }
 
     else if(oldDif > 1){
+        Node* copiedRoot = copyTree(root);
+
         leftRotate(copiedRoot);
         calculateWeights(copiedRoot);
 
