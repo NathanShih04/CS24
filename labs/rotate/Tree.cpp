@@ -85,57 +85,57 @@ void leftRotate(Node* root){
 }
 // -----------------------------------------------------------
 void balancer(Node* root){
-    size_t dif;
-    size_t newDif;
-    size_t leftWeight;
-    size_t rightWeight;
-    size_t copiedLeftWeight;
-    size_t copiedRightWeight;
+    // size_t dif;
+    // size_t newDif;
+    // size_t leftWeight;
+    // size_t rightWeight;
+    // size_t copiedLeftWeight;
+    // size_t copiedRightWeight;
 
-    // Make a tree copy
-    Node* copiedRootLeft = copyTree(root);
-    Node* copiedRootRight = copyTree(root);
+    // // Make a tree copy
+    // Node* copiedRootLeft = copyTree(root);
+    // Node* copiedRootRight = copyTree(root);
 
-    if(root == nullptr){
-        return;
-    }
+    // if(root == nullptr){
+    //     return;
+    // }
 
-    if(root->left == nullptr){
-        leftWeight = 0;
-    }
-    else{
-        leftWeight = root->left->weight;
-    }
-    if(root->right == nullptr){
-        rightWeight = 0;
-    }
-    else{
-        rightWeight = root->right->weight;
-    }
+    // if(root->left == nullptr){
+    //     leftWeight = 0;
+    // }
+    // else{
+    //     leftWeight = root->left->weight;
+    // }
+    // if(root->right == nullptr){
+    //     rightWeight = 0;
+    // }
+    // else{
+    //     rightWeight = root->right->weight;
+    // }
     
 
-    // Check to see if rotating helps left
-    if(leftWeight > rightWeight){
-        dif = leftWeight - rightWeight;
-        leftRotate(copiedRootLeft);
-        calculateWeights(copiedRootLeft);
-        newDif = copiedRootLeft->left->weight - copiedRootLeft->right->weight;
+    // // Check to see if rotating helps left
+    // if(leftWeight > rightWeight){
+    //     dif = leftWeight - rightWeight;
+    //     leftRotate(copiedRootLeft);
+    //     calculateWeights(copiedRootLeft);
+    //     newDif = copiedRootLeft->left->weight - copiedRootLeft->right->weight;
         
-        if(newDif < dif){
-            leftRotate(root);
-        }
-    }
-    // Check to see if rotating helps right
-    else if(rightWeight > leftWeight){
-        dif = rightWeight - leftWeight;
-        leftRotate(copiedRootRight);
-        calculateWeights(copiedRootRight);
-        newDif = copiedRootRight->right->weight - copiedRootRight->left->weight;
+    //     if(newDif < dif){
+    //         leftRotate(root);
+    //     }
+    // }
+    // // Check to see if rotating helps right
+    // else if(rightWeight > leftWeight){
+    //     dif = rightWeight - leftWeight;
+    //     leftRotate(copiedRootRight);
+    //     calculateWeights(copiedRootRight);
+    //     newDif = copiedRootRight->right->weight - copiedRootRight->left->weight;
         
-        if(newDif < dif){
-            rightRotate(root);
-        }
-    }
+    //     if(newDif < dif){
+    //         rightRotate(root);
+    //     }
+    // }
 }
 
 // ###########################################################
