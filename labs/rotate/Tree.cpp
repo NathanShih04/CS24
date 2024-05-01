@@ -386,25 +386,50 @@ void Tree::print() const{
 
 // ---------------------------------------
 
+Node* findMin(Node* root) {
+    while(root->left != nullptr){
+        root = root->left;
+    }
+    return root;
+}
+
 void removeHelper(Node* root, size_t index){
     if(root == nullptr){
-        throw std::out_of_range("Index out of range.");
+        throw out_of_range("Index out of range.");
     }
-    else if(indexHelper(root, index) == nullptr){
-        throw std::out_of_range("Index out of range.");
+
+    // Calculate the index of the current node in the sorted order
+    size_t leftCount = (root->left != nullptr) ? root->left->weight : 0;
+    size_t currentIndex = leftCount;
+
+    // left subtree
+    if(index < currentIndex){
+        removeHelper(root->left, index);
     }
-    // else if((indexHelper(root, index)->left == nullptr) && (indexHelper(root, index)->right == nullptr)){
-    //     delete root;
-    //     root = nullptr;
-    // }
-    // // one left child
-    // else if((indexHelper(root, index)->left != nullptr) && (indexHelper(root, index)->right == nullptr)){
-
-    // }
-    // // one right child
-    // else if((indexHelper(root, index)->right != nullptr) && (indexHelper(root, index)->left == nullptr)){
-
-    // }
+    // right subtree
+    else if(index > currentIndex){
+        removeHelper(root->right, index - currentIndex - 1);
+    }
+    // root node
+    else{
+        // Case 1
+        if(root->left == nullptr){
+            Node* temp = root->right;
+            delete root;
+            root = temp;
+        } 
+        else if(root->right == nullptr){
+            Node* temp = root->left;
+            delete root;
+            root = temp;
+        }
+        // Case 2
+        else{
+            Node* minRight = findMin(root->right);
+            root->word = minRight->word;
+            removeHelper(root->right, 0);
+        }
+    }
 
 }
 
