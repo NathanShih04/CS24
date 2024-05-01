@@ -16,3 +16,10 @@ Node::Node(string data){
     right = nullptr;
 
 }
+
+Node::Node(string data, size_t heavy){
+    weight = heavy;
+    word = data;
+    left = nullptr;
+    right = nullptr;
+}

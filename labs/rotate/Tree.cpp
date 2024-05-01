@@ -1,6 +1,7 @@
 #include "Tree.h"
 #include <stdexcept>
 #include <iostream>
+#include <cmath>
 using namespace std;
 
 // Helper functions
@@ -26,22 +27,90 @@ Node* indexHelper(Node* root, size_t index){
     
     return nullptr;
 }
+// -----------------------------------------------------------
 
-Node* rightRotate(Node* root){
+void calculateWeights(Node* root) {
+    if (root == nullptr) {
+        return;
+    }
+
+    calculateWeights(root->left);
+    calculateWeights(root->right);
+
+    if (root->left != nullptr && root->right != nullptr) {
+        root->weight = root->left->weight + root->right->weight + 1;
+    } else if (root->left != nullptr) {
+        root->weight = root->left->weight + 1;
+    } else if (root->right != nullptr) {
+        root->weight = root->right->weight + 1;
+    } else {
+        root->weight = 1;
+    }
+}
+// -----------------------------------------------------------
+
+Node* copyTree(Node* root) {
+    if(root == nullptr){
+        return nullptr;
+    }
+
+    Node* newRoot = new Node(root->word, root->weight);
+
+    // Recursively copy the left and right subtrees
+    newRoot->left = copyTree(root->left);
+    newRoot->right = copyTree(root->right);
+
+    return newRoot;
+}
+// -----------------------------------------------------------
+
+void rightRotate(Node* root){
     Node* holder;
     holder = root->right;
     root->right = holder->left;
     holder->left = root;
-    return holder;
 }
+// -----------------------------------------------------------
 
-Node* leftRotate(Node* root){
+void leftRotate(Node* root){
     Node* holder;
     holder = root->left;
     root->left = holder->right;
     holder->right = root;
-    return holder;
 }
+// -----------------------------------------------------------
+void balancer(Node* root){
+    size_t dif;
+    size_t newDif;
+    // Make a tree copy
+    Node* copiedRootLeft = copyTree(root);
+    Node* copiedRootRight = copyTree(root);
+
+    // Check to see if rotating helps left
+    if(root->left->weight > root->right->weight){
+        dif = root->left->weight - root->right->weight;
+        leftRotate(copiedRootLeft);
+        calculateWeights(copiedRootLeft);
+        newDif = copiedRootLeft->left->weight - copiedRootLeft->right->weight;
+        
+        if(newDif < dif){
+            leftRotate(root);
+        }
+    }
+    // Check to see if rotating helps right
+    else if(root->right->weight > root->left->weight){
+        dif = root->right->weight - root->left->weight;
+        leftRotate(copiedRootRight);
+        calculateWeights(copiedRootRight);
+        newDif = copiedRootRight->right->weight - copiedRootRight->left->weight;
+        
+        if(newDif < dif){
+            rightRotate(root);
+        }
+    }
+}
+
+// ###########################################################
 
 // Tree Function Implementations
 Tree::Tree(){
@@ -93,6 +162,7 @@ size_t countHelper(Node* root){
     else{
         return root->weight;
     }
+
 }
 
 size_t Tree::count() const{
@@ -196,12 +266,8 @@ Node* insertHelper(Node* root, string s){
         root->weight = 1;
     }
 
-    // if((root->left != nullptr && root->right != nullptr) && (root->left->weight > root->right->weight)){
-    //     root = leftRotate(root);
-    // }
-    // else if((root->left != nullptr && root->right != nullptr) && root->right->weight > root->left->weight){
-    //     root = rightRotate(root);
-    // }
+    // REBALANCING AND ROTATING
+    balancer(root);
 
     return root;
 }

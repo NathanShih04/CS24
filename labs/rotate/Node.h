@@ -13,6 +13,8 @@ struct Node {
   Node();
 
   Node(string data);
+
+  Node(string data, size_t heavy);
   
 };
 

@@ -17,7 +17,7 @@ int main() {
   tree.insert("snake");
   tree.insert("snake");
   tree.print();
-  cout << "Mushroom found at index: " << tree.find("snake") << "\n";
+  cout << "Mushroom found at index: " << tree.find("mushroom") << "\n";
 
   return 0;
 }
