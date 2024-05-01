@@ -1,7 +1,6 @@
 #include "Tree.h"
 #include <stdexcept>
 #include <iostream>
-#include <cmath>
 using namespace std;
 
 // Helper functions
