@@ -29,12 +29,17 @@ Node* indexHelper(Node* root, size_t index){
 // -----------------------------------------------------------
 
 void calculateWeights(Node* root) {
-    if (root == nullptr) {
+    if(root == nullptr){
         return;
     }
 
-    calculateWeights(root->left);
-    calculateWeights(root->right);
+    if(root->left != nullptr){
+        calculateWeights(root->left);
+    }
+    if(root->right != nullptr){
+        calculateWeights(root->right);
+
+    }
 
     if (root->left != nullptr && root->right != nullptr) {
         root->weight = root->left->weight + root->right->weight + 1;
