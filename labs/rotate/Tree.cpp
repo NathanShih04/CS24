@@ -49,17 +49,36 @@ void calculateWeights(Node* root) {
 // -----------------------------------------------------------
 
 Node* copyTree(Node* root) {
-    if(root == nullptr){
-        return nullptr;
-    }
+    Node* newRoot;
+    if(root != NULL){
+         newRoot= new Node;
+         newRoot->word = root->word;
+         newRoot->weight = root->weight;
+         newRoot->left = copyTree(root->left);
+         newRoot->right = copyTree(root->right);
+     } 
+     else{
+        return NULL;
+     }
 
-    Node* newRoot = new Node(root->word, root->weight);
+     return newRoot;
 
-    // Recursively copy the left and right subtrees
-    newRoot->left = copyTree(root->left);
-    newRoot->right = copyTree(root->right);
+    // if(root == nullptr){
+    //     std::cout << "null" << std::endl;
+    //     return nullptr;
+    // }
+    // std::cout << "666" << std::endl;
+    // Node* newRoot = new Node(root->word, root->weight);
+    // std::cout << "copy" << root->word << std::endl;
+    // std::cout << "yyy" << std::endl;
+    // // Recursively copy the left and right subtrees
+    // std::cout << "111" << newRoot->left << std::endl;
+    // newRoot->left = copyTree(root->left);
+    // std::cout << "left" << std::endl;
+    // newRoot->right = copyTree(root->right);
+    // std::cout << "right " << std::endl;
 
-    return newRoot;
+    // return newRoot;
 }
 // -----------------------------------------------------------
 
@@ -72,6 +91,7 @@ void rightRotate(Node* root){
     root->right = holder->left;
     holder->left = root;
 }
+
 // -----------------------------------------------------------
 
 void leftRotate(Node* root){
@@ -83,6 +103,7 @@ void leftRotate(Node* root){
     root->left = holder->right;
     holder->right = root;
 }
+
 // -----------------------------------------------------------
 void balancer(Node* root){
     int leftWeight;
@@ -111,12 +132,13 @@ void balancer(Node* root){
     }
 
     oldDif = leftWeight - rightWeight;
+    // RIGHT ROTATE
     if(oldDif < -1){
         Node* copiedRoot = copyTree(root);
-
         rightRotate(copiedRoot);
         calculateWeights(copiedRoot);
 
+        // Left weight setting
         if(copiedRoot->left != nullptr){
             copiedLeft = copiedRoot->left->weight;
         }
@@ -124,6 +146,7 @@ void balancer(Node* root){
             copiedLeft = 0;
         }
 
+        // Right weight setting
         if(copiedRoot->right != nullptr){
             copiedRight = copiedRoot->right->weight;
         }
@@ -139,9 +162,9 @@ void balancer(Node* root){
         } else {
             delete copiedRoot;
         }
-
     }
 
+    // LEFT ROTATE
     else if(oldDif > 1){
         Node* copiedRoot = copyTree(root);
 
@@ -164,13 +187,14 @@ void balancer(Node* root){
         
         newDif = copiedLeft - copiedRight;
         if(newDif < oldDif){
-            // rightRotate(root);
+            // leftRotate(root);
             delete root;
             root = copiedRoot;
         } else{
             delete copiedRoot;
         }
     }
+
 }
 
 // ###########################################################
@@ -330,6 +354,7 @@ Node* insertHelper(Node* root, string s){
     }
 
     // REBALANCING AND ROTATING
+    std::cout << "here" << std::endl;
     balancer(root);
 
     return root;
@@ -337,6 +362,7 @@ Node* insertHelper(Node* root, string s){
 
 void Tree::insert(const std::string& s){
     root = insertHelper(root, s);
+    std::cout << "done" << std::endl;
 }
 
 // ---------------------------------------

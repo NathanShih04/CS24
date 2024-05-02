@@ -8,17 +8,15 @@ int main() {
   Tree tree;
 
   // Do tree things!
-  tree.insert("mushroom");
-  tree.insert("badger");
-  tree.insert("mushroom");
-  tree.insert("snake");
-  tree.insert("badger");
-  tree.insert("snake");
-  tree.insert("badger");
-  tree.insert("mushroom");
+  tree.insert("Sunday");
+  tree.insert("Monday");
+  tree.insert("Tuesday");
+  tree.insert("Friday");
+  tree.insert("Saturday");
+  tree.insert("Thursday");
+  tree.insert("Wednesday");
 
   tree.print();
-  cout << "Mushroom found at index: " << tree.find("mushroom") << "\n";
 
   return 0;
 }
