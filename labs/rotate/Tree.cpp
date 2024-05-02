@@ -354,7 +354,6 @@ Node* insertHelper(Node* root, string s){
     }
 
     // REBALANCING AND ROTATING
-    std::cout << "here" << std::endl;
     balancer(root);
 
     return root;
@@ -362,7 +361,6 @@ Node* insertHelper(Node* root, string s){
 
 void Tree::insert(const std::string& s){
     root = insertHelper(root, s);
-    std::cout << "done" << std::endl;
 }
 
 // ---------------------------------------
