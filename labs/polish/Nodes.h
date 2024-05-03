@@ -9,9 +9,9 @@ using namespace std;
 
 class Number : public AST {
 private:
-    int value;
+    double number;
 public:
-
+    Number(double value);
     std::string prefix() const override;
     std::string postfix() const override;
     double value() const override;
@@ -21,12 +21,13 @@ public:
 
 class Operator : public AST {
 protected:
-    AST* L;
-    AST* R;
+    AST* left;
+    AST* right;
 public:
-    Operator(AST* left, AST* right) : L(left), R(right) {}
+    Operator(AST* L, AST* R) : left(L), right(R) {}
     virtual ~Operator();
 };
+
 
 class Addition : public Operator {
 public:
@@ -71,8 +72,15 @@ public:
 
 // ----------------------------------------------------------------
 
-class Negate : public AST {
-
+class Negate : public AST{
+protected:
+    AST* child;
+public:
+    Negate(AST* child) : child(child) {}
+    virtual ~Negate();
+    std::string prefix() const override;
+    std::string postfix() const override;
+    double value() const override;
 };
 
 #endif

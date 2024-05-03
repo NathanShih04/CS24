@@ -2,6 +2,8 @@
 
 #include <sstream>
 #include <string>
+#include <cmath>
+using namespace std;
 
 // This creates the number format the autograder expects:
 std::string format(double number) {
@@ -10,93 +12,112 @@ std::string format(double number) {
   return stream.str();
 }
 
-
 // Implement your AST subclasses' member functions here.
+Number::Number(double value){
+  number = value;
+}
+
 std::string Number::prefix() const {
-    // Add your code here
+    return format(number);
 }
 
-// Implement postfix function here
 std::string Number::postfix() const {
-    // Add your code here
+    return format(number);
 }
 
-// Implement value function here
 double Number::value() const {
-    // Add your code here
+  return number;
 }
 
-// Implement prefix function here
+// ###################################################
+
+Operator::~Operator() {
+    delete left;
+    delete right;
+}
+
 std::string Addition::prefix() const {
-    // Add your code here
+  return "+ " + left->prefix() + " " + right->prefix();
 }
 
-// Implement postfix function here
 std::string Addition::postfix() const {
-    // Add your code here
+  return left->postfix() + " " + right->postfix() + " +";
 }
 
-// Implement value function here
 double Addition::value() const {
-    // Add your code here
+  return left->value() + right->value();
 }
 
-// Implement prefix function here
+// ###################################################
+
 std::string Subtraction::prefix() const {
-    // Add your code here
+  return "- " + left->prefix() + " " + right->prefix();
 }
 
-// Implement postfix function here
 std::string Subtraction::postfix() const {
-    // Add your code here
+  return left->postfix() + " " + right->postfix() + " -";
 }
 
-// Implement value function here
 double Subtraction::value() const {
-    // Add your code here
+  return left->value() - right->value();
 }
 
-// Implement prefix function here
+// ###################################################
+
 std::string Multiplication::prefix() const {
-    // Add your code here
+  return "* " + left->prefix() + " " + right->prefix();
 }
 
-// Implement postfix function here
 std::string Multiplication::postfix() const {
-    // Add your code here
+  return left->postfix() + " " + right->postfix() + " *";
 }
 
-// Implement value function here
 double Multiplication::value() const {
-    // Add your code here
+  return left->value() * right->value();
 }
 
-// Implement prefix function here
+// ###################################################
+
 std::string Division::prefix() const {
-    // Add your code here
+  return "/ " + left->prefix() + " " + right->prefix();
 }
 
-// Implement postfix function here
 std::string Division::postfix() const {
-    // Add your code here
+  return left->postfix() + " " + right->postfix() + " /";
 }
 
-// Implement value function here
 double Division::value() const {
-    // Add your code here
+  return left->value() / right->value();
 }
 
-// Implement prefix function here
+// ###################################################
+
 std::string Modulo::prefix() const {
-    // Add your code here
+  return "% " + left->prefix() + " " + right->prefix();
 }
 
-// Implement postfix function here
 std::string Modulo::postfix() const {
-    // Add your code here
+  return left->postfix() + " " + right->postfix() + " %";
 }
 
-// Implement value function here
 double Modulo::value() const {
-    // Add your code here
+  return fmod(left->value(), right->value());
+}
+
+// ###################################################
+
+Negate::~Negate() {
+    delete child;
+}
+
+std::string Negate::prefix() const {
+  return "~ " + child->prefix();
+}
+
+std::string Negate::postfix() const {
+    return child->postfix() + " ~";
+}
+
+double Negate::value() const {
+    return -child->value();
 }
