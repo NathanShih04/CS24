@@ -8,14 +8,13 @@
 // Implement its member functions in Stack.cpp.
 
 class Stack {
-public:
     int count;
     AST** stack;
 
 public:
     Stack(int size);
     ~Stack();
-    void push(AST* newData);
+    void push(AST* node);
     AST* pop();
 };
 

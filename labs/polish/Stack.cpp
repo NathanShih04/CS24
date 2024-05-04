@@ -9,8 +9,9 @@ Stack::~Stack() {
     delete[] stack;
 }
 
-void Stack::push(AST* newData) {
-    stack[count] = newData;
+void Stack::push(AST* node) {
+    stack[count] = node;
+    count++;
 }
 
 AST* Stack::pop() {
@@ -18,7 +19,17 @@ AST* Stack::pop() {
         return nullptr;
     }
 
-    AST* poppedData = stack[count - 1];
+    count--;
+    AST* poppedData = stack[count];
+
+    // Pop off the last node
+    int length = sizeof(stack) / sizeof(stack[0]);
+    AST** newStack = new AST*[length];
+    for(int i = 0; i < count; i++){
+        newStack[i] = stack[i];
+    }
+
+    stack = newStack;
 
     return poppedData;
 }

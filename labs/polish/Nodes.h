@@ -12,9 +12,9 @@ private:
     double number;
 public:
     Number(double value);
-    std::string prefix() const override;
-    std::string postfix() const override;
-    double value() const override;
+    std::string prefix() const;
+    std::string postfix() const;
+    double value() const;
 };
 
 // ----------------------------------------------------------------
@@ -32,42 +32,42 @@ public:
 class Addition : public Operator {
 public:
     Addition(AST* left, AST* right) : Operator(left, right) {}
-    std::string prefix() const override;
-    std::string postfix() const override;
-    double value() const override;
+    std::string prefix() const;
+    std::string postfix() const;
+    double value() const;
 
 };
 
 class Subtraction : public Operator {
 public:
     Subtraction(AST* left, AST* right) : Operator(left, right) {}
-    std::string prefix() const override;
-    std::string postfix() const override;
-    double value() const override;
+    std::string prefix() const;
+    std::string postfix() const;
+    double value() const;
 };
 
 class Multiplication : public Operator {
 public:
     Multiplication(AST* left, AST* right) : Operator(left, right) {}
-    std::string prefix() const override;
-    std::string postfix() const override;
-    double value() const override;
+    std::string prefix() const;
+    std::string postfix() const;
+    double value() const;
 };
 
 class Division : public Operator {
 public:
     Division(AST* left, AST* right) : Operator(left, right) {}
-    std::string prefix() const override;
-    std::string postfix() const override;
-    double value() const override;
+    std::string prefix() const;
+    std::string postfix() const;
+    double value() const;
 };
 
 class Modulo : public Operator {
 public:
     Modulo(AST* left, AST* right) : Operator(left, right) {}
-    std::string prefix() const override;
-    std::string postfix() const override;
-    double value() const override;
+    std::string prefix() const;
+    std::string postfix() const;
+    double value() const;
 };
 
 // ----------------------------------------------------------------
@@ -78,9 +78,9 @@ protected:
 public:
     Negate(AST* child) : child(child) {}
     virtual ~Negate();
-    std::string prefix() const override;
-    std::string postfix() const override;
-    double value() const override;
+    std::string prefix() const;
+    std::string postfix() const;
+    double value() const;
 };
 
 #endif
