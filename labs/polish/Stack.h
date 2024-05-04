@@ -16,6 +16,7 @@ public:
     ~Stack();
     void push(AST* node);
     AST* pop();
+    AST* peek();
 };
 
 

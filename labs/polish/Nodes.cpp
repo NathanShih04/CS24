@@ -32,11 +32,6 @@ double Number::value() const {
 
 // ###################################################
 
-Operator::~Operator() {
-    delete left;
-    delete right;
-}
-
 std::string Addition::prefix() const {
   return "+ " + left->prefix() + " " + right->prefix();
 }

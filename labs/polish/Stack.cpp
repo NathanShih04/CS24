@@ -33,3 +33,7 @@ AST* Stack::pop() {
 
     return poppedData;
 }
+
+AST* Stack::peek(){
+    return stack[count];
+}

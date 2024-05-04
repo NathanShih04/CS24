@@ -19,55 +19,59 @@ public:
 
 // ----------------------------------------------------------------
 
-class Operator : public AST {
+class Addition : public AST {
 protected:
     AST* left;
     AST* right;
 public:
-    Operator(AST* L, AST* R) : left(L), right(R) {}
-    virtual ~Operator();
+    Addition(AST* left, AST* right) : left(left), right(right) {}
+    std::string prefix() const override;
+    std::string postfix() const override;
+    double value() const override;
 };
 
-
-class Addition : public Operator {
+class Subtraction : public AST {
+protected:
+    AST* left;
+    AST* right;
 public:
-    Addition(AST* left, AST* right) : Operator(left, right) {}
-    std::string prefix() const;
-    std::string postfix() const;
-    double value() const;
-
+    Subtraction(AST* left, AST* right) : left(left), right(right) {}
+    std::string prefix() const override;
+    std::string postfix() const override;
+    double value() const override;
 };
 
-class Subtraction : public Operator {
+class Multiplication : public AST {
+protected:
+    AST* left;
+    AST* right;
 public:
-    Subtraction(AST* left, AST* right) : Operator(left, right) {}
-    std::string prefix() const;
-    std::string postfix() const;
-    double value() const;
+    Multiplication(AST* left, AST* right) : left(left), right(right) {}
+    std::string prefix() const override;
+    std::string postfix() const override;
+    double value() const override;
 };
 
-class Multiplication : public Operator {
+class Division : public AST {
+protected:
+    AST* left;
+    AST* right;
 public:
-    Multiplication(AST* left, AST* right) : Operator(left, right) {}
-    std::string prefix() const;
-    std::string postfix() const;
-    double value() const;
+    Division(AST* left, AST* right) : left(left), right(right) {}
+    std::string prefix() const override;
+    std::string postfix() const override;
+    double value() const override;
 };
 
-class Division : public Operator {
+class Modulo : public AST {
+protected:
+    AST* left;
+    AST* right;
 public:
-    Division(AST* left, AST* right) : Operator(left, right) {}
-    std::string prefix() const;
-    std::string postfix() const;
-    double value() const;
-};
-
-class Modulo : public Operator {
-public:
-    Modulo(AST* left, AST* right) : Operator(left, right) {}
-    std::string prefix() const;
-    std::string postfix() const;
-    double value() const;
+    Modulo(AST* left, AST* right) : left(left), right(right) {}
+    std::string prefix() const override;
+    std::string postfix() const override;
+    double value() const override;
 };
 
 // ----------------------------------------------------------------
