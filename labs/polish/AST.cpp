@@ -9,7 +9,7 @@ AST* AST::parse(const std::string& expression) {
     Stack stack = Stack(expression.size());
 
     while(stream >> token) {
-        for(int i = 0; i < token.length(); i++){
+        for(unsigned int i = 0; i < token.length(); i++){
             if(!isdigit(i)){
                 if(token == "+"){
                     AST* second = stack.pop();
