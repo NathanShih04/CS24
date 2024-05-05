@@ -8,7 +8,9 @@
 // Implement its member functions in Stack.cpp.
 
 class Stack {
+public:
     int count;
+private:
     AST** stack;
 
 public:
