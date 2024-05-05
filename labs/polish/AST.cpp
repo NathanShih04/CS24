@@ -10,7 +10,7 @@ AST* AST::parse(const std::string& expression) {
 
     while(stream >> token) {
         for(unsigned int i = 0; i < token.length(); i++){
-            if((isdigit(i) == false) && (token[i] != '.')){
+            if((isdigit(token[i]) == false) && (token[i] != '.')){
                 if(token == "+"){
                     if(stack.stackSize() < 2){
                         throw std::runtime_error("Not enough operands.");
