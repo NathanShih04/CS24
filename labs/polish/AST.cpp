@@ -70,8 +70,15 @@ AST* AST::parse(const std::string& expression) {
                 }
             }
         }
-        AST* node = new Number(stod(token));
-        stack.push(node);
+        try {
+            double value = std::stod(token);
+            AST* node = new Number(value);
+            stack.push(node);
+        } 
+        catch (const std::invalid_argument& e) {
+            string message = "Invalid token: " + token;
+            throw std::runtime_error(message);
+        }
 
     }
 
