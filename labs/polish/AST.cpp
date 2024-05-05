@@ -10,9 +10,9 @@ AST* AST::parse(const std::string& expression) {
 
     while(stream >> token) {
         for(unsigned int i = 0; i < token.length(); i++){
-            if(!isdigit(i)){
+            if((isdigit(i) == false) && (token[i] != '.')){
                 if(token == "+"){
-                    if(stack.count < 2){
+                    if(stack.stackSize() < 2){
                         throw std::runtime_error("Not enough operands.");
                     }
                     AST* second = stack.pop();
@@ -21,7 +21,7 @@ AST* AST::parse(const std::string& expression) {
                     stack.push(node);
                 }
                 else if(token == "-"){
-                    if(stack.count < 2){
+                    if(stack.stackSize() < 2){
                         throw std::runtime_error("Not enough operands.");
                     }
                     AST* second = stack.pop();
@@ -30,7 +30,7 @@ AST* AST::parse(const std::string& expression) {
                     stack.push(node);
                 }
                 else if(token == "*"){
-                    if(stack.count < 2){
+                    if(stack.stackSize() < 2){
                         throw std::runtime_error("Not enough operands.");
                     }
                     AST* second = stack.pop();
@@ -39,7 +39,7 @@ AST* AST::parse(const std::string& expression) {
                     stack.push(node);
                 }
                 else if(token == "/"){
-                    if(stack.count < 2){
+                    if(stack.stackSize() < 2){
                         throw std::runtime_error("Not enough operands.");
                     }
                     AST* second = stack.pop();
@@ -48,7 +48,7 @@ AST* AST::parse(const std::string& expression) {
                     stack.push(node);
                 }
                 else if(token == "%"){
-                    if(stack.count < 2){
+                    if(stack.stackSize() < 2){
                         throw std::runtime_error("Not enough operands.");
                     }
                     AST* second = stack.pop();
@@ -57,7 +57,7 @@ AST* AST::parse(const std::string& expression) {
                     stack.push(node);
                 }
                 else if(token == "~"){
-                    if(stack.count < 1){
+                    if(stack.stackSize() < 1){
                         throw std::runtime_error("Not enough operands.");
                     }
                     AST* first = stack.pop();
@@ -75,10 +75,10 @@ AST* AST::parse(const std::string& expression) {
 
     }
 
-    if(stack.count == 0){
+    if(stack.stackSize() == 0){
         throw std::runtime_error("No input.");
     }
-    else if(stack.count > 1){
+    else if(stack.stackSize() > 1){
         throw std::runtime_error("Too many operands.");
     }
     return stack.peek();

@@ -19,6 +19,7 @@ public:
     void push(AST* node);
     AST* pop();
     AST* peek();
+    int stackSize();
 };
 
 
