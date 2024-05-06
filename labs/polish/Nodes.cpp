@@ -83,6 +83,9 @@ std::string Division::postfix() const {
 }
 
 double Division::value() const {
+  if(right->value() == 0){
+    throw std::runtime_error("Division by zero.");
+  }
   return left->value() / right->value();
 }
 
@@ -97,6 +100,9 @@ std::string Modulo::postfix() const {
 }
 
 double Modulo::value() const {
+  if(right->value() == 0){
+    throw std::runtime_error("Division by zero.");
+  }
   return fmod(left->value(), right->value());
 }
 
