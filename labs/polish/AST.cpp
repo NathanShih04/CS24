@@ -23,7 +23,6 @@ AST* AST::parse(const std::string& expression) {
                 stack.push(node);
             }
             else if(token == "-"){
-                std::cout << "here" << std::endl;
                 if(stack.stackSize() < 2){
                     throw std::runtime_error("Not enough operands.");
                 }
