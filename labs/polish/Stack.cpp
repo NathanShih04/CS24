@@ -35,7 +35,7 @@ AST* Stack::pop() {
 }
 
 AST* Stack::peek(){
-    return stack[count];
+    return stack[count - 1];
 }
 
 int Stack::stackSize(){
