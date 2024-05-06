@@ -3,6 +3,7 @@
 #include "Stack.h"
 #include <sstream>
 #include <string>
+#include <iostream>
 
 AST* AST::parse(const std::string& expression) {
     std::string token;
@@ -11,68 +12,67 @@ AST* AST::parse(const std::string& expression) {
 
     while(stream >> token){
 
-        for(unsigned int i = 0; i < token.length(); i++){
-            if((isdigit(token[i]) == false) && (token.length() == 1)){
-                if(token == "+"){
-                    if(stack.stackSize() < 2){
-                        throw std::runtime_error("Not enough operands.");
-                    }
-                    AST* second = stack.pop();
-                    AST* first = stack.pop();
-                    AST* node = new Addition(first, second);
-                    stack.push(node);
+        if((isdigit(token[0]) == false) && (token.length() == 1)){
+            if(token == "+"){
+                if(stack.stackSize() < 2){
+                    throw std::runtime_error("Not enough operands.");
                 }
-                else if(token == "-"){
-                    if(stack.stackSize() < 2){
-                        throw std::runtime_error("Not enough operands.");
-                    }
-                    AST* second = stack.pop();
-                    AST* first = stack.pop();
-                    AST* node = new Subtraction(first, second);
-                    stack.push(node);
+                AST* second = stack.pop();
+                AST* first = stack.pop();
+                AST* node = new Addition(first, second);
+                stack.push(node);
+            }
+            else if(token == "-"){
+                std::cout << "here" << std::endl;
+                if(stack.stackSize() < 2){
+                    throw std::runtime_error("Not enough operands.");
                 }
-                else if(token == "*"){
-                    if(stack.stackSize() < 2){
-                        throw std::runtime_error("Not enough operands.");
-                    }
-                    AST* second = stack.pop();
-                    AST* first = stack.pop();
-                    AST* node = new Multiplication(first, second);
-                    stack.push(node);
+                AST* second = stack.pop();
+                AST* first = stack.pop();
+                AST* node = new Subtraction(first, second);
+                stack.push(node);
+            }
+            else if(token == "*"){
+                if(stack.stackSize() < 2){
+                    throw std::runtime_error("Not enough operands.");
                 }
-                else if(token == "/"){
-                    if(stack.stackSize() < 2){
-                        throw std::runtime_error("Not enough operands.");
-                    }
-                    AST* second = stack.pop();
-                    AST* first = stack.pop();
-                    AST* node = new Division(first, second);
-                    stack.push(node);
+                AST* second = stack.pop();
+                AST* first = stack.pop();
+                AST* node = new Multiplication(first, second);
+                stack.push(node);
+            }
+            else if(token == "/"){
+                if(stack.stackSize() < 2){
+                    throw std::runtime_error("Not enough operands.");
                 }
-                else if(token == "%"){
-                    if(stack.stackSize() < 2){
-                        throw std::runtime_error("Not enough operands.");
-                    }
-                    AST* second = stack.pop();
-                    AST* first = stack.pop();
-                    AST* node = new Modulo(first, second);
-                    stack.push(node);
+                AST* second = stack.pop();
+                AST* first = stack.pop();
+                AST* node = new Division(first, second);
+                stack.push(node);
+            }
+            else if(token == "%"){
+                if(stack.stackSize() < 2){
+                    throw std::runtime_error("Not enough operands.");
                 }
-                else if(token == "~"){
-                    if(stack.stackSize() < 1){
-                        throw std::runtime_error("Not enough operands.");
-                    }
-                    AST* first = stack.pop();
-                    AST* node = new Negate(first);
-                    stack.push(node);
+                AST* second = stack.pop();
+                AST* first = stack.pop();
+                AST* node = new Modulo(first, second);
+                stack.push(node);
+            }
+            else if(token == "~"){
+                if(stack.stackSize() < 1){
+                    throw std::runtime_error("Not enough operands.");
                 }
-                else{
-                    string message = "Invalid token: " + token;
-                    throw std::runtime_error(message);
-                }
+                AST* first = stack.pop();
+                AST* node = new Negate(first);
+                stack.push(node);
+            }
+            else{
+                string message = "Invalid token: " + token;
+                throw std::runtime_error(message);
             }
         }
-        if(token[0] == '-'){
+        else if(token[0] == '-'){
             try {
                 double value = std::stod(token.substr(1));
                 AST* node = new Number(-1 * value);
