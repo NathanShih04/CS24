@@ -23,7 +23,7 @@ AST* Stack::pop() {
     AST* poppedData = stack[count];
 
     // Pop off the last node
-    int length = 50;
+    int length = 500;
     AST** newStack = new AST*[length];
     for(int i = 0; i < count; i++){
         newStack[i] = stack[i];
