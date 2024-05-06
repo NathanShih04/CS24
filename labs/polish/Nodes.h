@@ -25,6 +25,7 @@ protected:
     AST* right;
 public:
     Addition(AST* left, AST* right) : left(left), right(right) {}
+    ~Addition();
     std::string prefix() const override;
     std::string postfix() const override;
     double value() const override;
@@ -36,6 +37,7 @@ protected:
     AST* right;
 public:
     Subtraction(AST* left, AST* right) : left(left), right(right) {}
+    ~Subtraction();
     std::string prefix() const override;
     std::string postfix() const override;
     double value() const override;
@@ -47,6 +49,7 @@ protected:
     AST* right;
 public:
     Multiplication(AST* left, AST* right) : left(left), right(right) {}
+    ~Multiplication();
     std::string prefix() const override;
     std::string postfix() const override;
     double value() const override;
@@ -58,6 +61,7 @@ protected:
     AST* right;
 public:
     Division(AST* left, AST* right) : left(left), right(right) {}
+    ~Division();
     std::string prefix() const override;
     std::string postfix() const override;
     double value() const override;
@@ -69,6 +73,7 @@ protected:
     AST* right;
 public:
     Modulo(AST* left, AST* right) : left(left), right(right) {}
+    ~Modulo();
     std::string prefix() const override;
     std::string postfix() const override;
     double value() const override;
@@ -81,7 +86,7 @@ protected:
     AST* child;
 public:
     Negate(AST* child) : child(child) {}
-    virtual ~Negate();
+    ~Negate();
     std::string prefix() const;
     std::string postfix() const;
     double value() const;

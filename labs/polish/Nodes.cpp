@@ -32,6 +32,11 @@ double Number::value() const {
 
 // ###################################################
 
+Addition::~Addition() {
+    delete left;
+    delete right;
+}
+
 std::string Addition::prefix() const {
   return "+ " + left->prefix() + " " + right->prefix();
 }
@@ -45,6 +50,11 @@ double Addition::value() const {
 }
 
 // ###################################################
+
+Subtraction::~Subtraction() {
+    delete left;
+    delete right;
+}
 
 std::string Subtraction::prefix() const {
   return "- " + left->prefix() + " " + right->prefix();
@@ -60,6 +70,11 @@ double Subtraction::value() const {
 
 // ###################################################
 
+Multiplication::~Multiplication() {
+    delete left;
+    delete right;
+}
+
 std::string Multiplication::prefix() const {
   return "* " + left->prefix() + " " + right->prefix();
 }
@@ -73,6 +88,11 @@ double Multiplication::value() const {
 }
 
 // ###################################################
+
+Division::~Division() {
+    delete left;
+    delete right;
+}
 
 std::string Division::prefix() const {
   return "/ " + left->prefix() + " " + right->prefix();
@@ -90,6 +110,11 @@ double Division::value() const {
 }
 
 // ###################################################
+
+Modulo::~Modulo() {
+    delete left;
+    delete right;
+}
 
 std::string Modulo::prefix() const {
   return "% " + left->prefix() + " " + right->prefix();
