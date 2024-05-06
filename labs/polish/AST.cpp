@@ -10,156 +10,156 @@ AST* AST::parse(const std::string& expression) {
     Stack stack = Stack(expression.size());
 
     while(stream >> token){
-        if(token == "+"){
-            if(stack.stackSize() < 2){
-                throw std::runtime_error("Not enough operands.");
-            }
-            AST* second = stack.pop();
-            AST* first = stack.pop();
-            AST* node = new Addition(first, second);
-            stack.push(node);
-        }
-        else if(token == "-"){
-            if(stack.stackSize() < 2){
-                throw std::runtime_error("Not enough operands.");
-            }
-            AST* second = stack.pop();
-            AST* first = stack.pop();
-            AST* node = new Subtraction(first, second);
-            stack.push(node);
-        }
-        else if(token == "*"){
-            if(stack.stackSize() < 2){
-                throw std::runtime_error("Not enough operands.");
-            }
-            AST* second = stack.pop();
-            AST* first = stack.pop();
-            AST* node = new Multiplication(first, second);
-            stack.push(node);
-        }
-        else if(token == "/"){
-            if(stack.stackSize() < 2){
-                throw std::runtime_error("Not enough operands.");
-            }
-            AST* second = stack.pop();
-            AST* first = stack.pop();
-            AST* node = new Division(first, second);
-            stack.push(node);
-        }
-        else if(token == "%"){
-            if(stack.stackSize() < 2){
-                throw std::runtime_error("Not enough operands.");
-            }
-            AST* second = stack.pop();
-            AST* first = stack.pop();
-            AST* node = new Modulo(first, second);
-            stack.push(node);
-        }
-        else if(token == "~"){
-            if(stack.stackSize() < 1){
-                throw std::runtime_error("Not enough operands.");
-            }
-            AST* first = stack.pop();
-            AST* node = new Negate(first);
-            stack.push(node);
-        }
-        // NUMBERS OR INVALID
-        else{
-            if(token[0] == '-'){
-                try {
-                    double value = std::stod(token.substr(1));
-                    AST* node = new Number(-1 * value);
-                    stack.push(node);
-                } 
-                catch (const std::invalid_argument& e) {
-                    string message = "Invalid token: " + token;
-                    throw std::runtime_error(message);
-                }
-            }
-            else if(token[0] == '+'){
-                try {
-                    double value = std::stod(token.substr(1));
-                    AST* node = new Number(value);
-                    stack.push(node);
-                } 
-                catch (const std::invalid_argument& e) {
-                    string message = "Invalid token: " + token;
-                    throw std::runtime_error(message);
-                }
-            }
-            
-        }
-
-        // for(unsigned int i = 0; i < token.length(); i++){
-        //     if((isdigit(token[i]) == false) && (token[i] != '.')){
-        //         if(token == "+"){
-        //             if(stack.stackSize() < 2){
-        //                 throw std::runtime_error("Not enough operands.");
-        //             }
-        //             AST* second = stack.pop();
-        //             AST* first = stack.pop();
-        //             AST* node = new Addition(first, second);
+        // if(token == "+"){
+        //     if(stack.stackSize() < 2){
+        //         throw std::runtime_error("Not enough operands.");
+        //     }
+        //     AST* second = stack.pop();
+        //     AST* first = stack.pop();
+        //     AST* node = new Addition(first, second);
+        //     stack.push(node);
+        // }
+        // else if(token == "-"){
+        //     if(stack.stackSize() < 2){
+        //         throw std::runtime_error("Not enough operands.");
+        //     }
+        //     AST* second = stack.pop();
+        //     AST* first = stack.pop();
+        //     AST* node = new Subtraction(first, second);
+        //     stack.push(node);
+        // }
+        // else if(token == "*"){
+        //     if(stack.stackSize() < 2){
+        //         throw std::runtime_error("Not enough operands.");
+        //     }
+        //     AST* second = stack.pop();
+        //     AST* first = stack.pop();
+        //     AST* node = new Multiplication(first, second);
+        //     stack.push(node);
+        // }
+        // else if(token == "/"){
+        //     if(stack.stackSize() < 2){
+        //         throw std::runtime_error("Not enough operands.");
+        //     }
+        //     AST* second = stack.pop();
+        //     AST* first = stack.pop();
+        //     AST* node = new Division(first, second);
+        //     stack.push(node);
+        // }
+        // else if(token == "%"){
+        //     if(stack.stackSize() < 2){
+        //         throw std::runtime_error("Not enough operands.");
+        //     }
+        //     AST* second = stack.pop();
+        //     AST* first = stack.pop();
+        //     AST* node = new Modulo(first, second);
+        //     stack.push(node);
+        // }
+        // else if(token == "~"){
+        //     if(stack.stackSize() < 1){
+        //         throw std::runtime_error("Not enough operands.");
+        //     }
+        //     AST* first = stack.pop();
+        //     AST* node = new Negate(first);
+        //     stack.push(node);
+        // }
+        // // NUMBERS OR INVALID
+        // else{
+        //     if(token[0] == '-'){
+        //         try {
+        //             double value = std::stod(token.substr(1));
+        //             AST* node = new Number(-1 * value);
         //             stack.push(node);
-        //         }
-        //         else if(token == "-"){
-        //             if(stack.stackSize() < 2){
-        //                 throw std::runtime_error("Not enough operands.");
-        //             }
-        //             AST* second = stack.pop();
-        //             AST* first = stack.pop();
-        //             AST* node = new Subtraction(first, second);
-        //             stack.push(node);
-        //         }
-        //         else if(token == "*"){
-        //             if(stack.stackSize() < 2){
-        //                 throw std::runtime_error("Not enough operands.");
-        //             }
-        //             AST* second = stack.pop();
-        //             AST* first = stack.pop();
-        //             AST* node = new Multiplication(first, second);
-        //             stack.push(node);
-        //         }
-        //         else if(token == "/"){
-        //             if(stack.stackSize() < 2){
-        //                 throw std::runtime_error("Not enough operands.");
-        //             }
-        //             AST* second = stack.pop();
-        //             AST* first = stack.pop();
-        //             AST* node = new Division(first, second);
-        //             stack.push(node);
-        //         }
-        //         else if(token == "%"){
-        //             if(stack.stackSize() < 2){
-        //                 throw std::runtime_error("Not enough operands.");
-        //             }
-        //             AST* second = stack.pop();
-        //             AST* first = stack.pop();
-        //             AST* node = new Modulo(first, second);
-        //             stack.push(node);
-        //         }
-        //         else if(token == "~"){
-        //             if(stack.stackSize() < 1){
-        //                 throw std::runtime_error("Not enough operands.");
-        //             }
-        //             AST* first = stack.pop();
-        //             AST* node = new Negate(first);
-        //             stack.push(node);
-        //         }
-        //         else{
+        //         } 
+        //         catch (const std::invalid_argument& e) {
         //             string message = "Invalid token: " + token;
         //             throw std::runtime_error(message);
         //         }
         //     }
+        //     else if(token[0] == '+'){
+        //         try {
+        //             double value = std::stod(token.substr(1));
+        //             AST* node = new Number(value);
+        //             stack.push(node);
+        //         } 
+        //         catch (const std::invalid_argument& e) {
+        //             string message = "Invalid token: " + token;
+        //             throw std::runtime_error(message);
+        //         }
+        //     }
+            
         // }
-        // try {
-        //     double value = std::stod(token);
-        //     AST* node = new Number(value);
-        //     stack.push(node);
-        // } 
-        // catch (const std::invalid_argument& e) {
-        //     string message = "Invalid token: " + token;
-        //     throw std::runtime_error(message);
-        // }
+
+        for(unsigned int i = 0; i < token.length(); i++){
+            if((isdigit(token[i]) == false) && (token[i] != '.')){
+                if(token == "+"){
+                    if(stack.stackSize() < 2){
+                        throw std::runtime_error("Not enough operands.");
+                    }
+                    AST* second = stack.pop();
+                    AST* first = stack.pop();
+                    AST* node = new Addition(first, second);
+                    stack.push(node);
+                }
+                else if(token == "-"){
+                    if(stack.stackSize() < 2){
+                        throw std::runtime_error("Not enough operands.");
+                    }
+                    AST* second = stack.pop();
+                    AST* first = stack.pop();
+                    AST* node = new Subtraction(first, second);
+                    stack.push(node);
+                }
+                else if(token == "*"){
+                    if(stack.stackSize() < 2){
+                        throw std::runtime_error("Not enough operands.");
+                    }
+                    AST* second = stack.pop();
+                    AST* first = stack.pop();
+                    AST* node = new Multiplication(first, second);
+                    stack.push(node);
+                }
+                else if(token == "/"){
+                    if(stack.stackSize() < 2){
+                        throw std::runtime_error("Not enough operands.");
+                    }
+                    AST* second = stack.pop();
+                    AST* first = stack.pop();
+                    AST* node = new Division(first, second);
+                    stack.push(node);
+                }
+                else if(token == "%"){
+                    if(stack.stackSize() < 2){
+                        throw std::runtime_error("Not enough operands.");
+                    }
+                    AST* second = stack.pop();
+                    AST* first = stack.pop();
+                    AST* node = new Modulo(first, second);
+                    stack.push(node);
+                }
+                else if(token == "~"){
+                    if(stack.stackSize() < 1){
+                        throw std::runtime_error("Not enough operands.");
+                    }
+                    AST* first = stack.pop();
+                    AST* node = new Negate(first);
+                    stack.push(node);
+                }
+                else{
+                    string message = "Invalid token: " + token;
+                    throw std::runtime_error(message);
+                }
+            }
+        }
+        try {
+            double value = std::stod(token);
+            AST* node = new Number(value);
+            stack.push(node);
+        } 
+        catch (const std::invalid_argument& e) {
+            string message = "Invalid token: " + token;
+            throw std::runtime_error(message);
+        }
 
     }
 
