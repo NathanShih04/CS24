@@ -71,7 +71,14 @@ AST* AST::parse(const std::string& expression) {
                 throw std::runtime_error(message);
             }
         }
+        // NUMBERS
         else if(token[0] == '-'){
+            for(int i = 1; i < token.length(); i++){
+                if((isdigit(token[i]) == false) && (isdigit(token[i] != '.'))){
+                    string message = "Invalid token: " + token;
+                    throw std::runtime_error(message);
+                }
+            }
             try {
                 double value = std::stod(token.substr(1));
                 AST* node = new Number(-1 * value);
@@ -83,6 +90,12 @@ AST* AST::parse(const std::string& expression) {
             }
         }
         else if(token[0] == '+'){
+            for(int i = 1; i < token.length(); i++){
+                if((isdigit(token[i]) == false) && (isdigit(token[i] != '.'))){
+                    string message = "Invalid token: " + token;
+                    throw std::runtime_error(message);
+                }
+            }
             try {
                 double value = std::stod(token.substr(1));
                 AST* node = new Number(value);
@@ -94,6 +107,12 @@ AST* AST::parse(const std::string& expression) {
             }
         }
         else{
+            for(int i = 1; i < token.length(); i++){
+                if((isdigit(token[i]) == false) && (isdigit(token[i] != '.'))){
+                    string message = "Invalid token: " + token;
+                    throw std::runtime_error(message);
+                }
+            }
             try {
                 double value = std::stod(token);
                 AST* node = new Number(value);
