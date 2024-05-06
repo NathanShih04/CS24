@@ -107,7 +107,7 @@ AST* AST::parse(const std::string& expression) {
             }
         }
         else{
-            for(int i = 1; i < token.length(); i++){
+            for(int i = 0; i < token.length(); i++){
                 if((isdigit(token[i]) == false) && (isdigit(token[i] != '.'))){
                     string message = "Invalid token: " + token;
                     throw std::runtime_error(message);
