@@ -73,12 +73,21 @@ AST* AST::parse(const std::string& expression) {
         }
         // NUMBERS
         else if(token[0] == '-'){
+            int counter = 0;
             for(unsigned int i = 1; i < token.length(); i++){
+                if(token[i] == '.'){
+                    counter++;
+                }
                 if((isdigit(token[i]) == false) && (token[i] != '.')){
                     string message = "Invalid token: " + token;
                     throw std::runtime_error(message);
                 }
             }
+            if(counter > 1){
+                string message = "Invalid token: " + token;
+                throw std::runtime_error(message);
+            }
+
             try {
                 double value = std::stod(token.substr(1));
                 AST* node = new Number(-1 * value);
@@ -90,12 +99,21 @@ AST* AST::parse(const std::string& expression) {
             }
         }
         else if(token[0] == '+'){
+            int counter = 0;
             for(unsigned int i = 1; i < token.length(); i++){
+                if(token[i] == '.'){
+                    counter++;
+                }
                 if((isdigit(token[i]) == false) && (token[i] != '.')){
                     string message = "Invalid token: " + token;
                     throw std::runtime_error(message);
                 }
             }
+            if(counter > 1){
+                string message = "Invalid token: " + token;
+                throw std::runtime_error(message);
+            }
+            
             try {
                 double value = std::stod(token.substr(1));
                 AST* node = new Number(value);
@@ -107,12 +125,21 @@ AST* AST::parse(const std::string& expression) {
             }
         }
         else{
+            int counter = 0;
             for(unsigned int i = 0; i < token.length(); i++){
+                if(token[i] == '.'){
+                    counter++;
+                }
                 if((isdigit(token[i]) == false) && (token[i] != '.')){
                     string message = "Invalid token: " + token;
                     throw std::runtime_error(message);
                 }
             }
+            if(counter > 1){
+                string message = "Invalid token: " + token;
+                throw std::runtime_error(message);
+            }
+            
             try {
                 double value = std::stod(token);
                 AST* node = new Number(value);
