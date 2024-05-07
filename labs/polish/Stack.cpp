@@ -28,7 +28,7 @@ AST* Stack::pop() {
     for(int i = 0; i < count; i++){
         newStack[i] = stack[i];
     }
-    for(int i = 0; i <= count; i++){
+    for(int i = 0; i < count + 1; i++){
         delete stack[i];
     }
     delete[] stack;
