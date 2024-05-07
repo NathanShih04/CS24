@@ -12,18 +12,14 @@ Stack::~Stack() {
 void Stack::push(AST* node) {
     AST** newStack = new AST*[count + 2];
 
-    // Copy elements from the old stack to the new one
     for (int i = 0; i < count; i++) {
         newStack[i] = stack[i];
     }
 
-    // Delete the old stack
     delete[] stack;
 
-    // Update the stack pointer to point to the new stack
     stack = newStack;
 
-    // Add the new node to the stack
     stack[count] = node;
     count++;
 }
@@ -42,7 +38,7 @@ AST* Stack::pop() {
     AST* poppedData = stack[count];
 
     // Pop off the last node
-    AST** newStack = new AST*[count]; // Reduce the size of the new stack
+    AST** newStack = new AST*[count];
     for(int i = 0; i < count; i++){
         newStack[i] = stack[i];
     }
