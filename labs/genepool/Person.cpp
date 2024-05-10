@@ -1,4 +1,14 @@
 #include "Person.h"
+#include <set>
+
+// Helper functions
+
+void addSet(set<Person*> originalSet, set<Person*> addedSet) {
+    // Insert elements from sourceSet into destSet
+    for(Person* human : addedSet) {
+        originalSet.insert(human);
+    }
+}
 
 // Person Member Functions
 
@@ -35,34 +45,7 @@ Person* Person::father() {
 // #########################################################################
 
 std::set<Person*> Person::ancestors(PMod pmod) {
-    set<Person*> allAncestors;
 
-    if(pmod == PMod::ANY || pmod == PMod::MATERNAL){
-        if(mom != nullptr){
-            allAncestors.insert(mom);
-        }
-    }
-    if(pmod == PMod::ANY || pmod == PMod::PATERNAL){
-        if(dad != nullptr){
-            allAncestors.insert(dad);
-        }
-    }
-
-    // add mom parents and dad parents
-    if(pmod == PMod::ANY || pmod == PMod::MATERNAL){
-        if(mom != nullptr){
-            set<Person*> maternalAncestors = mom->ancestors(PMod::MATERNAL);
-            allAncestors.insert(maternalAncestors.begin(), maternalAncestors.end());
-        }
-    }
-    if(pmod == PMod::ANY || pmod == PMod::PATERNAL){
-        if(dad != nullptr){
-            set<Person*> paternalAncestors = dad->ancestors(PMod::PATERNAL);
-            allAncestors.insert(paternalAncestors.begin(), paternalAncestors.end());
-        }
-    }
-
-    return allAncestors;
 }
 
 std::set<Person*> Person::aunts(PMod pmod, SMod smod) {
@@ -70,11 +53,25 @@ std::set<Person*> Person::aunts(PMod pmod, SMod smod) {
 }
 
 std::set<Person*> Person::brothers(PMod pmod, SMod smod) {
-    
+    set<Person*> brotherSet = siblings(pmod, smod);
+
+    for(Person* sibling : brotherSet){
+        if(sibling->sex != Gender::MALE){
+            brotherSet.erase(sibling);
+        }
+    }
+
+    return brotherSet;
 }
 
 std::set<Person*> Person::children() {
-    
+    set<Person*> childrenSet;
+
+    for(Person* child : kids){
+        childrenSet.insert(child);
+    }
+
+    return childrenSet;
 }
 
 std::set<Person*> Person::cousins(PMod pmod, SMod smod) {
@@ -98,15 +95,54 @@ std::set<Person*> Person::granddaughters() {
 }
 
 std::set<Person*> Person::grandfathers(PMod pmod) {
-    
+    set<Person*> grandfatherSet;
+
+    if(pmod == PMod::MATERNAL){
+        addSet(grandfatherSet, mom->parents(PMod::PATERNAL));
+    }
+    else if(pmod == PMod::PATERNAL){
+        addSet(grandfatherSet, dad->parents(PMod::PATERNAL));
+    }
+    else{
+        addSet(grandfatherSet, mom->parents(PMod::PATERNAL));
+        addSet(grandfatherSet, dad->parents(PMod::PATERNAL));
+    }
+
+    return grandfatherSet;
 }
 
 std::set<Person*> Person::grandmothers(PMod pmod) {
-    
+    set<Person*> grandmotherSet;
+
+    if(pmod == PMod::MATERNAL){
+        addSet(grandmotherSet, mom->parents(PMod::MATERNAL));
+    }
+    else if(pmod == PMod::PATERNAL){
+        addSet(grandmotherSet, dad->parents(PMod::MATERNAL));
+    }
+    else{
+        addSet(grandmotherSet, mom->parents(PMod::MATERNAL));
+        addSet(grandmotherSet, dad->parents(PMod::MATERNAL));
+    }
+
+    return grandmotherSet;
 }
 
 std::set<Person*> Person::grandparents(PMod pmod) {
-    
+    set<Person*> grandparentSet;
+
+    if(pmod == PMod::MATERNAL){
+        addSet(grandparentSet, mom->parents(PMod::ANY));
+    }
+    else if(pmod == PMod::PATERNAL){
+        addSet(grandparentSet, dad->parents(PMod::ANY));
+    }
+    else{
+        addSet(grandparentSet, mom->parents(PMod::ANY));
+        addSet(grandparentSet, dad->parents(PMod::ANY));
+    }
+
+    return grandparentSet;
 }
 
 std::set<Person*> Person::grandsons() {
@@ -122,15 +158,70 @@ std::set<Person*> Person::nieces(PMod pmod, SMod smod) {
 }
 
 std::set<Person*> Person::parents(PMod pmod) {
-    
+    set<Person*> parentSet;
+
+    if(pmod == PMod::MATERNAL){
+        parentSet.insert(mom);
+    }
+    else if(pmod == PMod::PATERNAL){
+        parentSet.insert(dad);
+    }
+    else{
+        parentSet.insert(mom);
+        parentSet.insert(dad);
+    }
+
+    return parentSet;
 }
 
 std::set<Person*> Person::siblings(PMod pmod, SMod smod) {
-    
+     set<Person*> siblingSet;
+
+    // pmods
+    if(pmod == PMod::MATERNAL && dad != nullptr){
+        addSet(siblingSet, mom->children());
+    } 
+    else if (pmod == PMod::PATERNAL && mom != nullptr){
+        addSet(siblingSet, dad->children());
+    } 
+    else{
+        addSet(siblingSet, mom->children());
+        addSet(siblingSet, dad->children());
+    }
+
+    // smods
+
+    // full siblings
+    if(smod == SMod::FULL){
+        for(Person* human : siblingSet){
+            if((human->mom != this->mom) || (human->dad != this->dad)){
+                siblingSet.erase(human);
+            }
+        }
+    }
+    else if(smod == SMod::HALF){
+        set<Person*> fullSiblings;
+        addSet(fullSiblings, siblings(pmod, SMod::FULL));
+        for(Person* human : fullSiblings){
+            siblingSet.erase(human);
+        }
+    }
+
+    siblingSet.erase(this);
+
+    return siblingSet;
 }
 
 std::set<Person*> Person::sisters(PMod pmod, SMod smod) {
-    
+    set<Person*> sisterSet = siblings(pmod, smod);
+
+    for(Person* sibling : sisterSet){
+        if(sibling->sex != Gender::FEMALE){
+            sisterSet.erase(sibling);
+        }
+    }
+
+    return sisterSet;
 }
 
 std::set<Person*> Person::sons() {
@@ -140,5 +231,3 @@ std::set<Person*> Person::sons() {
 std::set<Person*> Person::uncles(PMod pmod, SMod smod) {
     
 }
-
-// Other Member Functions

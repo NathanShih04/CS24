@@ -14,7 +14,7 @@
 
 class GenePool {
   // Member Variables
-
+  set<Person*> famTree;
   // Helper Functions
 
 public:
