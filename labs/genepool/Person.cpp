@@ -38,11 +38,19 @@ Gender Person::gender() const {
 }
 
 Person* Person::mother() {
-    return mom;
+    if(mom != nullptr){
+        return mom;
+    }
+
+    return nullptr;
 }
 
 Person* Person::father() {
-    return dad;
+    if(dad != nullptr){
+        return dad;
+    }
+    
+    return nullptr;
 }
 
 // #########################################################################
@@ -375,7 +383,7 @@ set<Person*> Person::ancestors(PMod pmod) {
     set<Person*> ancestorSet;
 
     set<Person*> parentSet = parents(pmod);
-    
+
     addSet(ancestorSet, parentSet);
     for(Person* parent : parentSet){
         set<Person*> parentAncestors = parent->ancestors(pmod);
