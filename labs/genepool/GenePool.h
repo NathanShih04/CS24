@@ -14,7 +14,7 @@
 
 class GenePool {
   // Member Variables
-  set<Person*> famTree;
+  map<string, Person*> famTree;
   // Helper Functions
 
 public:

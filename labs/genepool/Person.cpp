@@ -62,13 +62,7 @@ std::set<Person*> Person::parents(PMod pmod) {
 }
 
 std::set<Person*> Person::children() {
-    set<Person*> childrenSet;
-
-    for(Person* child : kids){
-        childrenSet.insert(child);
-    }
-
-    return childrenSet;
+    return kids;
 }
 
 std::set<Person*> Person::sons() {
@@ -266,29 +260,46 @@ std::set<Person*> Person::aunts(PMod pmod, SMod smod) {
 
     set<Person*> parentSet = parents(pmod);
     for(Person* parent : parentSet){
-        set<Person*> parentBrothers = parent->sisters(PMod::ANY, smod);
-        addSet(auntSet, parentBrothers);
+        set<Person*> parentSisters = parent->sisters(PMod::ANY, smod);
+        addSet(auntSet, parentSisters);
     }
 
     return auntSet;
 }
 
 std::set<Person*> Person::cousins(PMod pmod, SMod smod) {
+    set<Person*> cousinSet;
+
+    set<Person*> uncleOrAuntSet;
+    if(pmod == PMod::MATERNAL){
+        uncleOrAuntSet = uncles(PMod::MATERNAL, smod);
+    } 
+    else{
+        uncleOrAuntSet = uncles(PMod::PATERNAL, smod);
+    }
+
+    for(Person* uncleOrAunt : uncleOrAuntSet){
+        set<Person*> cousinChildren = uncleOrAunt->children();
+        addSet(cousinSet, cousinChildren);
+    }   
+
+    return cousinSet;
+}
+
+// std::set<Person*> Person::nephews(PMod pmod, SMod smod) {
     
-}
+// }
 
-std::set<Person*> Person::nephews(PMod pmod, SMod smod) {
+// std::set<Person*> Person::nieces(PMod pmod, SMod smod) {
     
-}
+// }
 
-std::set<Person*> Person::nieces(PMod pmod, SMod smod) {
-    
-}
+// std::set<Person*> Person::descendants() {
+//     set<Person*> descendantSet;
 
-std::set<Person*> Person::descendants() {
-    
-}
+// }
 
-std::set<Person*> Person::ancestors(PMod pmod) {
+// std::set<Person*> Person::ancestors(PMod pmod) {
+//     set<Person*> ancestorSet;
 
-}
+// }

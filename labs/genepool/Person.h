@@ -19,7 +19,7 @@ class Person {
   Gender sex;
   Person* mom;
   Person* dad;
-  vector<Person*> kids;
+  set<Person*> kids;
 
   // Helper Functions
 
