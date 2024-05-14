@@ -58,6 +58,17 @@ GenePool::GenePool(std::istream& stream){
 
 }
 
+GenePool::~GenePool() {
+    for(auto& keyVal : famTree){
+        for(auto& parent : keyVal.second->parents(PMod::ANY)){
+            parent->kids.erase(keyVal.second);
+        }
+        delete keyVal.second;
+    }
+
+    famTree.clear();
+}
+
 std::set<Person*> GenePool::everyone() const {
     set<Person*> famSet;
 
