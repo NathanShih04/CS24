@@ -22,7 +22,7 @@ public:
   GenePool(std::istream& stream);
 
   // Clean it up.
-  ~GenePool();
+  // ~GenePool();
 
   // List all the people in the database.
   std::set<Person*> everyone() const;
