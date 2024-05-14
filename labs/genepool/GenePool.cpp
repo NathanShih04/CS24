@@ -59,17 +59,8 @@ GenePool::GenePool(std::istream& stream){
 }
 
 GenePool::~GenePool() {
-    set<Person*> toDelete;
-
-    for(auto& keyVal : famTree){
-        for(auto& parent : keyVal.second->parents(PMod::ANY)){
-            toDelete.insert(keyVal.second);
-            parent->kids.erase(keyVal.second);
-        }
-    }
-
-    for(auto& person : toDelete){
-        delete person;
+    for (auto it = famTree.begin(); it != famTree.end(); it++) {
+        delete it->second;
     }
 
     famTree.clear();
