@@ -28,13 +28,10 @@ GenePool::GenePool(std::istream& stream){
         }
 
         // Gender stuff
-        Gender gender;
-        if(g == "male"){
-            gender = Gender::MALE;
-        } 
-        else{
+        Gender gender = Gender::MALE;
+        if(g == "female"){
             gender = Gender::FEMALE;
-        }
+        } 
 
         // Mom pointer
         Person* mother = nullptr;
@@ -72,7 +69,7 @@ GenePool::~GenePool() {
 std::set<Person*> GenePool::everyone() const {
     set<Person*> famSet;
 
-    for(const auto& keyVal : famTree){
+    for(auto& keyVal : famTree){
         famSet.insert(keyVal.second);
     }
 
@@ -80,9 +77,11 @@ std::set<Person*> GenePool::everyone() const {
 }
 
 Person* GenePool::find(const std::string& name) const {
-    for(auto& pair : famTree){
-        if(pair.first == name){
-            return pair.second;
+    if(famTree.size() != 0){
+        for(auto& pair : famTree){
+            if(pair.first == name){
+                return pair.second;
+            }
         }
     }
 
