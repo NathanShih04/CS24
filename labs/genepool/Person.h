@@ -19,11 +19,11 @@ class Person {
   Gender sex;
   Person* mom;
   Person* dad;
-  set<Person*> kids;
 
   // Helper Functions
 
 public:
+  set<Person*> kids;
   // Constructor
   Person(string name, Gender gender, Person* mother, Person* father);
   // Destructor?

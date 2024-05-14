@@ -4,7 +4,10 @@
 // Helper functions
 
 void addSet(set<Person*> originalSet, set<Person*> addedSet) {
-    // Insert elements from sourceSet into destSet
+    if(addedSet.size() == 0){
+        return;
+    }
+
     for(Person* human : addedSet) {
         originalSet.insert(human);
     }

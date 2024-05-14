@@ -49,6 +49,12 @@ GenePool::GenePool(std::istream& stream){
         }
 
         Person* newPerson = new Person(n, gender, mother, father);
+        if(mother != nullptr){
+            mother->kids.insert(newPerson);
+        }
+        if(father != nullptr){
+            father->kids.insert(newPerson);
+        }
         
         famTree.insert({n, newPerson});
     }
