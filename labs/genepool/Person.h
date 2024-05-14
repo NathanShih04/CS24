@@ -27,7 +27,7 @@ public:
   // Constructor
   Person(string name, Gender gender, Person* mother, Person* father);
   // Destructor?
-  ~Person();
+  // ~Person();
 
   // Required Getter Functions
   const std::string& name()   const;

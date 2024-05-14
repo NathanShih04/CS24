@@ -22,10 +22,10 @@ Person::Person(string name, Gender gender, Person* mother, Person* father) {
     dad = father;
 }
 
-Person::~Person() {
-    delete mom;
-    delete dad;
-}
+// Person::~Person() {
+//     delete mom;
+//     delete dad;
+// }
 
 // #########################################################################
 
