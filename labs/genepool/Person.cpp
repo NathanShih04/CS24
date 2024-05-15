@@ -368,14 +368,23 @@ set<Person*> Person::descendants() {
 }
 
 set<Person*> Person::ancestors(PMod pmod) {
-    set<Person*> ancestorSet;
+     std::set<Person*> ancestorSet;
 
-    set<Person*> parentSet = parents(pmod);
+    Person* parentToStart = nullptr;
+    if(pmod == PMod::MATERNAL){
+        parentToStart = mother();
+    } 
+    else if(pmod == PMod::PATERNAL){
+        parentToStart = father();
+    }
 
-    addSet(ancestorSet, parentSet);
-    for(Person* parent : parentSet){
-        set<Person*> parentAncestors = parent->ancestors(pmod);
+    if(parentToStart != nullptr){
+        std::set<Person*> parentAncestors = parentToStart->ancestors(PMod::ANY);
         addSet(ancestorSet, parentAncestors);
+    }
+
+    if(parentToStart != nullptr){
+        ancestorSet.insert(parentToStart);
     }
 
     return ancestorSet;
