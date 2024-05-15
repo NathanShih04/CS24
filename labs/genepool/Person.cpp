@@ -240,18 +240,18 @@ std::set<Person*> Person::siblings(PMod pmod, SMod smod) {
         siblingSet.erase(this);
         return siblingSet;
     }
-    
+
     siblingSet.erase(this);
     return siblingSet;
 }
 
 std::set<Person*> Person::brothers(PMod pmod, SMod smod) {
-    set<Person*> brotherSet = siblings(pmod, smod);
+    set<Person*> brotherSet;
 
     if(siblings(pmod, smod).size() != 0){
-        for(Person* sibling : brotherSet){
-            if(sibling->sex != Gender::MALE){
-                brotherSet.erase(sibling);
+        for(Person* sibling : siblings(pmod, smod)){
+            if(sibling->sex == Gender::MALE){
+                brotherSet.insert(sibling);
             }
         }
     }
@@ -260,12 +260,12 @@ std::set<Person*> Person::brothers(PMod pmod, SMod smod) {
 }
 
 std::set<Person*> Person::sisters(PMod pmod, SMod smod) {
-    set<Person*> sisterSet = siblings(pmod, smod);
+    set<Person*> sisterSet;
 
     if(siblings(pmod, smod).size() != 0){
-        for(Person* sibling : sisterSet){
-            if(sibling->sex != Gender::FEMALE){
-                sisterSet.erase(sibling);
+        for(Person* sibling : siblings(pmod, smod)){
+            if(sibling->sex == Gender::FEMALE){
+                sisterSet.insert(sibling);
             }
         }
     }
