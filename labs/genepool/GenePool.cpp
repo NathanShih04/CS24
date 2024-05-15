@@ -8,58 +8,57 @@ GenePool::GenePool(std::istream& stream){
     string message;
 
     while(getline(stream, message)){
+        
+        if(message.empty() || message[0] == '#'){
+            continue;
+        }
+
         istringstream data(message);
         string token;
         string n, g, m, f;
-    
+        Gender gend = Gender::MALE;
+        Person* ma = nullptr;
+        Person* pa = nullptr;
+
         for(int i = 0; getline(data, token, '\t'); i++){
             if(i == 0){
                 n = token;
             }
-            else if(i == 1){
+            if(i == 1){
                 g = token;
+                if(g == "female"){
+                    gend = Gender::FEMALE;
+                } 
             }
-            else if(i == 2){
+            if(i == 2){
                 m = token;
+                if(m != "???"){
+                    ma = find(m);
+                }
             }
-            else if(i == 3){
+            if(i == 3){
                 f = token;
+                if(f != "???"){
+                    pa = find(f);
+                }
             }
         }
 
-        // Gender stuff
-        Gender gender = Gender::MALE;
-        if(g == "female"){
-            gender = Gender::FEMALE;
-        } 
-
-        // Mom pointer
-        Person* mother = nullptr;
-        if(m != "???"){
-            mother = find(m);
+        Person* member = new Person(n, gend, ma, pa);
+        if(ma != nullptr){
+            ma->kids.insert(member);
         }
-
-        // Dad pointer
-        Person* father = nullptr;
-        if(f != "???"){
-            father = find(f);
-        }
-
-        Person* newPerson = new Person(n, gender, mother, father);
-        if(mother != nullptr){
-            mother->kids.insert(newPerson);
-        }
-        if(father != nullptr){
-            father->kids.insert(newPerson);
+        if(pa != nullptr){
+            pa->kids.insert(member);
         }
         
-        famTree.insert({n, newPerson});
+        famTree.insert({n, member});
     }
 
 }
 
 GenePool::~GenePool() {
-    for (auto it = famTree.begin(); it != famTree.end(); it++) {
+    for(auto it = famTree.begin(); it != famTree.end(); it++){
         delete it->second;
     }
 
