@@ -15,14 +15,14 @@ using namespace std;
 
 class Person {
   // Member Variables
-  string pName;
-  Gender sex;
-  Person* mom;
-  Person* dad;
 
   // Helper Functions
 
 public:
+  string pName;
+  Gender sex;
+  Person* mom;
+  Person* dad;
   set<Person*> kids;
   // Constructor
   Person(string name, Gender gender, Person* mother, Person* father);

@@ -7,7 +7,7 @@ void addSet(set<Person*>& originalSet, const set<Person*>& addedSet) {
     if(addedSet.size() == 0){
         return;
     }
-    
+
     for(const auto& human : addedSet) {
         originalSet.insert(human);
     }
