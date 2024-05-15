@@ -207,23 +207,18 @@ std::set<Person*> Person::siblings(PMod pmod, SMod smod) {
      set<Person*> siblingSet;
 
     // pmods
-    if(pmod == PMod::MATERNAL && father() != nullptr){
-        addSet(siblingSet, mother()->children());
-    } 
-    else if (pmod == PMod::PATERNAL && mother() != nullptr){
-        addSet(siblingSet, father()->children());
-    } 
-    else{
-        if(mother() != nullptr){
+    if(pmod == PMod::MATERNAL || pmod == PMod::ANY){
+        if(mother()){
             addSet(siblingSet, mother()->children());
         }
-        if(father() != nullptr){
+    } 
+    if(pmod == PMod::PATERNAL || pmod == PMod::ANY){
+        if(father()){
             addSet(siblingSet, father()->children());
         }
-    }
+    } 
 
     // smods
-
     // full siblings
     if(smod == SMod::FULL){
         for(Person* human : siblingSet){
