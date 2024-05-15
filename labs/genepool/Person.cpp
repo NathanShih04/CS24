@@ -4,7 +4,11 @@
 // Helper functions
 
 void addSet(set<Person*>& originalSet, const set<Person*>& addedSet) {
-    for (const auto& human : addedSet) {
+    if(addedSet.size() == 0){
+        return;
+    }
+    
+    for(const auto& human : addedSet) {
         originalSet.insert(human);
     }
 }
