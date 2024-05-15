@@ -3,15 +3,21 @@
 
 // Helper functions
 
-void addSet(set<Person*> originalSet, set<Person*> addedSet) {
-    if(addedSet.size() == 0){
-        return;
-    }
-
-    for(Person* human : addedSet) {
+void addSet(set<Person*>& originalSet, const set<Person*>& addedSet) {
+    for (const auto& human : addedSet) {
         originalSet.insert(human);
     }
 }
+
+// void addSet(set<Person*> originalSet, set<Person*> addedSet) {
+//     if(addedSet.size() == 0){
+//         return;
+//     }
+
+//     for(Person* human : addedSet) {
+//         originalSet.insert(human);
+//     }
+// }
 
 // Person Member Functions
 
