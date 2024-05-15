@@ -178,12 +178,11 @@ std::set<Person*> Person::grandchildren() {
 }
 
 std::set<Person*> Person::grandsons() {
-    set<Person*> grandsonSet;
+    set<Person*> grandsonSet = grandchildren();
 
-    if(grandchildren().size() != 0){
-        addSet(grandsonSet, grandchildren());
+    if(grandsonSet.size() != 0){
         for(Person* grandchild : grandsonSet){
-            if(grandchild->sex != Gender::MALE){
+            if(grandchild->gender() != Gender::MALE){
                 grandsonSet.erase(grandchild);
             }
         }
