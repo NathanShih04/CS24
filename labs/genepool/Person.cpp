@@ -228,8 +228,7 @@ std::set<Person*> Person::siblings(PMod pmod, SMod smod) {
         }
     }
     else if(smod == SMod::HALF){
-        set<Person*> fullSiblings;
-        addSet(fullSiblings, siblings(pmod, SMod::FULL));
+        set<Person*> fullSiblings = siblings(pmod, SMod::FULL);
         for(Person* human : fullSiblings){
             siblingSet.erase(human);
         }
