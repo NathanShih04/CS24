@@ -313,7 +313,7 @@ std::set<Person*> Person::cousins(PMod pmod, SMod smod) {
     }
 
     if(parentToConsider != nullptr){
-        set<Person*> parentSiblings = parentToConsider->siblings(pmod, smod);
+        set<Person*> parentSiblings = parentToConsider->siblings(PMod::ANY, smod);
 
         for(Person* sibling : parentSiblings){
             set<Person*> siblingChildren = sibling->children();
