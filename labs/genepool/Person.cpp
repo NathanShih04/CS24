@@ -149,18 +149,13 @@ std::set<Person*> Person::grandfathers(PMod pmod) {
 std::set<Person*> Person::grandmothers(PMod pmod) {
     set<Person*> grandmotherSet;
 
-    if(pmod == PMod::MATERNAL && mother() != nullptr){
-        addSet(grandmotherSet, mother()->parents(PMod::MATERNAL));
-    }
-    else if(pmod == PMod::PATERNAL && father() != nullptr){
-        addSet(grandmotherSet, father()->parents(PMod::MATERNAL));
-    }
-    else{
-        if(mother() != nullptr){
+    if(pmod == PMod::MATERNAL || pmod == PMod::ANY){
+        if(mother()){
             addSet(grandmotherSet, mother()->parents(PMod::MATERNAL));
-
         }
-        if(father() != nullptr){
+    }
+    if(pmod == PMod::PATERNAL || pmod == PMod::ANY){
+        if(father()){
             addSet(grandmotherSet, father()->parents(PMod::MATERNAL));
         }
     }
