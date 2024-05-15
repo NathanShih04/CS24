@@ -81,10 +81,9 @@ std::set<Person*> Person::sons() {
     set<Person*> sonSet;
 
     if(children().size() != 0){
-        addSet(sonSet, children());
-        for(Person* child : sonSet){
-            if(child->sex != Gender::MALE){
-                sonSet.erase(child);
+        for(Person* child : children()){
+            if(child->gender() == Gender::MALE){
+                sonSet.insert(child);
             }
         }
     }
@@ -96,10 +95,9 @@ std::set<Person*> Person::daughters() {
     set<Person*> daughterSet;
     
     if(children().size() != 0){
-        addSet(daughterSet, children());
-        for(Person* child : daughterSet){
-            if(child->sex != Gender::FEMALE){
-                daughterSet.erase(child);
+        for(Person* child : children()){
+            if(child->gender() == Gender::FEMALE){
+                daughterSet.insert(child);
             }
         }
     }
@@ -195,10 +193,9 @@ std::set<Person*> Person::granddaughters() {
     set<Person*> granddaughterSet;
 
     if(grandchildren().size() != 0){
-        addSet(granddaughterSet, grandchildren());
-        for(Person* grandchild : granddaughterSet){
-            if(grandchild->sex != Gender::FEMALE){
-                granddaughterSet.erase(grandchild);
+        for(Person* grandchild : grandchildren()){
+            if(grandchild->gender() == Gender::FEMALE){
+                granddaughterSet.insert(grandchild);
             }
         }
     }
