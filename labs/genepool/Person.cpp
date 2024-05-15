@@ -59,18 +59,14 @@ Person* Person::father() {
 std::set<Person*> Person::parents(PMod pmod) {
     set<Person*> parentSet;
 
-    if(pmod == PMod::MATERNAL && mom != nullptr){
-        parentSet.insert(mom);
-    }
-    else if(pmod == PMod::PATERNAL && dad != nullptr){
-        parentSet.insert(dad);
-    }
-    else{
-        if(mom != nullptr){
-            parentSet.insert(mom);
+    if(pmod == PMod::MATERNAL || pmod == PMod::ANY){
+        if(mother()){
+            parentSet.insert(mother());
         }
-        if(dad != nullptr){
-            parentSet.insert(dad);
+    }
+    if(pmod == PMod::PATERNAL || pmod == PMod::ANY){
+        if(father()){
+            parentSet.insert(father());
         }
     }
 
