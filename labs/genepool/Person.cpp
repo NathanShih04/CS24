@@ -243,7 +243,7 @@ std::set<Person*> Person::siblings(PMod pmod, SMod smod) {
     // full siblings
     if(smod == SMod::FULL){
         for(Person* human : siblingSet){
-            if((human->mom != mom) || (human->dad != dad)){
+            if((human->mom != mom) || (human->dad != dad) || (human->mom == nullptr) || (human->dad == nullptr)){
                 siblingSet.erase(human);
             }
         }
