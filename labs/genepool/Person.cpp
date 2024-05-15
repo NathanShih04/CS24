@@ -205,6 +205,7 @@ std::set<Person*> Person::granddaughters() {
 
 std::set<Person*> Person::siblings(PMod pmod, SMod smod) {
      set<Person*> siblingSet;
+     set<Person*> finalSiblingSet;
 
     // pmods
     if(pmod == PMod::MATERNAL || pmod == PMod::ANY){
@@ -220,23 +221,24 @@ std::set<Person*> Person::siblings(PMod pmod, SMod smod) {
 
     // smods
     // full siblings
-    if(smod == SMod::FULL){
+    if(smod == SMod::HALF){
         for(Person* human : siblingSet){
             if((human->mother() == nullptr) || (human->father() == nullptr) || (human->mother() != mother()) || (human->father() != father())){
-                siblingSet.erase(human);
+                finalSiblingSet.insert(human);
             }
         }
     }
-    else if(smod == SMod::HALF){
-        set<Person*> fullSiblings = siblings(pmod, SMod::FULL);
-        for(Person* human : fullSiblings){
+    else if(smod == SMod::FULL){
+        set<Person*> halfSiblings = siblings(pmod, SMod::HALF);
+        for(Person* human : halfSiblings){
             siblingSet.erase(human);
         }
+        siblingSet.erase(this);
+        return siblingSet;
     }
 
-    siblingSet.erase(this);
-
-    return siblingSet;
+    finalSiblingSet.erase(this);
+    return finalSiblingSet;
 }
 
 std::set<Person*> Person::brothers(PMod pmod, SMod smod) {
