@@ -8,7 +8,6 @@ void addSet(set<Person*>& originalSet, const set<Person*>& addedSet) {
         originalSet.insert(human);
     }
 }
-
 // void addSet(set<Person*> originalSet, set<Person*> addedSet) {
 //     if(addedSet.size() == 0){
 //         return;
