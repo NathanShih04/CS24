@@ -221,12 +221,20 @@ std::set<Person*> Person::siblings(PMod pmod, SMod smod) {
 
     // smods
     // full siblings
-    if(smod == SMod::HALF){
+    if(smod == SMod::ANY){
+        siblingSet.erase(this);
+        return siblingSet;
+    }
+    else if(smod == SMod::HALF){
         for(Person* human : siblingSet){
             if((human->mother() == nullptr) || (human->father() == nullptr) || (human->mother() != mother()) || (human->father() != father())){
                 finalSiblingSet.insert(human);
             }
         }
+        if((mother() == nullptr) || (father() == nullptr)){
+            finalSiblingSet.erase(this);
+        }
+        return finalSiblingSet;
     }
     else if(smod == SMod::FULL){
         set<Person*> halfSiblings = siblings(pmod, SMod::HALF);
@@ -236,9 +244,6 @@ std::set<Person*> Person::siblings(PMod pmod, SMod smod) {
         siblingSet.erase(this);
         return siblingSet;
     }
-
-    finalSiblingSet.erase(this);
-    return finalSiblingSet;
 }
 
 std::set<Person*> Person::brothers(PMod pmod, SMod smod) {
