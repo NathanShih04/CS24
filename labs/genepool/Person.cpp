@@ -304,20 +304,20 @@ std::set<Person*> Person::aunts(PMod pmod, SMod smod) {
 std::set<Person*> Person::cousins(PMod pmod, SMod smod) {
     set<Person*> cousinSet;
 
-    Person* parentToConsider = nullptr;
-    if(pmod == PMod::MATERNAL){
-        parentToConsider = mother();
+    if(pmod == PMod::MATERNAL || pmod == PMod::ANY){
+        if(mother() != nullptr){
+            for(Person* sibling : mother()->siblings(PMod::ANY, smod)){
+                set<Person*> siblingChildren = sibling->children();
+                addSet(cousinSet, siblingChildren);
+            }
+        }
     } 
-    else if (pmod == PMod::PATERNAL){
-        parentToConsider = father();
-    }
-
-    if(parentToConsider != nullptr){
-        set<Person*> parentSiblings = parentToConsider->siblings(PMod::ANY, smod);
-
-        for(Person* sibling : parentSiblings){
-            set<Person*> siblingChildren = sibling->children();
-            addSet(cousinSet, siblingChildren);
+    if(pmod == PMod::PATERNAL || pmod == PMod::ANY){
+        if(father() != nullptr){
+            for(Person* sibling : father()->siblings(PMod::ANY, smod)){
+                set<Person*> siblingChildren = sibling->children();
+                addSet(cousinSet, siblingChildren);
+            }
         }
     }
 
