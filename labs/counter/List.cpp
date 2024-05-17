@@ -34,7 +34,10 @@ void List::insert(std::string key, int value){
 }
 
 Node* List::find(std::string key){
-    Node* current = head;
+    Node* current;
+    if(head != nullptr){
+        current = head;
+    }
     while(current != nullptr){
         if(current->key == key){
             return current;
