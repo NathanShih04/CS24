@@ -3,10 +3,14 @@
 using namespace std;
 
 // Constructor
-Counter::Counter() {}
+Counter::Counter() {
+    list = new List();
+}
 
 // Destructor
-Counter::~Counter() {}
+Counter::~Counter() {
+    delete[] list;
+}
 
 size_t Counter::count() const {
     return Lcount;
@@ -31,7 +35,7 @@ void Counter::inc(const std::string& key, int by) {
 
 void Counter::dec(const std::string& key, int by) {
     Node* node = list->find(key);
-    
+
     if(node != nullptr){
         node->value -= by;
         if(node->value == 0){
