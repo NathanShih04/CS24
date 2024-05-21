@@ -13,7 +13,6 @@ List::~List() {
         head = head->next;
         delete temp;
     }
-
     head = nullptr;
     tail = nullptr;
 }
