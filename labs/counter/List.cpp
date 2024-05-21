@@ -10,10 +10,12 @@ List::List(){
 List::~List() {
     while(head != nullptr){
         Node* temp = head;
-        head = head->next;
+        if(head->next != nullptr){
+            head = head->next;
+        }
         delete temp;
     }
-    
+
     head = nullptr;
     tail = nullptr;
 }
