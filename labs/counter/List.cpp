@@ -34,7 +34,7 @@ void List::insert(std::string key, int value){
 }
 
 Node* List::find(std::string key){
-    Node* current;
+    Node* current = nullptr;
     if(head != nullptr){
         current = head;
     }
@@ -44,7 +44,7 @@ Node* List::find(std::string key){
         }
         current = current->next;
     }
-    return nullptr;
+    return current;
 }
 
 void List::remove(Node* node) {
