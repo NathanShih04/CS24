@@ -16,8 +16,8 @@ List::~List() {
     }
 }
 
-void List::insert(const std::string& key, int value){
-    Node* newNode = new Node(key, value);
+void List::insert(std::string key, int value){
+    Node* newNode = new Node();
     newNode->key = key;
     newNode->value = value;
     newNode->next = nullptr;
@@ -34,15 +34,18 @@ void List::insert(const std::string& key, int value){
     }
 }
 
-Node* List::find(const std::string& key) {
-    Node* current = head;
-    while (current != nullptr) {
-        if (current->key == key) {
+Node* List::find(std::string key){
+    Node* current = nullptr;
+    if(head != nullptr){
+        current = head;
+    }
+    while(current != nullptr){
+        if(current->key == key){
             return current;
         }
         current = current->next;
     }
-    return nullptr;
+    return current;
 }
 
 void List::remove(Node* node) {
