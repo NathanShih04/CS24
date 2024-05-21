@@ -7,12 +7,14 @@ List::List(){
     tail = nullptr;
 }
 
-List::~List(){
-    while(head != nullptr){
+List::~List() {
+    while (head != nullptr) {
         Node* temp = head;
         head = head->next;
         delete temp;
     }
+    head = nullptr;
+    tail = nullptr;
 }
 
 void List::insert(std::string key, int value){
