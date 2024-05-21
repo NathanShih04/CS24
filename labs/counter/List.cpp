@@ -8,11 +8,9 @@ List::List(){
 }
 
 List::~List() {
-    while(head != nullptr){
+    while (head != nullptr) {
         Node* temp = head;
-        if(head->next != nullptr){
-            head = head->next;
-        }
+        head = head->next;
         delete temp;
     }
 
