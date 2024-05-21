@@ -68,7 +68,7 @@ int Counter::get(const std::string& key) const {
     }
 }
 
-void Counter::set(const std::string& key, size_t count) {
+void Counter::set(const std::string& key, int count) {
     Node* node = list->find(key);
     if(node){
         Ltotal += (count - node->value);

@@ -1,3 +1,4 @@
+
 #ifndef COUNTER_H
 #define COUNTER_H
 
@@ -28,7 +29,7 @@ public:
 private:
   // Member Variables
   List* list;
-  size_t Lcount;
+  int Lcount;
   int Ltotal;
 
 private:
@@ -45,7 +46,7 @@ public:
   void dec(const std::string& key, int by = 1);
   void del(const std::string& key);
   int  get(const std::string& key) const;
-  void set(const std::string& key, size_t count);
+  void set(const std::string& key, int count);
 
   Iterator begin() const;
   Iterator end() const;
