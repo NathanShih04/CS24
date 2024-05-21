@@ -7,6 +7,10 @@ Counter::Counter() {
     list = new List();
 }
 
+Counter::~Counter() {
+    delete list;
+}
+
 size_t Counter::count() const {
     return Lcount;
 }

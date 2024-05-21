@@ -36,6 +36,7 @@ private:
 
 public:
   Counter();
+  ~Counter();
 
   size_t count() const;
   int    total() const;
