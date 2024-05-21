@@ -14,8 +14,6 @@ List::~List() {
         delete current;
         current = nextNode;
     }
-    head = nullptr;
-    tail = nullptr;
 }
 
 void List::insert(std::string key, int value){
