@@ -7,11 +7,6 @@ Counter::Counter() {
     list = new List();
 }
 
-// Destructor
-Counter::~Counter() {
-    delete[] list;
-}
-
 size_t Counter::count() const {
     return Lcount;
 }
