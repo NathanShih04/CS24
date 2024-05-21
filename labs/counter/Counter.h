@@ -28,7 +28,7 @@ public:
 private:
   // Member Variables
   List* list;
-  int Lcount;
+  size_t Lcount;
   int Ltotal;
 
 private:
@@ -45,7 +45,7 @@ public:
   void dec(const std::string& key, int by = 1);
   void del(const std::string& key);
   int  get(const std::string& key) const;
-  void set(const std::string& key, int count);
+  void set(const std::string& key, size_t count);
 
   Iterator begin() const;
   Iterator end() const;
