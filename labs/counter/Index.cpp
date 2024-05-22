@@ -1,6 +1,6 @@
 #include "Index.h"
 #include <functional>
-#include <iostream>
+#include <iostream> 
 
 Index::Index(size_t initial_capacity, float load_factor)
     : capacity(initial_capacity), size(0), load_factor(load_factor) {
@@ -51,7 +51,6 @@ void Index::insert(const std::string& key, Node* node) {
     table[index].key = key;
     table[index].node = node;
     table[index].is_occupied = true;
-    table[index].is_dirty = false; 
 }
 
 Node* Index::find(const std::string& key) const {
@@ -75,7 +74,6 @@ void Index::remove(const std::string& key) {
 
     if (table[index].is_occupied) {
         table[index].is_occupied = false;
-        table[index].is_dirty = true; 
         size--;
     }
 }
