@@ -2,8 +2,7 @@
 #include <functional>
 #include <iostream> 
 
-Index::Index(size_t initial_capacity, float load_factor)
-    : capacity(initial_capacity), size(0), load_factor(load_factor) {
+Index::Index(size_t initial_capacity, float load_factor)  : capacity(initial_capacity), size(0), load_factor(load_factor) {
     table = new Entry[capacity];
 }
 
@@ -19,10 +18,10 @@ void Index::rehash() {
     size_t new_capacity = capacity * 2;
     Entry* new_table = new Entry[new_capacity];
 
-    for (size_t i = 0; i < capacity; ++i) {
-        if (table[i].is_occupied) {
+    for(size_t i = 0; i < capacity; i++){
+        if(table[i].is_occupied){
             size_t new_index = std::hash<std::string>{}(table[i].key) % new_capacity;
-            while (new_table[new_index].is_occupied) {
+            while(new_table[new_index].is_occupied){
                 new_index = (new_index + 1) % new_capacity;
             }
             new_table[new_index] = table[i];
@@ -35,16 +34,16 @@ void Index::rehash() {
 }
 
 void Index::insert(const std::string& key, Node* node) {
-    if (size >= capacity * load_factor) {
+    if(size >= capacity * load_factor){
         rehash();
     }
 
     size_t index = hash(key);
-    while (table[index].is_occupied && table[index].key != key) {
+    while(table[index].is_occupied && table[index].key != key){
         index = (index + 1) % capacity;
     }
 
-    if (!table[index].is_occupied) {
+    if(!table[index].is_occupied){
         size++;
     }
 
@@ -55,24 +54,27 @@ void Index::insert(const std::string& key, Node* node) {
 
 Node* Index::find(const std::string& key) const {
     size_t index = hash(key);
-    while (table[index].is_occupied && table[index].key != key) {
+
+    while(table[index].is_occupied && table[index].key != key){
         index = (index + 1) % capacity;
     }
 
-    if (table[index].is_occupied) {
+    if(table[index].is_occupied){
         return table[index].node;
-    } else {
+    } 
+    else{
         return nullptr;
     }
 }
 
 void Index::remove(const std::string& key) {
     size_t index = hash(key);
-    while (table[index].is_occupied && table[index].key != key) {
+
+    while(table[index].is_occupied && table[index].key != key){
         index = (index + 1) % capacity;
     }
 
-    if (table[index].is_occupied) {
+    if(table[index].is_occupied){
         table[index].is_occupied = false;
         size--;
     }
