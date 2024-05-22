@@ -1,3 +1,4 @@
+
 #include "Counter.h"
 
 Counter::Counter() : list(new List()), index(new Index()), Lcount(0), Ltotal(0) {}
