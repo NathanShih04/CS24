@@ -2,6 +2,7 @@
 #define COUNTER_H
 
 #include "List.h"
+#include "Index.h"
 #include <string>
 
 class Counter {
