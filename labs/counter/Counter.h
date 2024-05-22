@@ -22,6 +22,7 @@ public:
 
 private:
     List* list;
+    Index* index;
     size_t Lcount;
     int Ltotal;
 

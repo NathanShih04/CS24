@@ -1,9 +1,10 @@
 #include "Counter.h"
 
-Counter::Counter() : list(new List()), Lcount(0), Ltotal(0) {}
+Counter::Counter() : list(new List()), index(new Index()), Lcount(0), Ltotal(0) {}
 
 Counter::~Counter() {
     delete list;
+    delete index;
 }
 
 size_t Counter::count() const {
@@ -15,60 +16,56 @@ int Counter::total() const {
 }
 
 void Counter::inc(const std::string& key, int by) {
-    Node* node = list->find(key);
-    if(node != nullptr){
+    Node* node = index->find(key);
+    if (node) {
         node->value += by;
-    } 
-    else{
+    } else {
         list->insert(key, by);
+        node = list->tail;
+        index->insert(key, node);
         Lcount++;
     }
     Ltotal += by;
 }
 
 void Counter::dec(const std::string& key, int by) {
-    Node* node = list->find(key);
-    if(node != nullptr){
+    Node* node = index->find(key);
+    if (node) {
         node->value -= by;
-        // if(node->value == 0){
-        //     list->remove(node);
-        //     Lcount--;
-        // }
-    }
-    else{
+    } 
+    else {
         list->insert(key, -by);
+        node = list->tail;
+        index->insert(key, node);
         Lcount++;
     }
     Ltotal -= by;
 }
 
 void Counter::del(const std::string& key) {
-    Node* node = list->find(key);
-    if(node != nullptr){
+    Node* node = index->find(key);
+    if (node) {
         Ltotal -= node->value;
         list->remove(node);
+        index->remove(key);
         Lcount--;
     }
 }
 
 int Counter::get(const std::string& key) const {
-    Node* node = list->find(key);
-    if(node != nullptr){
-        return node->value;
-    }
-    else{
-        return 0;
-    }
+    Node* node = index->find(key);
+    return node ? node->value : 0;
 }
 
 void Counter::set(const std::string& key, int count) {
-    Node* node = list->find(key);
-    if(node != nullptr){
+    Node* node = index->find(key);
+    if (node) {
         Ltotal += (count - node->value);
         node->value = count;
-    } 
-    else{
+    } else {
         list->insert(key, count);
+        node = list->tail;
+        index->insert(key, node);
         Lcount++;
         Ltotal += count;
     }
