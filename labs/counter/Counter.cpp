@@ -32,8 +32,7 @@ void Counter::dec(const std::string& key, int by) {
     Node* node = index->find(key);
     if (node) {
         node->value -= by;
-    } 
-    else {
+    } else {
         list->insert(key, -by);
         node = list->tail;
         index->insert(key, node);

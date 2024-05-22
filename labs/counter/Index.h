@@ -2,12 +2,18 @@
 #define INDEX_H
 
 #include <string>
-#include <vector>
 #include "List.h"
 
 class Index {
 private:
-    std::vector<Node*> table;
+    struct Entry {
+        std::string key;
+        Node* node;
+        bool is_occupied;
+        Entry() : node(nullptr), is_occupied(false) {}
+    };
+
+    Entry* table;
     size_t capacity;
     size_t size;
     float load_factor;
