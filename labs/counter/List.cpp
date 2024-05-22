@@ -1,11 +1,6 @@
 #include "List.h"
 
-// List Member Functions
-
-List::List(){
-    head = nullptr;
-    tail = nullptr;
-}
+List::List() : head(nullptr), tail(nullptr) {}
 
 List::~List() {
     Node* current = head;
@@ -16,56 +11,38 @@ List::~List() {
     }
 }
 
-void List::insert(std::string key, int value){
-    Node* newNode = new Node();
-    newNode->key = key;
-    newNode->value = value;
-    newNode->next = nullptr;
-
-    if(head == nullptr){
-        head = newNode;
-        tail = newNode;
-        newNode->prev = nullptr;
-    } 
-    else{
+void List::insert(const std::string& key, int value) {
+    Node* newNode = new Node{key, value, tail, nullptr};
+    if (tail) {
         tail->next = newNode;
-        newNode->prev = tail;
-        tail = newNode;
+    } else {
+        head = newNode;
     }
+    tail = newNode;
 }
 
-Node* List::find(std::string key){
-    Node* current = nullptr;
-    if(head != nullptr){
-        current = head;
-    }
-    while(current != nullptr){
-        if(current->key == key){
+Node* List::find(const std::string& key) const {
+    Node* current = head;
+    while (current) {
+        if (current->key == key) {
             return current;
         }
         current = current->next;
     }
-    return current;
+    return nullptr;
 }
 
 void List::remove(Node* node) {
-    if(node == nullptr){
-        return;
-    }
-
-    if(node->prev != nullptr){
+    if (!node) return;
+    if (node->prev) {
         node->prev->next = node->next;
-    } 
-    else{
+    } else {
         head = node->next;
     }
-
-    if(node->next != nullptr){
+    if (node->next) {
         node->next->prev = node->prev;
-    } 
-    else{
+    } else {
         tail = node->prev;
     }
-
     delete node;
 }

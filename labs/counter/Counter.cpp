@@ -1,11 +1,6 @@
 #include "Counter.h"
 
-using namespace std;
-
-// Constructor
-Counter::Counter() {
-    list = new List();
-}
+Counter::Counter() : list(new List()), Lcount(0), Ltotal(0) {}
 
 Counter::~Counter() {
     delete list;
@@ -29,12 +24,10 @@ void Counter::inc(const std::string& key, int by) {
         Lcount++;
     }
     Ltotal += by;
-
 }
 
 void Counter::dec(const std::string& key, int by) {
     Node* node = list->find(key);
-
     if(node != nullptr){
         node->value -= by;
         if(node->value == 0){
@@ -42,16 +35,17 @@ void Counter::dec(const std::string& key, int by) {
             Lcount--;
         }
     } 
-    else{
+    else {
         list->insert(key, -by);
         Lcount++;
     }
+
     Ltotal -= by;
 }
 
 void Counter::del(const std::string& key) {
     Node* node = list->find(key);
-    if(node != nullptr){
+    if(node){
         Ltotal -= node->value;
         list->remove(node);
         Lcount--;
@@ -70,7 +64,7 @@ int Counter::get(const std::string& key) const {
 
 void Counter::set(const std::string& key, int count) {
     Node* node = list->find(key);
-    if(node){
+    if(node != nullptr){
         Ltotal += (count - node->value);
         node->value = count;
     } 

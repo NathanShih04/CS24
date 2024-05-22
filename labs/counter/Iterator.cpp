@@ -1,9 +1,6 @@
 #include "Counter.h"
 
-// Counter::Iterator Member Functions
-Counter::Iterator::Iterator(Node* node){
-    this->node = node;
-}
+Counter::Iterator::Iterator(Node* node) : node(node) {}
 
 Counter::Iterator::~Iterator() {}
 
@@ -16,7 +13,9 @@ int Counter::Iterator::value() const {
 }
 
 void Counter::Iterator::operator++() {
-    node = node->next;
+    if (node) {
+        node = node->next;
+    }
 }
 
 bool Counter::Iterator::operator==(const Counter::Iterator& other) const {

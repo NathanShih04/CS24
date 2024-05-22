@@ -1,27 +1,25 @@
 #ifndef LIST_H
 #define LIST_H
 
-#include <iostream>
 #include <string>
-using namespace std;
 
-struct Node{
-    string key;
+struct Node {
+    std::string key;
     int value;
     Node* prev;
     Node* next;
 };
 
-class List{
+class List {
 public:
     Node* head;
     Node* tail;
-    
+
 public:
     List();
     ~List();
-    void insert(string key, int value);
-    Node* find(string key);
+    void insert(const std::string& key, int value);
+    Node* find(const std::string& key) const;
     void remove(Node* node);
 };
 
