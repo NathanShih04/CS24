@@ -22,7 +22,7 @@ private:
     void rehash();
 
 public:
-    Index(size_t initial_capacity = 16, float load_factor = 0.75);
+    Index(size_t initial_capacity = 4096, float load_factor = 0.75);
     ~Index();
 
     void insert(const std::string& key, Node* node);
