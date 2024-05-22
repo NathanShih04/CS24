@@ -34,18 +34,17 @@ void Counter::dec(const std::string& key, int by) {
             list->remove(node);
             Lcount--;
         }
-    } 
-    else {
+    }
+    else{
         list->insert(key, -by);
         Lcount++;
     }
-
     Ltotal -= by;
 }
 
 void Counter::del(const std::string& key) {
     Node* node = list->find(key);
-    if(node){
+    if(node != nullptr){
         Ltotal -= node->value;
         list->remove(node);
         Lcount--;
@@ -54,12 +53,7 @@ void Counter::del(const std::string& key) {
 
 int Counter::get(const std::string& key) const {
     Node* node = list->find(key);
-    if(node != nullptr){
-        return node->value;
-    } 
-    else{
-        return 0;
-    }
+    return node ? node->value : 0;
 }
 
 void Counter::set(const std::string& key, int count) {
