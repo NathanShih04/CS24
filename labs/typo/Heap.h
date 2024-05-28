@@ -26,11 +26,6 @@ public:
     Heap(const Heap& other);
     ~Heap();
 
-    // helper func
-    void percolateUp(size_t index);
-    void percolateDown(size_t index);
-
-    // required funcs
     size_t       capacity() const;
     size_t       count() const;
     const Entry& lookup(size_t index) const;

@@ -2,23 +2,23 @@
 #include <stdexcept>
 using namespace std;
 
-// Helper funcs ##########################################
+// Helper functions ##########################################
 
-void Heap::percolateUp(size_t index) {
+void percolateUp(Heap::Entry* mData, size_t index) {
     while(index > 0){
         size_t parentIndex = (index - 1) / 2;
         if(mData[index].score >= mData[parentIndex].score){
             break;
         }
 
-        Entry temp = mData[index];
+        Heap::Entry temp = mData[index];
         mData[index] = mData[parentIndex];
         mData[parentIndex] = temp;
         index = parentIndex;
     }
 }
 
-void Heap::percolateDown(size_t index) {
+void percolateDown(Heap::Entry* mData, size_t mCount, size_t index) {
     size_t leftChild, rightChild, smallestChild;
 
     while((leftChild = 2 * index + 1) < mCount){
@@ -35,7 +35,7 @@ void Heap::percolateDown(size_t index) {
             break;
         }
         
-        Entry temp = mData[index];
+        Heap::Entry temp = mData[index];
         mData[index] = mData[smallestChild];
         mData[smallestChild] = temp;
         index = smallestChild;
@@ -82,7 +82,7 @@ Heap::Entry Heap::pop() {
 
     Entry root = mData[0];
     mData[0] = mData[--mCount];
-    percolateDown(0);
+    percolateDown(mData, mCount, 0);
     return root;
 }
 
@@ -93,7 +93,7 @@ Heap::Entry Heap::pushpop(const std::string& value, float score) {
 
     Entry root = mData[0];
     mData[0] = {value, score};
-    percolateDown(0);
+    percolateDown(mData, mCount, 0);
     return root;
 }
 
@@ -103,7 +103,7 @@ void Heap::push(const std::string& value, float score) {
     }
 
     mData[mCount] = {value, score};
-    percolateUp(mCount++);
+    percolateUp(mData, mCount++);
 }
 
 const Heap::Entry& Heap::top() const {
