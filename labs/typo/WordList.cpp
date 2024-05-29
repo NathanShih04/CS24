@@ -9,7 +9,17 @@ WordList::WordList(std::istream& stream) {
     string word;
 
     while(std::getline(stream, word)){
-        mWords.push_back(word);
+        bool isValid = true;
+
+        for(char c : word){
+            if(!islower(c) || !isalpha(c)){
+                isValid = false;
+                break;
+            }
+        }
+        if(isValid){
+            mWords.push_back(word);
+        }
     }
 }
 
