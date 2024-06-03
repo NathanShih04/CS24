@@ -3,22 +3,41 @@
 
 #include <istream>
 #include <vector>
-
+#include <memory>
 #include "Point.h"
 #include "Route.h"
 
-class VoxMap {
-  // Member Variables
+struct Voxel {
+    bool isFilled;
+    bool isSurface;
+};
 
-
-  // Helper Functions
-
-
+class VoxelMap {
 public:
-  VoxMap(std::istream& stream);
-  ~VoxMap();
+    VoxelMap(int width, int depth, int height);
+    
+    Voxel& getVoxel(int x, int y, int z);
+    const Voxel& getVoxel(int x, int y, int z) const;
+    
+    bool isValid(int x, int y, int z) const;
+    void markSurface();
 
-  Route route(Point src, Point dst);
+    int width, depth, height;  // Make these public for access
+
+private:
+    std::vector<Voxel> voxels;
+};
+
+class VoxMap {
+public:
+    VoxMap(std::istream& stream);
+    ~VoxMap();
+
+    Route route(Point src, Point dst);
+
+private:
+    std::unique_ptr<VoxelMap> map;
+    bool isValidPoint(const Point& p) const;
 };
 
 #endif
