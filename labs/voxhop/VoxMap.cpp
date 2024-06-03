@@ -6,6 +6,8 @@
 #include <bitset>
 #include <cmath>
 #include <array>
+#include <stdexcept>
+#include <iostream>
 
 VoxelMap::VoxelMap(int width, int depth, int height)
     : width(width), depth(depth), height(height),
@@ -41,16 +43,26 @@ VoxMap::VoxMap(std::istream& stream) {
 
     map = std::make_unique<VoxelMap>(width, depth, height);
 
+    std::string line;
     for (int z = 0; z < height; ++z) {
-        std::string line;
         std::getline(stream, line); // Read empty line
+        if (line.empty()) {
+            std::getline(stream, line); // Read next line if current is empty
+        }
 
         for (int y = 0; y < depth; ++y) {
             std::getline(stream, line);
+            if (line.empty()) continue; // Skip empty lines
+
             for (int x = 0; x < width / 4; ++x) {
-                std::bitset<4> bits(std::stoi(std::string(1, line[x]), nullptr, 16));
-                for (int b = 0; b < 4; ++b) {
-                    map->getVoxel(x * 4 + b, y, z).isFilled = bits[3 - b];
+                try {
+                    std::bitset<4> bits(std::stoi(std::string(1, line[x]), nullptr, 16));
+                    for (int b = 0; b < 4; ++b) {
+                        map->getVoxel(x * 4 + b, y, z).isFilled = bits[3 - b];
+                    }
+                } catch (const std::invalid_argument& e) {
+                    std::cerr << "Invalid character in map input: " << line[x] << std::endl;
+                    throw;
                 }
             }
         }
