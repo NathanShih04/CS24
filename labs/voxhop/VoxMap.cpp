@@ -75,8 +75,8 @@ VoxMap::~VoxMap() {}
 
 bool VoxMap::isValidPoint(const Point& p) const {
     if (!map->isValid(p.x, p.y, p.z)) return false;
-    if (!map->getVoxel(p.x, p.y, p.z).isSurface) return false;
     if (map->getVoxel(p.x, p.y, p.z).isFilled) return false;  // The point must be empty
+    if (p.z == 0 || !map->getVoxel(p.x, p.y, p.z - 1).isFilled) return false;  // Must have a filled voxel directly below it
     return true;
 }
 
