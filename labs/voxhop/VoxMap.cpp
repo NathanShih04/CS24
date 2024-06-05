@@ -1,7 +1,8 @@
-
 #include "VoxMap.h"
 #include <stdexcept>
 #include <sstream>
+#include <queue>
+#include <unordered_set>
 
 VoxMap::VoxMap(std::istream& stream) {
   // Read the map dimensions from the input stream
@@ -38,7 +39,7 @@ bool VoxMap::is_valid_point(const Point& point) const {
 
 bool VoxMap::is_valid_voxel(const Point& point) const {
   if (!is_valid_point(point)) return false;
-  if (!voxels[point.y][point.z][point.x]) return false; // Must be empty
+  if (voxels[point.y][point.z][point.x]) return false; // Must be empty
   if (point.y == 0 || !voxels[point.y - 1][point.z][point.x]) return false; // Must have a full voxel below
   return true;
 }
@@ -51,11 +52,58 @@ Route VoxMap::route(Point src, Point dst) {
     throw InvalidPoint(dst);
   }
 
-  // Placeholder for the pathfinding algorithm
-  // Here we just simulate that no route is found
+  struct Node {
+    Point pt;
+    int cost;
+    Route path;
+    bool operator>(const Node& other) const {
+      return cost > other.cost;
+    }
+  };
+
+  std::priority_queue<Node, std::vector<Node>, std::greater<Node>> openSet;
+  std::unordered_set<Point> closedSet;
+
+  auto heuristic = [](const Point& a, const Point& b) {
+    return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
+  };
+
+  openSet.push({src, 0, {}});
+
+  while (!openSet.empty()) {
+    Node current = openSet.top();
+    openSet.pop();
+
+    if (current.pt == dst) {
+      return current.path;
+    }
+
+    if (closedSet.find(current.pt) != closedSet.end()) continue;
+    closedSet.insert(current.pt);
+
+    static const std::array<std::pair<Point, Move>, 4> directions{
+      std::pair<Point, Move>{{0, 1, 0}, Move::NORTH}, 
+      std::pair<Point, Move>{{1, 0, 0}, Move::EAST},
+      std::pair<Point, Move>{{0, -1, 0}, Move::SOUTH}, 
+      std::pair<Point, Move>{{-1, 0, 0}, Move::WEST}};
+
+    for (const auto& [delta, move] : directions) {
+      Point next = {current.pt.x + delta.x, current.pt.y + delta.y, current.pt.z};
+      if (!is_valid_point(next)) continue;
+      if (!voxels[next.y][next.z][next.x]) {
+        while (next.y > 0 && !voxels[next.y - 1][next.z][next.x]) {
+          next.y--;
+        }
+        if (!is_valid_voxel(next)) continue;
+      }
+
+      int newCost = current.cost + 1 + heuristic(next, dst);
+      Route newPath = current.path;
+      newPath.push_back(move);
+
+      openSet.push({next, newCost, newPath});
+    }
+  }
+
   throw NoRoute(src, dst);
-
-  // In a complete implementation, the algorithm would return a valid Route
-  // if one exists between the source and destination points.
 }
-

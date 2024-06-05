@@ -1,4 +1,3 @@
-
 #ifndef VOXMAP_H
 #define VOXMAP_H
 
