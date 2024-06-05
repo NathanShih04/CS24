@@ -1,120 +1,146 @@
 #include "VoxMap.h"
 #include "Errors.h"
-#include <cmath>
-#include <sstream>
+#include <queue>
 #include <unordered_set>
-#include <algorithm>
+#include <sstream>
+#include <bitset>
+#include <cmath>
+#include <array>
 #include <stdexcept>
+#include <iostream>
+
+VoxelMap::VoxelMap(int width, int depth, int height)
+    : width(width), depth(depth), height(height),
+      voxels(width * depth * height, Voxel{false, false}) {}
+
+Voxel& VoxelMap::getVoxel(int x, int y, int z) {
+    return voxels[(z * depth + y) * width + x];
+}
+
+const Voxel& VoxelMap::getVoxel(int x, int y, int z) const {
+    return voxels[(z * depth + y) * width + x];
+}
+
+bool VoxelMap::isValid(int x, int y, int z) const {
+    return x >= 0 && x < width && y >= 0 && y < depth && z >= 0 && z < height;
+}
+
+void VoxelMap::markSurface() {
+    for (int x = 0; x < width; ++x) {
+        for (int y = 0; y < depth; ++y) {
+            for (int z = 1; z < height; ++z) {
+                if (getVoxel(x, y, z).isFilled && !getVoxel(x, y, z - 1).isFilled) {
+                    getVoxel(x, y, z - 1).isSurface = true;
+                }
+            }
+        }
+    }
+}
 
 VoxMap::VoxMap(std::istream& stream) {
-  if (!(stream >> width >> depth >> height)) {
-    throw std::runtime_error("Failed to read map dimensions.");
-  }
+    int width, depth, height;
+    stream >> width >> depth >> height;
 
-  map.resize(height, std::vector<std::vector<Voxel>>(depth, std::vector<Voxel>(width)));
+    map = std::make_unique<VoxelMap>(width, depth, height);
 
-  std::string line;
-  for (int z = 0; z < height; ++z) {
-    // Skip empty line
-    if (!std::getline(stream, line) || !line.empty()) {
-      throw std::runtime_error("Expected empty line before height tier " + std::to_string(z) + ".");
-    }
-
-    for (int y = 0; y < depth; ++y) {
-      if (!std::getline(stream, line) || line.size() != static_cast<size_t>(width / 4)) {
-        throw std::runtime_error("Invalid map data format at depth " + std::to_string(y) + ", height " + std::to_string(z) + ". Line size: " + std::to_string(line.size()));
-      }
-
-      for (int x = 0; x < width / 4; ++x) {
-        char hex_char = line[x];
-        int value;
-        try {
-          value = std::stoi(std::string(1, hex_char), nullptr, 16);
-        } catch (const std::invalid_argument& e) {
-          throw std::runtime_error("Invalid hex character '" + std::string(1, hex_char) + "' in map data at depth " + std::to_string(y) + ", height " + std::to_string(z) + ".");
+    std::string line;
+    for (int z = 0; z < height; ++z) {
+        std::getline(stream, line); // Read empty line
+        if (line.empty()) {
+            std::getline(stream, line); // Read next line if current is empty
         }
 
-        for (int i = 0; i < 4; ++i) {
-          map[z][y][4 * x + (3 - i)].is_full = (value & (1 << i)) != 0;
-          map[z][y][4 * x + (3 - i)].is_visited = false;
+        for (int y = 0; y < depth; ++y) {
+            std::getline(stream, line);
+            if (line.empty()) continue; // Skip empty lines
+
+            for (int x = 0; x < width / 4; ++x) {
+                try {
+                    std::bitset<4> bits(std::stoi(std::string(1, line[x]), nullptr, 16));
+                    for (int b = 0; b < 4; ++b) {
+                        map->getVoxel(x * 4 + b, y, z).isFilled = bits[3 - b];
+                    }
+                } catch (const std::invalid_argument& e) {
+                    std::cerr << "Invalid character in map input: " << line[x] << std::endl;
+                    throw;
+                }
+            }
         }
-      }
     }
-  }
+
+    map->markSurface();
 }
 
-bool VoxMap::isValidVoxel(const Point& p) const {
-  return p.x >= 0 && p.x < width && p.y >= 0 && p.y < depth && p.z >= 0 && p.z < height;
-}
+VoxMap::~VoxMap() {}
 
-bool VoxMap::isStandable(const Point& p) const {
-  return isValidVoxel(p) && !map[p.z][p.y][p.x].is_full && p.z > 0 && map[p.z - 1][p.y][p.x].is_full;
-}
-
-std::vector<Point> VoxMap::getNeighbors(const Point& p) const {
-  std::vector<Point> neighbors;
-  const std::vector<Point> directions = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}};
-
-  for (const auto& dir : directions) {
-    Point next = {p.x + dir.x, p.y + dir.y, p.z};
-    if (isValidVoxel(next) && !map[next.z][next.y][next.x].is_full) {
-      // handle falling down
-      while (next.z > 0 && !map[next.z - 1][next.y][next.x].is_full) {
-        next.z--;
-      }
-      // handle jumping up
-      if (next.z + 1 < height && !map[next.z + 1][next.y][next.x].is_full && map[next.z][next.y][next.x].is_full) {
-        next.z++;
-      }
-      neighbors.push_back(next);
+bool VoxMap::isValidPoint(const Point& p) const {
+    if (!map->isValid(p.x, p.y, p.z)) {
+        return false;
     }
-  }
-  return neighbors;
-}
-
-int VoxMap::heuristic(const Point& a, const Point& b) const {
-  return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
+    if (map->getVoxel(p.x, p.y, p.z).isFilled) {
+        return false;
+    }
+    if (p.z == 0 || map->getVoxel(p.x, p.y, p.z - 1).isFilled) {
+        return true;
+    }
+    return false;
 }
 
 Route VoxMap::route(Point src, Point dst) {
-  if (!isStandable(src)) throw InvalidPoint(src);
-  if (!isStandable(dst)) throw InvalidPoint(dst);
+    if (!isValidPoint(src)) throw InvalidPoint(src);
+    if (!isValidPoint(dst)) throw InvalidPoint(dst);
 
-  using PQElement = std::pair<int, Point>;
-  std::priority_queue<PQElement, std::vector<PQElement>, std::greater<>> open_set;
-  std::unordered_map<Point, Point, Point::HashFunction> came_from;
-  std::unordered_map<Point, int, Point::HashFunction> cost_so_far;
+    struct Node {
+        Point pt;
+        int cost;
+        Route path;
+        bool operator>(const Node& other) const {
+            return cost > other.cost;
+        }
+    };
 
-  open_set.emplace(0, src);
-  cost_so_far[src] = 0;
+    std::priority_queue<Node, std::vector<Node>, std::greater<Node>> openSet;
+    std::unordered_set<int> closedSet;
 
-  while (!open_set.empty()) {
-    Point current = open_set.top().second;
-    open_set.pop();
+    auto hashPoint = [this](const Point& p) {
+        return (p.z * map->depth + p.y) * map->width + p.x;
+    };
 
-    if (current == dst) {
-      Route path;
-      while (current != src) {
-        Point from = came_from[current];
-        if (from.x < current.x) path.push_back(Move::EAST);
-        else if (from.x > current.x) path.push_back(Move::WEST);
-        else if (from.y < current.y) path.push_back(Move::SOUTH);
-        else if (from.y > current.y) path.push_back(Move::NORTH);
-        current = from;
-      }
-      std::reverse(path.begin(), path.end());
-      return path;
+    auto heuristic = [](const Point& a, const Point& b) {
+        return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
+    };
+
+    openSet.push({src, 0, {}});
+
+    while (!openSet.empty()) {
+        Node current = openSet.top();
+        openSet.pop();
+
+        if (current.pt.x == dst.x && current.pt.y == dst.y && current.pt.z == dst.z) {
+            return current.path;
+        }
+
+        int currentHash = hashPoint(current.pt);
+        if (closedSet.find(currentHash) != closedSet.end()) continue;
+        closedSet.insert(currentHash);
+
+        static const std::array<std::pair<Point, Move>, 4> directions{
+            std::pair<Point, Move>{{0, 1, 0}, Move::NORTH}, 
+            std::pair<Point, Move>{{1, 0, 0}, Move::EAST},
+            std::pair<Point, Move>{{0, -1, 0}, Move::SOUTH}, 
+            std::pair<Point, Move>{{-1, 0, 0}, Move::WEST}};
+
+        for (const auto& [delta, move] : directions) {
+            Point next = {current.pt.x + delta.x, current.pt.y + delta.y, current.pt.z};
+            if (!isValidPoint(next)) continue;
+
+            int newCost = current.cost + 1 + heuristic(next, dst);
+            Route newPath = current.path;
+            newPath.push_back(move);
+
+            openSet.push({next, newCost, newPath});
+        }
     }
 
-    for (const auto& next : getNeighbors(current)) {
-      int new_cost = cost_so_far[current] + 1;
-      if (cost_so_far.find(next) == cost_so_far.end() || new_cost < cost_so_far[next]) {
-        cost_so_far[next] = new_cost;
-        int priority = new_cost + heuristic(next, dst);
-        open_set.emplace(priority, next);
-        came_from[next] = current;
-      }
-    }
-  }
-  throw NoRoute(src, dst);
+    throw NoRoute(src, dst);
 }
