@@ -100,11 +100,7 @@ Route VoxMap::route(Point src, Point dst) {
     };
 
     std::priority_queue<Node, std::vector<Node>, std::greater<Node>> openSet;
-    std::unordered_set<int> closedSet;
-
-    auto hashPoint = [this](const Point& p) {
-        return (p.z * map->depth + p.y) * map->width + p.x;
-    };
+    std::unordered_set<Point> closedSet;
 
     auto heuristic = [](const Point& a, const Point& b) {
         return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
@@ -116,13 +112,12 @@ Route VoxMap::route(Point src, Point dst) {
         Node current = openSet.top();
         openSet.pop();
 
-        if (current.pt.x == dst.x && current.pt.y == dst.y && current.pt.z == dst.z) {
+        if (current.pt == dst) {
             return current.path;
         }
 
-        int currentHash = hashPoint(current.pt);
-        if (closedSet.find(currentHash) != closedSet.end()) continue;
-        closedSet.insert(currentHash);
+        if (closedSet.find(current.pt) != closedSet.end()) continue;
+        closedSet.insert(current.pt);
 
         static const std::array<std::pair<Point, Move>, 4> directions{
             std::pair<Point, Move>{{0, 1, 0}, Move::NORTH}, 
@@ -132,6 +127,12 @@ Route VoxMap::route(Point src, Point dst) {
 
         for (const auto& [delta, move] : directions) {
             Point next = {current.pt.x + delta.x, current.pt.y + delta.y, current.pt.z};
+            if (!map->isValid(next.x, next.y, next.z) || map->getVoxel(next.x, next.y, next.z).isFilled) continue;
+
+            if (!map->isValid(next.x, next.y, next.z - 1) || map->getVoxel(next.x, next.y, next.z - 1).isFilled) {
+                next.z = next.z - 1;
+            }
+
             if (!isValidPoint(next)) continue;
 
             int newCost = current.cost + 1 + heuristic(next, dst);
