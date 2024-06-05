@@ -74,12 +74,15 @@ VoxMap::VoxMap(std::istream& stream) {
 VoxMap::~VoxMap() {}
 
 bool VoxMap::isValidPoint(const Point& p) const {
+    // Check if point is within the bounds of the map
     if (!map->isValid(p.x, p.y, p.z)) {
         return false;
     }
+    // Check if the voxel at point is not filled
     if (map->getVoxel(p.x, p.y, p.z).isFilled) {
         return false;
     }
+    // For points with z > 0, ensure there is a filled voxel below them
     if (p.z > 0 && !map->getVoxel(p.x, p.y, p.z - 1).isFilled) {
         return false;
     }
@@ -144,5 +147,3 @@ Route VoxMap::route(Point src, Point dst) {
 
     throw NoRoute(src, dst);
 }
-
-
