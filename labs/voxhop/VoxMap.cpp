@@ -80,12 +80,11 @@ bool VoxMap::isValidPoint(const Point& p) const {
     if (map->getVoxel(p.x, p.y, p.z).isFilled) {
         return false;
     }
-    if (p.z == 0 || !map->getVoxel(p.x, p.y, p.z - 1).isFilled) {
+    if (p.z > 0 && !map->getVoxel(p.x, p.y, p.z - 1).isFilled) {
         return false;
     }
     return true;
 }
-
 
 Route VoxMap::route(Point src, Point dst) {
     if (!isValidPoint(src)) throw InvalidPoint(src);
@@ -145,4 +144,5 @@ Route VoxMap::route(Point src, Point dst) {
 
     throw NoRoute(src, dst);
 }
+
 
