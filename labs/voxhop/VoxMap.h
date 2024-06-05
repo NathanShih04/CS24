@@ -3,43 +3,30 @@
 
 #include <istream>
 #include <vector>
-#include <memory>
+#include <queue>
+#include <unordered_map>
 #include "Point.h"
 #include "Route.h"
-#include <unordered_map>
-#include <queue>
-
-struct Voxel {
-    bool isFilled;
-    bool isSurface;
-};
-
-class VoxelMap {
-public:
-    VoxelMap(int width, int depth, int height);
-    
-    Voxel& getVoxel(int x, int y, int z);
-    const Voxel& getVoxel(int x, int y, int z) const;
-    
-    bool isValid(int x, int y, int z) const;
-    void markSurface();
-
-    int width, depth, height;  // Make these public for access
-
-private:
-    std::vector<Voxel> voxels;
-};
 
 class VoxMap {
+  struct Voxel {
+    bool is_full;
+    bool is_visited;
+  };
+
+  int width, depth, height;
+  std::vector<std::vector<std::vector<Voxel>>> map;
+
+  bool isValidVoxel(const Point& p) const;
+  bool isStandable(const Point& p) const;
+  std::vector<Point> getNeighbors(const Point& p) const;
+  int heuristic(const Point& a, const Point& b) const;
+
 public:
-    VoxMap(std::istream& stream);
-    ~VoxMap();
+  VoxMap(std::istream& stream);
+  ~VoxMap() = default;
 
-    Route route(Point src, Point dst);
-
-private:
-    std::unique_ptr<VoxelMap> map;
-    bool isValidPoint(const Point& p) const;
+  Route route(Point src, Point dst);
 };
 
 #endif
