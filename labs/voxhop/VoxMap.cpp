@@ -75,20 +75,17 @@ VoxMap::~VoxMap() {}
 
 bool VoxMap::isValidPoint(const Point& p) const {
     if (!map->isValid(p.x, p.y, p.z)) {
-        std::cerr << "Invalid point: out of bounds (" << p.x << ", " << p.y << ", " << p.z << ")\n";
         return false;
     }
     if (map->getVoxel(p.x, p.y, p.z).isFilled) {
-        std::cerr << "Invalid point: filled voxel (" << p.x << ", " << p.y << ", " << p.z << ")\n";
         return false;
     }
     if (p.z == 0 || !map->getVoxel(p.x, p.y, p.z - 1).isFilled) {
-        std::cerr << "Invalid point: no filled voxel below (" << p.x << ", " << p.y << ", " << p.z << ")\n";
         return false;
     }
-    std::cerr << "Valid point: (" << p.x << ", " << p.y << ", " << p.z << ")\n";
     return true;
 }
+
 
 Route VoxMap::route(Point src, Point dst) {
     if (!isValidPoint(src)) throw InvalidPoint(src);
@@ -136,8 +133,7 @@ Route VoxMap::route(Point src, Point dst) {
 
         for (const auto& [delta, move] : directions) {
             Point next = {current.pt.x + delta.x, current.pt.y + delta.y, current.pt.z};
-            if (!map->isValid(next.x, next.y, next.z)) continue;
-            if (!map->getVoxel(next.x, next.y, next.z).isSurface) continue;
+            if (!isValidPoint(next)) continue;
 
             int newCost = current.cost + 1 + heuristic(next, dst);
             Route newPath = current.path;
@@ -149,3 +145,4 @@ Route VoxMap::route(Point src, Point dst) {
 
     throw NoRoute(src, dst);
 }
+
