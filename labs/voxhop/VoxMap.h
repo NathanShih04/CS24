@@ -6,6 +6,8 @@
 #include <memory>
 #include "Point.h"
 #include "Route.h"
+#include <unordered_map>
+#include <queue>
 
 struct Voxel {
     bool isFilled;
