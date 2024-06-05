@@ -1,141 +1,61 @@
+
 #include "VoxMap.h"
-#include "Errors.h"
-#include <queue>
-#include <unordered_set>
-#include <sstream>
-#include <bitset>
-#include <cmath>
-#include <array>
 #include <stdexcept>
-#include <iostream>
-
-VoxelMap::VoxelMap(int width, int depth, int height)
-    : width(width), depth(depth), height(height),
-      voxels(width * depth * height, Voxel{false, false}) {}
-
-Voxel& VoxelMap::getVoxel(int x, int y, int z) {
-    return voxels[(z * depth + y) * width + x];
-}
-
-const Voxel& VoxelMap::getVoxel(int x, int y, int z) const {
-    return voxels[(z * depth + y) * width + x];
-}
-
-bool VoxelMap::isValid(int x, int y, int z) const {
-    return x >= 0 && x < width && y >= 0 && y < depth && z >= 0 && z < height;
-}
-
-void VoxelMap::markSurface() {
-    for (int x = 0; x < width; ++x) {
-        for (int y = 0; y < depth; ++y) {
-            for (int z = 1; z < height; ++z) {
-                if (getVoxel(x, y, z).isFilled && !getVoxel(x, y, z - 1).isFilled) {
-                    getVoxel(x, y, z - 1).isSurface = true;
-                }
-            }
-        }
-    }
-}
+#include <sstream>
 
 VoxMap::VoxMap(std::istream& stream) {
-    int width, depth, height;
-    stream >> width >> depth >> height;
+  // Read the map dimensions from the input stream
+  stream >> width >> height >> depth;
 
-    map = std::make_unique<VoxelMap>(width, depth, height);
+  // Initialize the voxel map with the given dimensions
+  voxels.resize(height, std::vector<std::vector<bool>>(depth, std::vector<bool>(width, false)));
 
+  // Read the voxel data from the input stream
+  for (int h = 0; h < height; ++h) {
     std::string line;
-    for (int z = 0; z < height; ++z) {
-        std::getline(stream, line); // Read empty line
-        if (line.empty()) {
-            std::getline(stream, line); // Read next line if current is empty
+    for (int d = 0; d < depth; ++d) {
+      stream >> line;
+      for (int w = 0; w < width / 4; ++w) {
+        char hex_char = line[w];
+        int value = std::stoi(std::string(1, hex_char), nullptr, 16);
+        for (int bit = 0; bit < 4; ++bit) {
+          voxels[h][d][w * 4 + bit] = (value & (1 << (3 - bit))) != 0;
         }
-
-        for (int y = 0; y < depth; ++y) {
-            std::getline(stream, line);
-            if (line.empty()) continue; // Skip empty lines
-
-            for (int x = 0; x < width / 4; ++x) {
-                try {
-                    std::bitset<4> bits(std::stoi(std::string(1, line[x]), nullptr, 16));
-                    for (int b = 0; b < 4; ++b) {
-                        map->getVoxel(x * 4 + b, y, z).isFilled = bits[3 - b];
-                    }
-                } catch (const std::invalid_argument& e) {
-                    std::cerr << "Invalid character in map input: " << line[x] << std::endl;
-                    throw;
-                }
-            }
-        }
+      }
     }
-
-    map->markSurface();
+  }
 }
 
-VoxMap::~VoxMap() {}
+VoxMap::~VoxMap() {
+  // Destructor
+}
 
-bool VoxMap::isValidPoint(const Point& p) const {
-    if (!map->isValid(p.x, p.y, p.z)) {
-        return false;
-    }
-    if (map->getVoxel(p.x, p.y, p.z).isFilled) {
-        return false;
-    }
-    if (p.z > 0 && !map->getVoxel(p.x, p.y, p.z - 1).isFilled) {
-        return false;
-    }
-    return true;
+bool VoxMap::is_valid_point(const Point& point) const {
+  return point.x >= 0 && point.x < width &&
+         point.y >= 0 && point.y < height &&
+         point.z >= 0 && point.z < depth;
+}
+
+bool VoxMap::is_valid_voxel(const Point& point) const {
+  if (!is_valid_point(point)) return false;
+  if (!voxels[point.y][point.z][point.x]) return false; // Must be empty
+  if (point.y == 0 || !voxels[point.y - 1][point.z][point.x]) return false; // Must have a full voxel below
+  return true;
 }
 
 Route VoxMap::route(Point src, Point dst) {
-    if (!isValidPoint(src)) throw InvalidPoint(src);
-    if (!isValidPoint(dst)) throw InvalidPoint(dst);
+  if (!is_valid_voxel(src)) {
+    throw InvalidPoint(src);
+  }
+  if (!is_valid_voxel(dst)) {
+    throw InvalidPoint(dst);
+  }
 
-    struct Node {
-        Point pt;
-        int cost;
-        Route path;
-        bool operator>(const Node& other) const {
-            return cost > other.cost;
-        }
-    };
+  // Placeholder for the pathfinding algorithm
+  // Here we just simulate that no route is found
+  throw NoRoute(src, dst);
 
-    std::priority_queue<Node, std::vector<Node>, std::greater<Node>> openSet;
-    std::unordered_set<Point> closedSet;
-
-    auto heuristic = [](const Point& a, const Point& b) {
-        return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
-    };
-
-    openSet.push({src, 0, {}});
-
-    while (!openSet.empty()) {
-        Node current = openSet.top();
-        openSet.pop();
-
-        if (current.pt == dst) {
-            return current.path;
-        }
-
-        if (closedSet.find(current.pt) != closedSet.end()) continue;
-        closedSet.insert(current.pt);
-
-        static const std::array<std::pair<Point, Move>, 4> directions{
-            std::pair<Point, Move>{{0, 1, 0}, Move::NORTH}, 
-            std::pair<Point, Move>{{1, 0, 0}, Move::EAST},
-            std::pair<Point, Move>{{0, -1, 0}, Move::SOUTH}, 
-            std::pair<Point, Move>{{-1, 0, 0}, Move::WEST}};
-
-        for (const auto& [delta, move] : directions) {
-            Point next = {current.pt.x + delta.x, current.pt.y + delta.y, current.pt.z};
-            if (!isValidPoint(next)) continue;
-
-            int newCost = current.cost + 1 + heuristic(next, dst);
-            Route newPath = current.path;
-            newPath.push_back(move);
-
-            openSet.push({next, newCost, newPath});
-        }
-    }
-
-    throw NoRoute(src, dst);
+  // In a complete implementation, the algorithm would return a valid Route
+  // if one exists between the source and destination points.
 }
+

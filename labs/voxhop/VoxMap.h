@@ -1,45 +1,27 @@
+
 #ifndef VOXMAP_H
 #define VOXMAP_H
 
 #include <istream>
 #include <vector>
-#include <memory>
 #include "Point.h"
 #include "Route.h"
-#include <unordered_map>
-#include <queue>
-
-struct Voxel {
-    bool isFilled;
-    bool isSurface;
-};
-
-class VoxelMap {
-public:
-    VoxelMap(int width, int depth, int height);
-    
-    Voxel& getVoxel(int x, int y, int z);
-    const Voxel& getVoxel(int x, int y, int z) const;
-    
-    bool isValid(int x, int y, int z) const;
-    void markSurface();
-
-    int width, depth, height;  // Make these public for access
-
-private:
-    std::vector<Voxel> voxels;
-};
+#include "Errors.h"
 
 class VoxMap {
+  std::vector<std::vector<std::vector<bool>>> voxels;
+  int width;
+  int height;
+  int depth;
+
+  bool is_valid_point(const Point& point) const;
+  bool is_valid_voxel(const Point& point) const;
+
 public:
-    VoxMap(std::istream& stream);
-    ~VoxMap();
+  VoxMap(std::istream& stream);
+  ~VoxMap();
 
-    Route route(Point src, Point dst);
-
-private:
-    std::unique_ptr<VoxelMap> map;
-    bool isValidPoint(const Point& p) const;
+  Route route(Point src, Point dst);
 };
 
 #endif
