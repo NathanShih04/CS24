@@ -7,7 +7,10 @@
 #include <stdexcept>
 
 VoxMap::VoxMap(std::istream& stream) {
-  stream >> width >> depth >> height;
+  if (!(stream >> width >> depth >> height)) {
+    throw std::runtime_error("Failed to read map dimensions.");
+  }
+
   map.resize(height, std::vector<std::vector<Voxel>>(depth, std::vector<Voxel>(width)));
 
   std::string line;
@@ -15,18 +18,21 @@ VoxMap::VoxMap(std::istream& stream) {
     if (!std::getline(stream, line)) {
       throw std::runtime_error("Unexpected end of file while reading map data.");
     }
+
     for (int y = 0; y < depth; ++y) {
       if (!std::getline(stream, line) || line.size() != static_cast<size_t>(width / 4)) {
-        throw std::runtime_error("Invalid map data format.");
+        throw std::runtime_error("Invalid map data format at depth " + std::to_string(y) + ", height " + std::to_string(z) + ".");
       }
+
       for (int x = 0; x < width / 4; ++x) {
         char hex_char = line[x];
         int value;
         try {
           value = std::stoi(std::string(1, hex_char), nullptr, 16);
         } catch (const std::invalid_argument& e) {
-          throw std::runtime_error("Invalid hex character in map data.");
+          throw std::runtime_error("Invalid hex character '" + std::string(1, hex_char) + "' in map data at depth " + std::to_string(y) + ", height " + std::to_string(z) + ".");
         }
+
         for (int i = 0; i < 4; ++i) {
           map[z][y][4 * x + (3 - i)].is_full = (value & (1 << i)) != 0;
           map[z][y][4 * x + (3 - i)].is_visited = false;
