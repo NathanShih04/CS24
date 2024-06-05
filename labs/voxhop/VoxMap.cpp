@@ -15,13 +15,14 @@ VoxMap::VoxMap(std::istream& stream) {
 
   std::string line;
   for (int z = 0; z < height; ++z) {
-    if (!std::getline(stream, line)) {
-      throw std::runtime_error("Unexpected end of file while reading map data.");
+    // Skip empty line
+    if (!std::getline(stream, line) || !line.empty()) {
+      throw std::runtime_error("Expected empty line before height tier " + std::to_string(z) + ".");
     }
 
     for (int y = 0; y < depth; ++y) {
       if (!std::getline(stream, line) || line.size() != static_cast<size_t>(width / 4)) {
-        throw std::runtime_error("Invalid map data format at depth " + std::to_string(y) + ", height " + std::to_string(z) + ".");
+        throw std::runtime_error("Invalid map data format at depth " + std::to_string(y) + ", height " + std::to_string(z) + ". Line size: " + std::to_string(line.size()));
       }
 
       for (int x = 0; x < width / 4; ++x) {
