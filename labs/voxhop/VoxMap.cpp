@@ -80,10 +80,10 @@ bool VoxMap::isValidPoint(const Point& p) const {
     if (map->getVoxel(p.x, p.y, p.z).isFilled) {
         return false;
     }
-    if (p.z == 0 || map->getVoxel(p.x, p.y, p.z - 1).isFilled) {
-        return true;
+    if (p.z > 0 && !map->getVoxel(p.x, p.y, p.z - 1).isFilled) {
+        return false;
     }
-    return false;
+    return true;
 }
 
 Route VoxMap::route(Point src, Point dst) {
@@ -127,12 +127,6 @@ Route VoxMap::route(Point src, Point dst) {
 
         for (const auto& [delta, move] : directions) {
             Point next = {current.pt.x + delta.x, current.pt.y + delta.y, current.pt.z};
-            if (!map->isValid(next.x, next.y, next.z) || map->getVoxel(next.x, next.y, next.z).isFilled) continue;
-
-            if (!map->isValid(next.x, next.y, next.z - 1) || map->getVoxel(next.x, next.y, next.z - 1).isFilled) {
-                next.z = next.z - 1;
-            }
-
             if (!isValidPoint(next)) continue;
 
             int newCost = current.cost + 1 + heuristic(next, dst);
