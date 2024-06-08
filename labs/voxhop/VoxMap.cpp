@@ -1,67 +1,51 @@
 #include "VoxMap.h"
 #include "Errors.h"
 #include <unordered_map>
+#include <algorithm>
+#include <cmath>
 #include <vector>
 #include <queue>
-#include <string>
 #include <thread>
 #include <future>
-#include <iostream>
-#include <sstream>
-#include <algorithm>
+#include <string>
 
-VoxMap::VoxMap(std::istream &stream)
-{
+VoxMap::VoxMap(std::istream &stream) {
     stream >> width >> depth >> height;
     map.resize(width * depth * height);
 
-    // Precompute hex value lookup table
     std::vector<int> hexTable(256, 0);
     for (char c = '0'; c <= '9'; ++c) hexTable[c] = c - '0';
     for (char c = 'A'; c <= 'F'; ++c) hexTable[c] = c - 'A' + 10;
     for (char c = 'a'; c <= 'f'; ++c) hexTable[c] = c - 'a' + 10;
 
-    // Read all input into a buffer
-    std::stringstream buffer;
-    buffer << stream.rdbuf();
-    std::string data = buffer.str();
-
-    auto processLine = [&](int z, int y, const std::string &line) {
-        const char *linePtr = line.c_str();
-        for (int x = 0; x < width / 4; ++x) {
-            int value = hexTable[static_cast<unsigned char>(linePtr[x])];
-            int baseIndex = index(x * 4, y, z);
-            map[baseIndex] = (value & 8) != 0;
-            if (x * 4 + 1 < width) map[baseIndex + 1] = (value & 4) != 0;
-            if (x * 4 + 2 < width) map[baseIndex + 2] = (value & 2) != 0;
-            if (x * 4 + 3 < width) map[baseIndex + 3] = (value & 1) != 0;
+    auto processLayer = [&](int z) {
+        for (int y = 0; y < depth; ++y) {
+            std::string line;
+            stream >> line;
+            const char *linePtr = line.c_str();
+            for (int x = 0; x < width / 4; ++x) {
+                int value = hexTable[static_cast<unsigned char>(linePtr[x])];
+                int baseIndex = index(x * 4, y, z);
+                map[baseIndex] = (value & 8) != 0;
+                if (x * 4 + 1 < width) map[baseIndex + 1] = (value & 4) != 0;
+                if (x * 4 + 2 < width) map[baseIndex + 2] = (value & 2) != 0;
+                if (x * 4 + 3 < width) map[baseIndex + 3] = (value & 1) != 0;
+            }
         }
     };
 
-    // Process each layer sequentially
-    std::vector<std::thread> threads;
-    size_t offset = 0;
+    std::vector<std::future<void>> futures;
     for (int z = 0; z < height; ++z) {
-        for (int y = 0; y < depth; ++y) {
-            std::string line = data.substr(offset, width / 4);
-            offset += (width / 4) + 1; // Move to the next line (including newline character)
-            threads.emplace_back(processLine, z, y, line);
-        }
+        futures.push_back(std::async(std::launch::async, processLayer, z));
     }
-
-    // Join all threads
-    for (auto &t : threads) {
-        if (t.joinable()) {
-            t.join();
-        }
+    for (auto &fut : futures) {
+        fut.get();
     }
 }
 
 inline int VoxMap::index(int x, int y, int z) const {
     return z * width * depth + y * width + x;
 }
-
-
 
 inline bool VoxMap::isValidPoint(const Point &point) const {
     return point.x >= 0 && point.x < width &&
@@ -116,7 +100,7 @@ Route VoxMap::route(Point src, Point dst) {
             next.x += deltas[i].x;
             next.y += deltas[i].y;
 
-            if (isValidPoint(Point(current.x, current.y, current.z + 1)) && map[index(current.x, current.y, current.z + 1)]) {
+            if (!isValidPoint(Point(next.x, next.y, next.z + 1)) || map[index(next.x, next.y, next.z + 1)]) {
                 continue;
             }
 
@@ -125,7 +109,7 @@ Route VoxMap::route(Point src, Point dst) {
             }
             next.z++;
 
-            if (isValidPoint(Point(next.x, next.y, next.z + 1)) && map[index(next.x, next.y, next.z + 1)]) {
+            if (!isValidPoint(Point(next.x, next.y, next.z + 1)) || map[index(next.x, next.y, next.z + 1)]) {
                 continue;
             }
 
