@@ -3,6 +3,7 @@
 #include <sstream>
 #include <queue>
 #include <unordered_set>
+#include <iostream>
 
 // Custom hash function for Point
 struct PointHash {
@@ -33,7 +34,13 @@ VoxMap::VoxMap(std::istream& stream) {
       std::getline(stream, line);
       for (int w = 0; w < width / 4; ++w) {
         char hex_char = line[w];
-        int value = std::stoi(std::string(1, hex_char), nullptr, 16);
+        int value;
+        try {
+          value = std::stoi(std::string(1, hex_char), nullptr, 16);
+        } catch (const std::invalid_argument& e) {
+          std::cerr << "Invalid character in map input: " << hex_char << std::endl;
+          throw;
+        }
         for (int bit = 0; bit < 4; ++bit) {
           voxels[h][d][w * 4 + bit] = (value & (1 << (3 - bit))) != 0;
         }
