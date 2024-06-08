@@ -1,22 +1,25 @@
 #include "VoxMap.h"
 #include "Errors.h"
 #include <unordered_map>
-#include <algorithm>
-#include <cmath>
 #include <vector>
 #include <queue>
+#include <string>
+#include <thread>
+#include <future>
+#include <algorithm>
 
 VoxMap::VoxMap(std::istream &stream)
 {
     stream >> width >> depth >> height;
     map.resize(width * depth * height);
 
+    // Precompute hex value lookup table
     std::vector<int> hexTable(256, 0);
     for (char c = '0'; c <= '9'; ++c) hexTable[c] = c - '0';
     for (char c = 'A'; c <= 'F'; ++c) hexTable[c] = c - 'A' + 10;
     for (char c = 'a'; c <= 'f'; ++c) hexTable[c] = c - 'a' + 10;
 
-    for (int z = 0; z < height; ++z) {
+    auto processLayer = [&](int z) {
         for (int y = 0; y < depth; ++y) {
             std::string line;
             stream >> line;
@@ -30,13 +33,22 @@ VoxMap::VoxMap(std::istream &stream)
                 if (x * 4 + 3 < width) map[baseIndex + 3] = (value & 1) != 0;
             }
         }
+    };
+
+    // Process each layer in parallel
+    std::vector<std::future<void>> futures;
+    for (int z = 0; z < height; ++z) {
+        futures.push_back(std::async(std::launch::async, processLayer, z));
+    }
+    for (auto &fut : futures) {
+        fut.get();
     }
 }
-
 
 inline int VoxMap::index(int x, int y, int z) const {
     return z * width * depth + y * width + x;
 }
+
 
 inline bool VoxMap::isValidPoint(const Point &point) const {
     return point.x >= 0 && point.x < width &&
@@ -91,24 +103,21 @@ Route VoxMap::route(Point src, Point dst) {
             next.x += deltas[i].x;
             next.y += deltas[i].y;
 
-            // Check for a block above the current position before moving horizontally
             if (isValidPoint(Point(current.x, current.y, current.z + 1)) && map[index(current.x, current.y, current.z + 1)]) {
-                continue; // Skip this direction if there is a block above the current position
+                continue;
             }
 
-            // Simulate falling down
             while (isValidPoint(next) && !map[index(next.x, next.y, next.z)]) {
                 next.z--;
             }
             next.z++;
 
-            // Check for block above the head in the next position
             if (isValidPoint(Point(next.x, next.y, next.z + 1)) && map[index(next.x, next.y, next.z + 1)]) {
-                continue; // Skip this direction if there is a block above the head in the next position
+                continue;
             }
 
             if (isNavigable(next)) {
-                double newCost = costSoFar[current] + 1; // Each move costs 1
+                double newCost = costSoFar[current] + 1;
                 if (costSoFar.find(next) == costSoFar.end() || newCost < costSoFar[next]) {
                     costSoFar[next] = newCost;
                     double priority = newCost + heuristic(next, dst);
@@ -121,4 +130,3 @@ Route VoxMap::route(Point src, Point dst) {
     }
     throw NoRoute(src, dst);
 }
-
