@@ -1,29 +1,62 @@
 #include "VoxMap.h"
 #include "Errors.h"
 #include <unordered_map>
-#include <algorithm>
-#include <cmath>
 #include <vector>
 #include <queue>
+#include <string>
+#include <sstream>
+#include <algorithm>
 
 VoxMap::VoxMap(std::istream &stream)
 {
     stream >> width >> depth >> height;
     map.resize(width * depth * height);
 
-    for (int z = 0; z < height; ++ z) {
-        std::string line;
-        for (int y = 0; y < depth; ++ y) {
-            stream >> line;
-            for (int x = 0; x < width / 4; ++ x) {
-                char hexDigit = line[x];
-                int value = (hexDigit >= '0' && hexDigit <= '9') ? hexDigit - '0' : hexDigit - 'A' + 10;
-                for (int bit = 0; bit < 4; ++ bit) {
-                    map[index(x * 4 + bit, y, z)] = (value & (8 >> bit)) != 0;
-                }
+    // Precompute hex value lookup table
+    std::vector<int> hexTable(256, 0);
+    for (char c = '0'; c <= '9'; ++c) hexTable[c] = c - '0';
+    for (char c = 'A'; c <= 'F'; ++c) hexTable[c] = c - 'A' + 10;
+    for (char c = 'a'; c <= 'f'; ++c) hexTable[c] = c - 'a' + 10;
+
+    // Read the stream into a string buffer for recursive processing
+    std::stringstream buffer;
+    buffer << stream.rdbuf();
+    std::string data = buffer.str();
+    size_t offset = 0;
+
+    // Helper lambda to recursively process each dimension
+    std::function<void(int, int, int)> processDimension;
+    processDimension = [&](int z, int y, int x4) {
+        if (z >= height) return;
+        if (y >= depth) {
+            processDimension(z + 1, 0, 0);
+            return;
+        }
+        if (x4 >= width / 4) {
+            processDimension(z, y + 1, 0);
+            return;
+        }
+
+        // Process the current hex digit and bits
+        char hexDigit = data[offset++];
+        int value = hexTable[static_cast<unsigned char>(hexDigit)];
+        for (int bit = 0; bit < 4; ++bit) {
+            int actualX = x4 * 4 + bit;
+            if (actualX < width) {
+                map[index(actualX, y, z)] = (value & (8 >> bit)) != 0;
             }
         }
-    }
+
+        // Recursively process the next position in the current dimension
+        processDimension(z, y, x4 + 1);
+    };
+
+    // Start the recursive processing
+    processDimension(0, 0, 0);
+}
+
+inline int VoxMap::index(int x, int y, int z) const {
+    return z * width * depth + y * width + x;
 }
 
 inline int VoxMap::index(int x, int y, int z) const {
