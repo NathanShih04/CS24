@@ -4,6 +4,7 @@
 #include <istream>
 #include <vector>
 #include <unordered_map>
+#include <queue>
 #include "Point.h"
 #include "Route.h"
 
@@ -11,7 +12,7 @@ class VoxMap {
     int width;
     int depth;
     int height;
-    std::vector<bool> map;
+    std::vector<uint8_t> map;
 
     bool isValidPoint(const Point& point) const;
     bool isNavigable(const Point& point) const;

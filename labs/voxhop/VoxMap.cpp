@@ -5,9 +5,7 @@
 #include <cmath>
 #include <vector>
 #include <queue>
-#include <thread>
-#include <future>
-#include <string>
+#include <limits>
 
 VoxMap::VoxMap(std::istream &stream) {
     stream >> width >> depth >> height;
@@ -18,7 +16,7 @@ VoxMap::VoxMap(std::istream &stream) {
     for (char c = 'A'; c <= 'F'; ++c) hexTable[c] = c - 'A' + 10;
     for (char c = 'a'; c <= 'f'; ++c) hexTable[c] = c - 'a' + 10;
 
-    auto processLayer = [&](int z) {
+    for (int z = 0; z < height; ++z) {
         for (int y = 0; y < depth; ++y) {
             std::string line;
             stream >> line;
@@ -32,14 +30,6 @@ VoxMap::VoxMap(std::istream &stream) {
                 if (x * 4 + 3 < width) map[baseIndex + 3] = (value & 1) != 0;
             }
         }
-    };
-
-    std::vector<std::future<void>> futures;
-    for (int z = 0; z < height; ++z) {
-        futures.push_back(std::async(std::launch::async, processLayer, z));
-    }
-    for (auto &fut : futures) {
-        fut.get();
     }
 }
 
@@ -100,21 +90,25 @@ Route VoxMap::route(Point src, Point dst) {
             next.x += deltas[i].x;
             next.y += deltas[i].y;
 
-            if (!isValidPoint(Point(next.x, next.y, next.z + 1)) || map[index(next.x, next.y, next.z + 1)]) {
-                continue;
+            // Check for a block above the current position before moving horizontally
+            if (current.z + 1 < height && map[index(current.x, current.y, current.z + 1)]) {
+                continue; // Skip this direction if there is a block above the current position
             }
 
-            while (isValidPoint(next) && !map[index(next.x, next.y, next.z)]) {
-                next.z--;
+            // Simulate falling down
+            int nextZ = next.z;
+            while (nextZ >= 0 && !map[index(next.x, next.y, nextZ)]) {
+                nextZ--;
             }
-            next.z++;
+            next.z = nextZ + 1;
 
-            if (!isValidPoint(Point(next.x, next.y, next.z + 1)) || map[index(next.x, next.y, next.z + 1)]) {
-                continue;
+            // Check for block above the head in the next position
+            if (next.z + 1 < height && map[index(next.x, next.y, next.z + 1)]) {
+                continue; // Skip this direction if there is a block above the head in the next position
             }
 
             if (isNavigable(next)) {
-                double newCost = costSoFar[current] + 1;
+                double newCost = costSoFar[current] + 1; // Each move costs 1
                 if (costSoFar.find(next) == costSoFar.end() || newCost < costSoFar[next]) {
                     costSoFar[next] = newCost;
                     double priority = newCost + heuristic(next, dst);
