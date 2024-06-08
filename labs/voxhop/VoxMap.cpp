@@ -20,7 +20,7 @@ struct PointEqual {
 
 VoxMap::VoxMap(std::istream& stream) {
   // Read the map dimensions from the input stream
-  stream >> width >> height >> depth;
+  stream >> width >> depth >> height;
 
   // Initialize the voxel map with the given dimensions
   voxels.resize(height, std::vector<std::vector<bool>>(depth, std::vector<bool>(width, false)));
@@ -28,8 +28,9 @@ VoxMap::VoxMap(std::istream& stream) {
   // Read the voxel data from the input stream
   for (int h = 0; h < height; ++h) {
     std::string line;
+    std::getline(stream, line); // Read the empty line
     for (int d = 0; d < depth; ++d) {
-      stream >> line;
+      std::getline(stream, line);
       for (int w = 0; w < width / 4; ++w) {
         char hex_char = line[w];
         int value = std::stoi(std::string(1, hex_char), nullptr, 16);
