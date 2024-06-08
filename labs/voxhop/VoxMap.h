@@ -14,7 +14,7 @@ class VoxMap {
   std::vector<std::vector<std::vector<bool>>> voxels;
 
   bool isValidPoint(const Point& point) const;
-  bool isWalkable(const Point& point) const;
+  bool isWalkable(const Point& point, bool& invalid) const;
   int heuristic(const Point& a, const Point& b) const;
 
 public:

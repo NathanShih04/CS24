@@ -33,11 +33,13 @@ bool VoxMap::isValidPoint(const Point& point) const {
     return point.x >= 0 && point.x < width && point.y >= 0 && point.y < depth && point.z >= 0 && point.z < height;
 }
 
-bool VoxMap::isWalkable(const Point& point) const {
-    if (!isValidPoint(point)) return false;
-    if (voxels[point.z][point.y][point.x]) return false; // Must be empty
+bool VoxMap::isWalkable(const Point& point, bool& invalid) const {
+    invalid = !isValidPoint(point) || voxels[point.z][point.y][point.x];
+    if (invalid) return false;
+
     if (point.z == 0) return true; // Ground level
-    return voxels[point.z - 1][point.y][point.x]; // Must have a full voxel directly below
+    invalid = !voxels[point.z - 1][point.y][point.x];
+    return !invalid;
 }
 
 int VoxMap::heuristic(const Point& a, const Point& b) const {
@@ -51,12 +53,18 @@ struct Compare {
 };
 
 Route VoxMap::route(Point src, Point dst) {
-    if (!isWalkable(src)) {
-        std::cerr << "Invalid point: (" << src.x << ", " << src.y << ", " << src.z << ")\n";
+    bool invalidSrc = false, invalidDst = false;
+
+    if (!isWalkable(src, invalidSrc)) {
+        if (invalidSrc) {
+            std::cerr << "Invalid point: (" << src.x << ", " << src.y << ", " << src.z << ")\n";
+        }
         throw InvalidPoint(src);
     }
-    if (!isWalkable(dst)) {
-        std::cerr << "Invalid point: (" << dst.x << ", " << dst.y << ", " << dst.z << ")\n";
+    if (!isWalkable(dst, invalidDst)) {
+        if (invalidDst) {
+            std::cerr << "Invalid point: (" << dst.x << ", " << dst.y << ", " << dst.z << ")\n";
+        }
         throw InvalidPoint(dst);
     }
 
@@ -95,7 +103,7 @@ Route VoxMap::route(Point src, Point dst) {
             }
             ++next.z;
 
-            if (isWalkable(next)) {
+            if (isWalkable(next, invalidSrc)) {
                 int newCost = costSoFar[current] + 1;
                 if (costSoFar.find(next) == costSoFar.end() || newCost < costSoFar[next]) {
                     costSoFar[next] = newCost;
