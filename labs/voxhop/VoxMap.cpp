@@ -70,8 +70,8 @@ Route VoxMap::route(Point src, Point dst) {
     if (!isWalkable(src)) throw InvalidPoint(src);
     if (!isWalkable(dst)) throw InvalidPoint(dst);
 
-    std::unordered_map<Point, Point, std::hash<std::string>> cameFrom;
-    std::unordered_map<Point, int, std::hash<std::string>> costSoFar;
+    std::unordered_map<Point, Point> cameFrom;
+    std::unordered_map<Point, int> costSoFar;
     std::priority_queue<std::pair<int, Point>, std::vector<std::pair<int, Point>>, std::greater<>> frontier;
 
     auto heuristic = [](const Point& a, const Point& b) {
