@@ -30,36 +30,33 @@ VoxMap::VoxMap(std::istream& stream) {
 }
 
 bool VoxMap::isValidPoint(const Point& point) const {
-    return point.x >= 0 && point.x < width && point.y >= 0 && point.y < depth && point.z > 0 && point.z < height;
+    return point.x >= 0 && point.x < width &&
+         point.y >= 0 && point.y < height &&
+         point.z >= 0 && point.z < depth;
 }
 
-bool VoxMap::isWalkable(const Point& point, bool& invalid) const {
+bool VoxMap::isWalkable(const Point& point) const {
     // Check if the point is within the map bounds
     if (!isValidPoint(point)) {
-        invalid = true;
         return false;
     }
 
     // Check if the voxel at the point is empty
     if (voxels[point.z][point.y][point.x]) {
-        invalid = true;
         return false;
     }
 
     // Check if the point is at ground level (z == 0)
     if (point.z == 0) {
-        invalid = false;
         return true;
     }
 
     // Check if there is a full voxel directly below the point
     if (!voxels[point.z - 1][point.y][point.x]) {
-        invalid = true;
         return false;
     }
 
     // If all checks passed, the point is walkable
-    invalid = false;
     return true;
 }
 
@@ -77,18 +74,12 @@ Route VoxMap::route(Point src, Point dst) {
     bool invalidSrc = false, invalidDst = false;
 
     // Validate the source point
-    if (!isWalkable(src, invalidSrc)) {
-        if (invalidSrc) {
-            std::cerr << "Invalid point: (" << src.x << ", " << src.y << ", " << src.z << ")\n";
-        }
+    if (!isWalkable(src)) {
         throw InvalidPoint(src);
     }
 
     // Validate the destination point
-    if (!isWalkable(dst, invalidDst)) {
-        if (invalidDst) {
-            std::cerr << "Invalid point: (" << dst.x << ", " << dst.y << ", " << dst.z << ")\n";
-        }
+    if (!isWalkable(dst)) {
         throw InvalidPoint(dst);
     }
 
@@ -128,7 +119,7 @@ Route VoxMap::route(Point src, Point dst) {
             ++next.z;
 
             bool invalidNext = false;
-            if (isWalkable(next, invalidNext)) {
+            if (isWalkable(next)) {
                 int newCost = costSoFar[current] + 1;
                 if (costSoFar.find(next) == costSoFar.end() || newCost < costSoFar[next]) {
                     costSoFar[next] = newCost;
