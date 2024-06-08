@@ -34,9 +34,10 @@ bool VoxMap::isValidPoint(const Point& point) const {
 }
 
 bool VoxMap::isWalkable(const Point& point) const {
-    if (!isValidPoint(point) || voxels[point.z][point.y][point.x]) return false;
-    if (point.z == 0) return true;
-    return voxels[point.z - 1][point.y][point.x];
+    if (!isValidPoint(point)) return false;
+    if (voxels[point.z][point.y][point.x]) return false; // Must be empty
+    if (point.z == 0) return true; // Ground level
+    return voxels[point.z - 1][point.y][point.x]; // Must have a full voxel directly below
 }
 
 int VoxMap::heuristic(const Point& a, const Point& b) const {
@@ -50,8 +51,14 @@ struct Compare {
 };
 
 Route VoxMap::route(Point src, Point dst) {
-    if (!isWalkable(src)) throw InvalidPoint(src);
-    if (!isWalkable(dst)) throw InvalidPoint(dst);
+    if (!isWalkable(src)) {
+        std::cerr << "Invalid point: (" << src.x << ", " << src.y << ", " << src.z << ")\n";
+        throw InvalidPoint(src);
+    }
+    if (!isWalkable(dst)) {
+        std::cerr << "Invalid point: (" << dst.x << ", " << dst.y << ", " << dst.z << ")\n";
+        throw InvalidPoint(dst);
+    }
 
     using PQElement = std::pair<int, Point>;
     std::priority_queue<PQElement, std::vector<PQElement>, Compare> frontier;
