@@ -31,33 +31,21 @@ VoxMap::VoxMap(std::istream& stream) {
 
 bool VoxMap::isValidPoint(const Point& point) const {
     return point.x >= 0 && point.x < width &&
-         point.y >= 0 && point.y < height &&
-         point.z >= 0 && point.z < depth;
+         point.y >= 0 && point.y < depth &&
+         point.z >= 0 && point.z < height;
 }
 
 bool VoxMap::isWalkable(const Point& point) const {
-    // Check if the point is within the map bounds
-    if (!isValidPoint(point)) {
-        return false;
-    }
-
-    // Check if the voxel at the point is empty
-    if (voxels[point.z][point.y][point.x]) {
-        return false;
-    }
-
-    // Check if the point is at ground level (z == 0)
-    if (point.z == 0) {
-        return true;
-    }
-
-    // Check if there is a full voxel directly below the point
-    if (!voxels[point.z - 1][point.y][point.x]) {
-        return false;
-    }
-
-    // If all checks passed, the point is walkable
-    return true;
+  if (!isValidPoint(point)){
+    return false;
+  }
+  if (!voxels[point.y][point.z][point.x]){
+    return false; // Must be empty
+  }
+  if (point.y == 0 || !voxels[point.y][point.z - 1][point.x]){
+    return false; // Must have a full voxel below
+  }
+  return true;
 }
 
 int VoxMap::heuristic(const Point& a, const Point& b) const {
