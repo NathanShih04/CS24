@@ -4,6 +4,7 @@
 #include <istream>
 #include <vector>
 #include <unordered_set>
+#include <queue>
 #include "Point.h"
 #include "Route.h"
 
@@ -11,10 +12,11 @@ class VoxMap {
     int width;
     int depth;
     int height;
-    std::vector<std::vector<std::vector<bool>>> map;
+    std::vector<bool> map;
 
     bool isValidPoint(const Point& point) const;
     bool isNavigable(const Point& point) const;
+    int index(int x, int y, int z) const;
 
 public:
     VoxMap(std::istream& stream);
