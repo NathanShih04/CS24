@@ -1,152 +1,98 @@
 #include "VoxMap.h"
 #include "Errors.h"
-#include <stdexcept>
+#include <bitset>
 #include <sstream>
-#include <queue>
-#include <unordered_set>
-#include <iostream>
-#include <cctype>
-
-// Custom hash function for Point
-struct PointHash {
-    std::size_t operator()(const Point& p) const {
-        return std::hash<int>()(p.x) ^ (std::hash<int>()(p.y) << 1) ^ (std::hash<int>()(p.z) << 2);
-    }
-};
-
-// Custom equality function for Point
-struct PointEqual {
-    bool operator()(const Point& lhs, const Point& rhs) const {
-        return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z;
-    }
-};
+#include <algorithm>
 
 VoxMap::VoxMap(std::istream& stream) {
-    // Read the map dimensions from the input stream
     stream >> width >> depth >> height;
-    stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore the rest of the line
+    voxels.resize(height, std::vector<std::vector<bool>>(depth, std::vector<bool>(width, false)));
 
-    // Initialize the voxel map with the given dimensions
-    voxels.resize(height, std::vector<std::vector<Voxel>>(depth, std::vector<Voxel>(width, {false, false})));
-
-    // Read the voxel data from the input stream
+    std::string line;
     for (int h = 0; h < height; ++h) {
-        std::string line;
-        std::getline(stream, line); // Read the empty line
-        if (!line.empty()) {
-            throw std::invalid_argument("Expected an empty line between tiers");
-        }
+        std::getline(stream, line);  // Skip empty line
         for (int d = 0; d < depth; ++d) {
             std::getline(stream, line);
-            if (line.size() < static_cast<std::string::size_type>(width / 4)) {
-                throw std::invalid_argument("Map line length is less than expected");
-            }
-            for (int w = 0; w < width / 4; ++w) {
-                char hex_char = line[w];
-                if (!isxdigit(hex_char)) {
-                    std::cerr << "Invalid character in map input: " << hex_char << std::endl;
-                    throw std::invalid_argument("Invalid character in map input");
+            std::stringstream ss(line);
+            char hexChar;
+            int w = 0;
+            while (ss >> hexChar) {
+                std::bitset<4> bits(std::stoi(std::string(1, hexChar), nullptr, 16));
+                for (int i = 0; i < 4; ++i) {
+                    voxels[h][d][w * 4 + i] = bits[3 - i];
                 }
-                int value = std::stoi(std::string(1, hex_char), nullptr, 16);
-                for (int bit = 0; bit < 4; ++bit) {
-                    voxels[h][d][w * 4 + bit].isFilled = (value & (1 << (3 - bit))) != 0;
-                }
-            }
-        }
-    }
-
-    // Mark surface voxels
-    for (int h = 0; h < height - 1; ++h) {
-        for (int d = 0; d < depth; ++d) {
-            for (int w = 0; w < width; ++w) {
-                if (voxels[h][d][w].isFilled && !voxels[h + 1][d][w].isFilled) {
-                    voxels[h][d][w].isSurface = true;
-                }
+                ++w;
             }
         }
     }
 }
 
-VoxMap::~VoxMap() {
-    // Destructor
+bool VoxMap::isValidPoint(const Point& point) const {
+    return point.x >= 0 && point.x < width && point.y >= 0 && point.y < depth && point.z >= 0 && point.z < height;
 }
 
-bool VoxMap::is_valid_point(const Point& point) const {
-    return point.x >= 0 && point.x < width &&
-           point.y >= 0 && point.y < depth &&
-           point.z >= 0 && point.z < height;
+bool VoxMap::isWalkable(const Point& point) const {
+    if (!isValidPoint(point) || voxels[point.z][point.y][point.x]) return false;
+    if (point.z == 0) return true;
+    return voxels[point.z - 1][point.y][point.x];
 }
 
-bool VoxMap::is_valid_voxel(const Point& point) const {
-    if (!is_valid_point(point)) return false;
-    if (voxels[point.z][point.y][point.x].isFilled) return false; // Must be empty
-    if (point.z == 0 || voxels[point.z - 1][point.y][point.x].isFilled) return true; // Must have a full voxel below
-    return false;
+int VoxMap::heuristic(const Point& a, const Point& b) const {
+    return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
 }
 
 Route VoxMap::route(Point src, Point dst) {
-    if (!is_valid_voxel(src)) {
-        throw InvalidPoint(src);
-    }
-    if (!is_valid_voxel(dst)) {
-        throw InvalidPoint(dst);
-    }
+    if (!isWalkable(src)) throw InvalidPoint(src);
+    if (!isWalkable(dst)) throw InvalidPoint(dst);
 
-    struct Node {
-        Point pt;
-        int cost;
-        Route path;
-        bool operator>(const Node& other) const {
-            return cost > other.cost;
-        }
+    using PQElement = std::pair<int, Point>;
+    std::priority_queue<PQElement, std::vector<PQElement>, std::greater<PQElement>> frontier;
+    std::unordered_map<int, int> costSoFar;
+    std::unordered_map<int, std::pair<int, Move>> cameFrom;
+
+    auto hash = [this](const Point& p) { return p.z * width * depth + p.y * width + p.x; };
+
+    frontier.push({0, src});
+    costSoFar[hash(src)] = 0;
+    cameFrom[hash(src)] = {hash(src), Move::NORTH};  // Dummy initial value
+
+    const std::vector<std::pair<Point, Move>> directions = {
+        {{0, -1, 0}, Move::NORTH}, {{1, 0, 0}, Move::EAST}, {{0, 1, 0}, Move::SOUTH}, {{-1, 0, 0}, Move::WEST}
     };
 
-    std::priority_queue<Node, std::vector<Node>, std::greater<Node>> openSet;
-    std::unordered_set<Point, PointHash, PointEqual> closedSet;
+    while (!frontier.empty()) {
+        Point current = frontier.top().second;
+        frontier.pop();
 
-    auto heuristic = [](const Point& a, const Point& b) {
-        return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
-    };
-
-    openSet.push({src, 0, {}});
-
-    while (!openSet.empty()) {
-        Node current = openSet.top();
-        openSet.pop();
-
-        if (current.pt == dst) {
-            return current.path;
-        }
-
-        if (closedSet.find(current.pt) != closedSet.end()) continue;
-        closedSet.insert(current.pt);
-
-        static const std::array<std::pair<Point, Move>, 4> directions{
-            std::pair<Point, Move>{{0, 1, 0}, Move::NORTH}, 
-            std::pair<Point, Move>{{1, 0, 0}, Move::EAST},
-            std::pair<Point, Move>{{0, -1, 0}, Move::SOUTH}, 
-            std::pair<Point, Move>{{-1, 0, 0}, Move::WEST}};
-
-        for (const auto& [delta, move] : directions) {
-            Point next = {current.pt.x + delta.x, current.pt.y + delta.y, current.pt.z};
-
-            // Check if the next point is within bounds
-            if (!is_valid_point(next)) continue;
-
-            // If the next point is empty, simulate falling
-            if (!voxels[next.z][next.y][next.x].isFilled) {
-                while (next.z > 0 && !voxels[next.z - 1][next.y][next.x].isFilled) {
-                    next.z--;
-                }
-                // If it falls out of the map or onto an invalid voxel, continue
-                if (!is_valid_voxel(next)) continue;
+        if (current.x == dst.x && current.y == dst.y && current.z == dst.z) {
+            Route route;
+            int currentHash = hash(current);
+            while (cameFrom.find(currentHash) != cameFrom.end() && currentHash != hash(src)) {
+                auto [prevHash, move] = cameFrom[currentHash];
+                route.push_back(move);
+                currentHash = prevHash;
             }
+            std::reverse(route.begin(), route.end());
+            return route;
+        }
 
-            int newCost = current.cost + 1 + heuristic(next, dst);
-            Route newPath = current.path;
-            newPath.push_back(move);
+        for (const auto& [dir, move] : directions) {
+            Point next(current.x + dir.x, current.y + dir.y, current.z);
+            while (isValidPoint(next) && !voxels[next.z][next.y][next.x]) {
+                --next.z;
+            }
+            ++next.z;
 
-            openSet.push({next, newCost, newPath});
+            if (isWalkable(next)) {
+                int nextHash = hash(next);
+                int newCost = costSoFar[hash(current)] + 1;
+                if (costSoFar.find(nextHash) == costSoFar.end() || newCost < costSoFar[nextHash]) {
+                    costSoFar[nextHash] = newCost;
+                    int priority = newCost + heuristic(next, dst);
+                    frontier.push({priority, next});
+                    cameFrom[nextHash] = {hash(current), move};
+                }
+            }
         }
     }
 

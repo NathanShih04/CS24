@@ -3,28 +3,25 @@
 
 #include <istream>
 #include <vector>
+#include <queue>
+#include <unordered_map>
+#include <unordered_set>
 #include "Point.h"
 #include "Route.h"
 
-struct Voxel {
-    bool isFilled;
-    bool isSurface;
-};
-
 class VoxMap {
-    std::vector<std::vector<std::vector<Voxel>>> voxels;
-    int width;
-    int depth;
-    int height;
+  int width, depth, height;
+  std::vector<std::vector<std::vector<bool>>> voxels;
 
-    bool is_valid_point(const Point& point) const;
-    bool is_valid_voxel(const Point& point) const;
+  bool isValidPoint(const Point& point) const;
+  bool isWalkable(const Point& point) const;
+  int heuristic(const Point& a, const Point& b) const;
 
 public:
-    VoxMap(std::istream& stream);
-    ~VoxMap();
+  VoxMap(std::istream& stream);
+  ~VoxMap() = default;
 
-    Route route(Point src, Point dst);
+  Route route(Point src, Point dst);
 };
 
 #endif

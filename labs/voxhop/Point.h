@@ -15,9 +15,4 @@ struct Point {
 std::istream& operator >> (std::istream& stream, Point& point);
 std::ostream& operator << (std::ostream& stream, const Point& point);
 
-bool operator == (const Point & lhs, const Point& rhs);
-bool operator != (const Point & lhs, const Point& rhs);
-
-
-
 #endif
