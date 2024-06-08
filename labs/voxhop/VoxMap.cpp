@@ -47,8 +47,8 @@ VoxMap::~VoxMap() {
 
 bool VoxMap::is_valid_point(const Point& point) const {
   return point.x >= 0 && point.x < width &&
-         point.y >= 0 && point.y < height &&
-         point.z >= 0 && point.z < depth;
+         point.y >= 0 && point.y < depth &&
+         point.z >= 0 && point.z < height;
 }
 
 bool VoxMap::is_valid_voxel(const Point& point) const {
