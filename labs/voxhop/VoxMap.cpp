@@ -90,6 +90,10 @@ Route VoxMap::route(Point src, Point dst) {
             next.x += deltas[i].x;
             next.y += deltas[i].y;
 
+            // Check if next position is within bounds
+            if (!isValidPoint(next))
+                continue;
+
             // Check for a block above the current position before moving horizontally
             if (current.z + 1 < height && map[index(current.x, current.y, current.z + 1)]) {
                 continue; // Skip this direction if there is a block above the current position
@@ -103,7 +107,7 @@ Route VoxMap::route(Point src, Point dst) {
             next.z = nextZ + 1;
 
             // Check for block above the head in the next position
-            if (next.z + 1 < height && map[index(next.x, next.y, next.z + 1)]) {
+            if (next.z < height - 1 && map[index(next.x, next.y, next.z + 1)]) {
                 continue; // Skip this direction if there is a block above the head in the next position
             }
 
