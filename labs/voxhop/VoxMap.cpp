@@ -30,7 +30,7 @@ VoxMap::VoxMap(std::istream& stream) {
 }
 
 bool VoxMap::isValidPoint(const Point& point) const {
-    return point.x >= 0 && point.x < width && point.y >= 0 && point.y < depth && point.z >= 0 && point.z < height;
+    return point.x >= 0 && point.x < width && point.y >= 0 && point.y < depth && point.z > 0 && point.z < height;
 }
 
 bool VoxMap::isWalkable(const Point& point, bool& invalid) const {
