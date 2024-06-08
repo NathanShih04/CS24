@@ -19,7 +19,9 @@ VoxMap::VoxMap(std::istream& stream) {
             while (ss >> hexChar) {
                 std::bitset<4> bits(std::stoi(std::string(1, hexChar), nullptr, 16));
                 for (int i = 0; i < 4; ++i) {
-                    voxels[h][d][w * 4 + i] = bits[3 - i];
+                    if (w * 4 + i < width) {
+                        voxels[h][d][w * 4 + i] = bits[3 - i];
+                    }
                 }
                 ++w;
             }
@@ -41,20 +43,24 @@ int VoxMap::heuristic(const Point& a, const Point& b) const {
     return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
 }
 
+struct Compare {
+    bool operator()(const std::pair<int, Point>& a, const std::pair<int, Point>& b) const {
+        return a.first > b.first;
+    }
+};
+
 Route VoxMap::route(Point src, Point dst) {
     if (!isWalkable(src)) throw InvalidPoint(src);
     if (!isWalkable(dst)) throw InvalidPoint(dst);
 
     using PQElement = std::pair<int, Point>;
-    std::priority_queue<PQElement, std::vector<PQElement>, std::greater<PQElement>> frontier;
-    std::unordered_map<int, int> costSoFar;
-    std::unordered_map<int, std::pair<int, Move>> cameFrom;
-
-    auto hash = [this](const Point& p) { return p.z * width * depth + p.y * width + p.x; };
+    std::priority_queue<PQElement, std::vector<PQElement>, Compare> frontier;
+    std::unordered_map<Point, int> costSoFar;
+    std::unordered_map<Point, std::pair<Point, Move>> cameFrom;
 
     frontier.push({0, src});
-    costSoFar[hash(src)] = 0;
-    cameFrom[hash(src)] = {hash(src), Move::NORTH};  // Dummy initial value
+    costSoFar[src] = 0;
+    cameFrom[src] = {src, Move::NORTH};  // Dummy initial value
 
     const std::vector<std::pair<Point, Move>> directions = {
         {{0, -1, 0}, Move::NORTH}, {{1, 0, 0}, Move::EAST}, {{0, 1, 0}, Move::SOUTH}, {{-1, 0, 0}, Move::WEST}
@@ -64,13 +70,12 @@ Route VoxMap::route(Point src, Point dst) {
         Point current = frontier.top().second;
         frontier.pop();
 
-        if (current.x == dst.x && current.y == dst.y && current.z == dst.z) {
+        if (current == dst) {
             Route route;
-            int currentHash = hash(current);
-            while (cameFrom.find(currentHash) != cameFrom.end() && currentHash != hash(src)) {
-                auto [prevHash, move] = cameFrom[currentHash];
-                route.push_back(move);
-                currentHash = prevHash;
+            Point currentPoint = current;
+            while (cameFrom[currentPoint].first != currentPoint) {
+                route.push_back(cameFrom[currentPoint].second);
+                currentPoint = cameFrom[currentPoint].first;
             }
             std::reverse(route.begin(), route.end());
             return route;
@@ -84,13 +89,12 @@ Route VoxMap::route(Point src, Point dst) {
             ++next.z;
 
             if (isWalkable(next)) {
-                int nextHash = hash(next);
-                int newCost = costSoFar[hash(current)] + 1;
-                if (costSoFar.find(nextHash) == costSoFar.end() || newCost < costSoFar[nextHash]) {
-                    costSoFar[nextHash] = newCost;
+                int newCost = costSoFar[current] + 1;
+                if (costSoFar.find(next) == costSoFar.end() || newCost < costSoFar[next]) {
+                    costSoFar[next] = newCost;
                     int priority = newCost + heuristic(next, dst);
                     frontier.push({priority, next});
-                    cameFrom[nextHash] = {hash(current), move};
+                    cameFrom[next] = {current, move};
                 }
             }
         }
