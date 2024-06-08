@@ -6,6 +6,8 @@
 #include <string>
 #include <thread>
 #include <future>
+#include <iostream>
+#include <sstream>
 #include <algorithm>
 
 VoxMap::VoxMap(std::istream &stream)
@@ -19,35 +21,46 @@ VoxMap::VoxMap(std::istream &stream)
     for (char c = 'A'; c <= 'F'; ++c) hexTable[c] = c - 'A' + 10;
     for (char c = 'a'; c <= 'f'; ++c) hexTable[c] = c - 'a' + 10;
 
-    auto processLayer = [&](int z) {
-        for (int y = 0; y < depth; ++y) {
-            std::string line;
-            stream >> line;
-            const char *linePtr = line.c_str();
-            for (int x = 0; x < width / 4; ++x) {
-                int value = hexTable[static_cast<unsigned char>(linePtr[x])];
-                int baseIndex = index(x * 4, y, z);
-                map[baseIndex] = (value & 8) != 0;
-                if (x * 4 + 1 < width) map[baseIndex + 1] = (value & 4) != 0;
-                if (x * 4 + 2 < width) map[baseIndex + 2] = (value & 2) != 0;
-                if (x * 4 + 3 < width) map[baseIndex + 3] = (value & 1) != 0;
-            }
+    // Read all input into a buffer
+    std::stringstream buffer;
+    buffer << stream.rdbuf();
+    std::string data = buffer.str();
+
+    auto processLine = [&](int z, int y, const std::string &line) {
+        const char *linePtr = line.c_str();
+        for (int x = 0; x < width / 4; ++x) {
+            int value = hexTable[static_cast<unsigned char>(linePtr[x])];
+            int baseIndex = index(x * 4, y, z);
+            map[baseIndex] = (value & 8) != 0;
+            if (x * 4 + 1 < width) map[baseIndex + 1] = (value & 4) != 0;
+            if (x * 4 + 2 < width) map[baseIndex + 2] = (value & 2) != 0;
+            if (x * 4 + 3 < width) map[baseIndex + 3] = (value & 1) != 0;
         }
     };
 
-    // Process each layer in parallel
-    std::vector<std::future<void>> futures;
+    // Process each layer sequentially
+    std::vector<std::thread> threads;
+    size_t offset = 0;
     for (int z = 0; z < height; ++z) {
-        futures.push_back(std::async(std::launch::async, processLayer, z));
+        for (int y = 0; y < depth; ++y) {
+            std::string line = data.substr(offset, width / 4);
+            offset += (width / 4) + 1; // Move to the next line (including newline character)
+            threads.emplace_back(processLine, z, y, line);
+        }
     }
-    for (auto &fut : futures) {
-        fut.get();
+
+    // Join all threads
+    for (auto &t : threads) {
+        if (t.joinable()) {
+            t.join();
+        }
     }
 }
 
 inline int VoxMap::index(int x, int y, int z) const {
     return z * width * depth + y * width + x;
 }
+
 
 
 inline bool VoxMap::isValidPoint(const Point &point) const {
