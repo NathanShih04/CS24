@@ -4,6 +4,7 @@
 #include <queue>
 #include <unordered_set>
 #include <iostream>
+#include <cctype>
 
 // Custom hash function for Point
 struct PointHash {
@@ -22,6 +23,7 @@ struct PointEqual {
 VoxMap::VoxMap(std::istream& stream) {
   // Read the map dimensions from the input stream
   stream >> width >> depth >> height;
+  stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore the rest of the line
 
   // Initialize the voxel map with the given dimensions
   voxels.resize(height, std::vector<std::vector<bool>>(depth, std::vector<bool>(width, false)));
@@ -30,6 +32,9 @@ VoxMap::VoxMap(std::istream& stream) {
   for (int h = 0; h < height; ++h) {
     std::string line;
     std::getline(stream, line); // Read the empty line
+    if (line != "") {
+      throw std::invalid_argument("Expected an empty line between tiers");
+    }
     for (int d = 0; d < depth; ++d) {
       std::getline(stream, line);
       if (line.size() < static_cast<std::string::size_type>(width / 4)) {
