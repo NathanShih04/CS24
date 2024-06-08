@@ -32,15 +32,16 @@ VoxMap::VoxMap(std::istream& stream) {
     std::getline(stream, line); // Read the empty line
     for (int d = 0; d < depth; ++d) {
       std::getline(stream, line);
+      if (line.size() < width / 4) {
+        throw std::invalid_argument("Map line length is less than expected");
+      }
       for (int w = 0; w < width / 4; ++w) {
         char hex_char = line[w];
-        int value;
-        try {
-          value = std::stoi(std::string(1, hex_char), nullptr, 16);
-        } catch (const std::invalid_argument& e) {
+        if (!isxdigit(hex_char)) {
           std::cerr << "Invalid character in map input: " << hex_char << std::endl;
-          throw;
+          throw std::invalid_argument("Invalid character in map input");
         }
+        int value = std::stoi(std::string(1, hex_char), nullptr, 16);
         for (int bit = 0; bit < 4; ++bit) {
           voxels[h][d][w * 4 + bit] = (value & (1 << (3 - bit))) != 0;
         }
