@@ -32,7 +32,7 @@ VoxMap::VoxMap(std::istream& stream) {
     std::getline(stream, line); // Read the empty line
     for (int d = 0; d < depth; ++d) {
       std::getline(stream, line);
-      if (line.size() < width / 4) {
+      if (line.size() < static_cast<std::string::size_type>(width / 4)) {
         throw std::invalid_argument("Map line length is less than expected");
       }
       for (int w = 0; w < width / 4; ++w) {
