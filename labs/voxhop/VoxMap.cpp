@@ -36,7 +36,8 @@ bool VoxMap::isNavigable(const Point& point) const {
 }
 
 bool VoxMap::canJump(const Point& current, const Point& next) const {
-    return next.z < height && !map[next.z][next.y][next.x];
+    // Check if the space directly above the next point is empty
+    return isValidPoint({current.x, current.y, current.z + 1}) && !map[current.z + 1][current.y][current.x];
 }
 
 Route VoxMap::route(Point src, Point dst) {
@@ -73,7 +74,13 @@ Route VoxMap::route(Point src, Point dst) {
             next.x += deltas[i].x;
             next.y += deltas[i].y;
 
-            if (isValidPoint(next) && canJump(current, next) && isNavigable(next)) {
+            if (isValidPoint(next)) {
+                // Move up if the space above is empty and canJump is satisfied
+                if (isValidPoint({next.x, next.y, next.z + 1}) && canJump(current, next)) {
+                    next.z++;
+                }
+                
+                // Move down until hitting a solid voxel
                 while (isValidPoint(next) && !map[next.z][next.y][next.x]) {
                     next.z--;
                 }
