@@ -65,7 +65,7 @@ Route VoxMap::route(Point src, Point dst) {
     }
 
     std::unordered_set<Point, PointHash> closedSet;
-    std::priority_queue<std::pair<int, Point>, std::vector<std::pair<int, Point>>, std::greater<>> openSet;
+    std::priority_queue<std::pair<int, Point>, std::vector<std::pair<int, Point>>, ComparePoints> openSet;
     std::unordered_map<Point, Point, PointHash> cameFrom;
     std::unordered_map<Point, int, PointHash> gScore, fScore;
 

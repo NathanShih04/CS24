@@ -26,4 +26,11 @@ public:
     Route route(Point src, Point dst);
 };
 
+// Custom comparator for priority queue
+struct ComparePoints {
+    bool operator()(const std::pair<int, Point>& p1, const std::pair<int, Point>& p2) {
+        return p1.first > p2.first; // Compare based on f-score
+    }
+};
+
 #endif
