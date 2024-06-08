@@ -71,7 +71,6 @@ struct Compare {
 };
 
 Route VoxMap::route(Point src, Point dst) {
-    bool invalidSrc = false, invalidDst = false;
 
     // Validate the source point
     if (!isWalkable(src)) {
@@ -118,7 +117,6 @@ Route VoxMap::route(Point src, Point dst) {
             }
             ++next.z;
 
-            bool invalidNext = false;
             if (isWalkable(next)) {
                 int newCost = costSoFar[current] + 1;
                 if (costSoFar.find(next) == costSoFar.end() || newCost < costSoFar[next]) {
