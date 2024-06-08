@@ -3,19 +3,20 @@
 
 #include <istream>
 #include <vector>
-#include <unordered_set>
+#include <unordered_map>
+#include <queue>
+#include <string>
 #include "Point.h"
 #include "Route.h"
 
 class VoxMap {
-    int width;
-    int depth;
-    int height;
-    std::vector<std::vector<std::vector<bool>>> map;
+private:
+    int width, depth, height;
+    std::vector<std::vector<std::vector<bool>>> voxels;
 
-    bool isValidPoint(const Point& point) const;
-    bool isNavigable(const Point& point) const;
-    bool canJump(const Point& current, const Point& next) const;
+    bool isValid(const Point& point) const;
+    bool isWalkable(const Point& point) const;
+    std::vector<Point> getNeighbors(const Point& point) const;
 
 public:
     VoxMap(std::istream& stream);

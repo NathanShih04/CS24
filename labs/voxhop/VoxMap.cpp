@@ -1,99 +1,118 @@
 #include "VoxMap.h"
 #include "Errors.h"
-#include <queue>
-#include <unordered_map>
-#include <unordered_set>
+#include <sstream>
+#include <bitset>
 #include <algorithm>
 
 VoxMap::VoxMap(std::istream& stream) {
     stream >> width >> depth >> height;
-    map.resize(height, std::vector<std::vector<bool>>(depth, std::vector<bool>(width)));
+    voxels.resize(height, std::vector<std::vector<bool>>(depth, std::vector<bool>(width)));
 
-    for (int z = 0; z < height; ++z) {
-        std::string line;
-        for (int y = 0; y < depth; ++y) {
-            stream >> line;
-            for (int x = 0; x < width / 4; ++x) {
-                char hexDigit = line[x];
-                int value = (hexDigit >= '0' && hexDigit <= '9') ? hexDigit - '0' : hexDigit - 'A' + 10;
-                for (int bit = 0; bit < 4; ++bit) {
-                    map[z][y][x * 4 + bit] = (value & (8 >> bit)) != 0;
+    std::string line;
+    for (int h = 0; h < height; ++h) {
+        std::getline(stream, line); // skip empty line
+        for (int d = 0; d < depth; ++d) {
+            std::getline(stream, line);
+            for (size_t w = 0; w < line.size(); ++w) {
+                std::bitset<4> bits(std::stoi(std::string(1, line[w]), nullptr, 16));
+                for (int b = 0; b < 4; ++b) {
+                    voxels[h][d][w * 4 + b] = bits[3 - b];
                 }
             }
         }
     }
 }
 
-bool VoxMap::isValidPoint(const Point& point) const {
+bool VoxMap::isValid(const Point& point) const {
     return point.x >= 0 && point.x < width &&
            point.y >= 0 && point.y < depth &&
            point.z >= 0 && point.z < height;
 }
 
-bool VoxMap::isNavigable(const Point& point) const {
-    return isValidPoint(point) && !map[point.z][point.y][point.x] && 
-           (point.z > 0 && map[point.z - 1][point.y][point.x]);
+bool VoxMap::isWalkable(const Point& point) const {
+    if (!isValid(point) || voxels[point.z][point.y][point.x])
+        return false;
+
+    if (point.z == 0 || voxels[point.z - 1][point.y][point.x])
+        return true;
+
+    return false;
 }
 
-bool VoxMap::canJump(const Point& current, const Point& next) const {
-    // Check if the space directly above the next point is empty
-    return isValidPoint({current.x, current.y, current.z + 1}) && !map[current.z + 1][current.y][current.x];
+std::vector<Point> VoxMap::getNeighbors(const Point& point) const {
+    static const std::vector<std::pair<int, int>> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+    std::vector<Point> neighbors;
+
+    for (const auto& [dx, dy] : directions) {
+        Point neighbor(point.x + dx, point.y + dy, point.z);
+
+        if (isValid(neighbor) && isWalkable(neighbor)) {
+            while (neighbor.z > 0 && !voxels[neighbor.z - 1][neighbor.y][neighbor.x]) {
+                neighbor.z--;
+            }
+            if (isWalkable(neighbor)) {
+                neighbors.push_back(neighbor);
+            }
+        }
+        
+        if (neighbor.z < height - 1 && !voxels[neighbor.z + 1][neighbor.y][neighbor.x]) {
+            neighbor.z++;
+            if (isWalkable(neighbor)) {
+                neighbors.push_back(neighbor);
+            }
+        }
+    }
+
+    return neighbors;
 }
 
 Route VoxMap::route(Point src, Point dst) {
-    if (!isNavigable(src)) throw InvalidPoint(src);
-    if (!isNavigable(dst)) throw InvalidPoint(dst);
+    if (!isWalkable(src)) throw InvalidPoint(src);
+    if (!isWalkable(dst)) throw InvalidPoint(dst);
 
-    std::queue<Point> toExplore;
-    std::unordered_map<Point, Point, PointHash> cameFrom;
-    std::unordered_map<Point, Move, PointHash> moveMap;
-    std::unordered_set<Point, PointHash> visited;
+    std::unordered_map<Point, Point, std::hash<std::string>> cameFrom;
+    std::unordered_map<Point, int, std::hash<std::string>> costSoFar;
+    std::priority_queue<std::pair<int, Point>, std::vector<std::pair<int, Point>>, std::greater<>> frontier;
 
-    toExplore.push(src);
-    visited.insert(src);
+    auto heuristic = [](const Point& a, const Point& b) {
+        return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
+    };
 
-    std::vector<Move> directions = {Move::NORTH, Move::EAST, Move::SOUTH, Move::WEST};
-    std::vector<Point> deltas = {Point(0, -1, 0), Point(1, 0, 0), Point(0, 1, 0), Point(-1, 0, 0)};
+    frontier.push({0, src});
+    cameFrom[src] = src;
+    costSoFar[src] = 0;
 
-    while (!toExplore.empty()) {
-        Point current = toExplore.front();
-        toExplore.pop();
+    while (!frontier.empty()) {
+        Point current = frontier.top().second;
+        frontier.pop();
 
         if (current == dst) {
             Route route;
-            while (current != src) {
-                route.push_back(moveMap[current]);
-                current = cameFrom[current];
+            Point trace = dst;
+
+            while (trace != src) {
+                Point parent = cameFrom[trace];
+                if (trace.x == parent.x + 1) route.push_back(Move::EAST);
+                else if (trace.x == parent.x - 1) route.push_back(Move::WEST);
+                else if (trace.y == parent.y + 1) route.push_back(Move::SOUTH);
+                else if (trace.y == parent.y - 1) route.push_back(Move::NORTH);
+                trace = parent;
             }
+
             std::reverse(route.begin(), route.end());
             return route;
         }
 
-        for (size_t i = 0; i < directions.size(); ++i) {
-            Point next = current;
-            next.x += deltas[i].x;
-            next.y += deltas[i].y;
-
-            if (isValidPoint(next)) {
-                // Move up if the space above is empty and canJump is satisfied
-                if (isValidPoint({next.x, next.y, next.z + 1}) && canJump(current, next)) {
-                    next.z++;
-                }
-                
-                // Move down until hitting a solid voxel
-                while (isValidPoint(next) && !map[next.z][next.y][next.x]) {
-                    next.z--;
-                }
-                next.z++;
-
-                if (isNavigable(next) && visited.find(next) == visited.end()) {
-                    toExplore.push(next);
-                    visited.insert(next);
-                    cameFrom[next] = current;
-                    moveMap[next] = directions[i];
-                }
+        for (const Point& next : getNeighbors(current)) {
+            int newCost = costSoFar[current] + 1;
+            if (costSoFar.find(next) == costSoFar.end() || newCost < costSoFar[next]) {
+                costSoFar[next] = newCost;
+                int priority = newCost + heuristic(next, dst);
+                frontier.push({priority, next});
+                cameFrom[next] = current;
             }
         }
     }
+
     throw NoRoute(src, dst);
 }
