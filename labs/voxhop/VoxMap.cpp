@@ -1,117 +1,86 @@
 #include "VoxMap.h"
 #include "Errors.h"
+#include <queue>
 #include <unordered_map>
 #include <unordered_set>
-#include <queue>
-#include <cmath>
 #include <algorithm>
 
 VoxMap::VoxMap(std::istream& stream) {
     stream >> width >> depth >> height;
-    map.resize(height, std::vector<std::vector<bool>>(depth, std::vector<bool>(width, false)));
+    map.resize(height, std::vector<std::vector<bool>>(depth, std::vector<bool>(width)));
 
-    for (int h = 0; h < height; ++h) {
+    for (int z = 0; z < height; ++z) {
         std::string line;
-        for (int d = 0; d < depth; ++d) {
+        for (int y = 0; y < depth; ++y) {
             stream >> line;
-            for (int w = 0; w < width / 4; ++w) {
-                char hexChar = line[w];
-                int hexVal = (hexChar >= '0' && hexChar <= '9') ? hexChar - '0' : hexChar - 'a' + 10;
-                for (int b = 0; b < 4; ++b) {
-                    map[h][d][4 * w + b] = (hexVal & (1 << (3 - b))) != 0;
+            for (int x = 0; x < width / 4; ++x) {
+                char hexDigit = line[x];
+                int value = (hexDigit >= '0' && hexDigit <= '9') ? hexDigit - '0' : hexDigit - 'A' + 10;
+                for (int bit = 0; bit < 4; ++bit) {
+                    map[z][y][x * 4 + bit] = (value & (8 >> bit)) != 0;
                 }
             }
         }
     }
 }
 
-VoxMap::~VoxMap() {
-}
-
 bool VoxMap::isValidPoint(const Point& point) const {
-    if (point.x < 0 || point.x >= width || point.y < 0 || point.y >= depth || point.z < 0 || point.z >= height) {
-        return false;
-    }
-    return !map[point.z][point.y][point.x] && point.z > 0 && map[point.z - 1][point.y][point.x];
+    return point.x >= 0 && point.x < width &&
+           point.y >= 0 && point.y < depth &&
+           point.z >= 0 && point.z < height;
 }
 
-bool VoxMap::isWalkable(const Point& point) const {
-    return isValidPoint(point) && point.z >= 0 && (!map[point.z + 1][point.y][point.x]);
-}
-
-std::vector<Point> VoxMap::getNeighbors(const Point& point) const {
-    std::vector<Point> neighbors;
-    static const std::vector<Point> directions{{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}};
-    
-    for (const auto& dir : directions) {
-        Point newPoint = {point.x + dir.x, point.y + dir.y, point.z};
-        if (isValidPoint(newPoint)) {
-            neighbors.push_back(newPoint);
-        }
-    }
-    
-    return neighbors;
+bool VoxMap::isNavigable(const Point& point) const {
+    return isValidPoint(point) && !map[point.z][point.y][point.x] && 
+           (point.z > 0 && map[point.z - 1][point.y][point.x]);
 }
 
 Route VoxMap::route(Point src, Point dst) {
-    if (!isValidPoint(src)) {
-        throw InvalidPoint(src);
-    }
-    if (!isValidPoint(dst)) {
-        throw InvalidPoint(dst);
-    }
-    if (src == dst) {
-        return Route();
-    }
+    if (!isNavigable(src)) throw InvalidPoint(src);
+    if (!isNavigable(dst)) throw InvalidPoint(dst);
 
-    std::unordered_set<Point, PointHash> closedSet;
-    std::priority_queue<std::pair<int, Point>, std::vector<std::pair<int, Point>>, ComparePoints> openSet;
+    std::queue<Point> toExplore;
     std::unordered_map<Point, Point, PointHash> cameFrom;
-    std::unordered_map<Point, int, PointHash> gScore, fScore;
+    std::unordered_map<Point, Move, PointHash> moveMap;
+    std::unordered_set<Point, PointHash> visited;
 
-    auto heuristic = [](const Point& a, const Point& b) {
-        return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
-    };
+    toExplore.push(src);
+    visited.insert(src);
 
-    openSet.emplace(0, src);
-    gScore[src] = 0;
-    fScore[src] = heuristic(src, dst);
+    std::vector<Move> directions = {Move::NORTH, Move::EAST, Move::SOUTH, Move::WEST};
+    std::vector<Point> deltas = {Point(0, -1, 0), Point(1, 0, 0), Point(0, 1, 0), Point(-1, 0, 0)};
 
-    while (!openSet.empty()) {
-        Point current = openSet.top().second;
-        openSet.pop();
+    while (!toExplore.empty()) {
+        Point current = toExplore.front();
+        toExplore.pop();
 
         if (current == dst) {
-            Route path;
-            while (cameFrom.find(current) != cameFrom.end()) {
-                Point parent = cameFrom[current];
-                if (parent.x < current.x) path.push_back(Move::EAST);
-                if (parent.x > current.x) path.push_back(Move::WEST);
-                if (parent.y < current.y) path.push_back(Move::SOUTH);
-                if (parent.y > current.y) path.push_back(Move::NORTH);
-                current = parent;
+            Route route;
+            while (current != src) {
+                route.push_back(moveMap[current]);
+                current = cameFrom[current];
             }
-            std::reverse(path.begin(), path.end());
-            return path;
+            std::reverse(route.begin(), route.end());
+            return route;
         }
 
-        closedSet.insert(current);
-
-        for (const auto& neighbor : getNeighbors(current)) {
-            if (closedSet.find(neighbor) != closedSet.end()) {
-                continue;
+        for (size_t i = 0; i < directions.size(); ++i) {
+            Point next = current;
+            next.x += deltas[i].x;
+            next.y += deltas[i].y;
+            
+            while (isValidPoint(next) && !map[next.z][next.y][next.x]) {
+                next.z--;
             }
+            next.z++;
 
-            int tentative_gScore = gScore[current] + 1;
-
-            if (gScore.find(neighbor) == gScore.end() || tentative_gScore < gScore[neighbor]) {
-                cameFrom[neighbor] = current;
-                gScore[neighbor] = tentative_gScore;
-                fScore[neighbor] = gScore[neighbor] + heuristic(neighbor, dst);
-                openSet.emplace(fScore[neighbor], neighbor);
+            if (isNavigable(next) && visited.find(next) == visited.end()) {
+                toExplore.push(next);
+                visited.insert(next);
+                cameFrom[next] = current;
+                moveMap[next] = directions[i];
             }
         }
     }
-
     throw NoRoute(src, dst);
 }
