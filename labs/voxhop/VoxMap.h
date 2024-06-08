@@ -1,22 +1,21 @@
+
 #ifndef VOXMAP_H
 #define VOXMAP_H
 
 #include <istream>
 #include <vector>
-#include <unordered_map>
-#include <queue>
-#include <string>
+#include <unordered_set>
 #include "Point.h"
 #include "Route.h"
 
 class VoxMap {
-private:
-    int width, depth, height;
-    std::vector<std::vector<std::vector<bool>>> voxels;
+    int width;
+    int depth;
+    int height;
+    std::vector<std::vector<std::vector<bool>>> map;
 
-    bool isValid(const Point& point) const;
-    bool isWalkable(const Point& point) const;
-    std::vector<Point> getNeighbors(const Point& point) const;
+    bool isValidPoint(const Point& point) const;
+    bool isNavigable(const Point& point) const;
 
 public:
     VoxMap(std::istream& stream);

@@ -1,118 +1,86 @@
 #include "VoxMap.h"
 #include "Errors.h"
-#include <sstream>
-#include <bitset>
+#include <queue>
+#include <unordered_map>
+#include <unordered_set>
 #include <algorithm>
 
 VoxMap::VoxMap(std::istream& stream) {
     stream >> width >> depth >> height;
-    voxels.resize(height, std::vector<std::vector<bool>>(depth, std::vector<bool>(width)));
+    map.resize(height, std::vector<std::vector<bool>>(depth, std::vector<bool>(width)));
 
-    std::string line;
-    for (int h = 0; h < height; ++h) {
-        std::getline(stream, line); // skip empty line
-        for (int d = 0; d < depth; ++d) {
-            std::getline(stream, line);
-            for (size_t w = 0; w < line.size(); ++w) {
-                std::bitset<4> bits(std::stoi(std::string(1, line[w]), nullptr, 16));
-                for (int b = 0; b < 4; ++b) {
-                    voxels[h][d][w * 4 + b] = bits[3 - b];
+    for (int z = 0; z < height; ++z) {
+        std::string line;
+        for (int y = 0; y < depth; ++y) {
+            stream >> line;
+            for (int x = 0; x < width / 4; ++x) {
+                char hexDigit = line[x];
+                int value = (hexDigit >= '0' && hexDigit <= '9') ? hexDigit - '0' : hexDigit - 'A' + 10;
+                for (int bit = 0; bit < 4; ++bit) {
+                    map[z][y][x * 4 + bit] = (value & (8 >> bit)) != 0;
                 }
             }
         }
     }
 }
 
-bool VoxMap::isValid(const Point& point) const {
+bool VoxMap::isValidPoint(const Point& point) const {
     return point.x >= 0 && point.x < width &&
            point.y >= 0 && point.y < depth &&
            point.z >= 0 && point.z < height;
 }
 
-bool VoxMap::isWalkable(const Point& point) const {
-    if (!isValid(point) || voxels[point.z][point.y][point.x])
-        return false;
-
-    if (point.z == 0 || voxels[point.z - 1][point.y][point.x])
-        return true;
-
-    return false;
-}
-
-std::vector<Point> VoxMap::getNeighbors(const Point& point) const {
-    static const std::vector<std::pair<int, int>> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-    std::vector<Point> neighbors;
-
-    for (const auto& [dx, dy] : directions) {
-        Point neighbor(point.x + dx, point.y + dy, point.z);
-
-        if (isValid(neighbor) && isWalkable(neighbor)) {
-            while (neighbor.z > 0 && !voxels[neighbor.z - 1][neighbor.y][neighbor.x]) {
-                neighbor.z--;
-            }
-            if (isWalkable(neighbor)) {
-                neighbors.push_back(neighbor);
-            }
-        }
-        
-        if (neighbor.z < height - 1 && !voxels[neighbor.z + 1][neighbor.y][neighbor.x]) {
-            neighbor.z++;
-            if (isWalkable(neighbor)) {
-                neighbors.push_back(neighbor);
-            }
-        }
-    }
-
-    return neighbors;
+bool VoxMap::isNavigable(const Point& point) const {
+    return isValidPoint(point) && !map[point.z][point.y][point.x] && 
+           (point.z > 0 && map[point.z - 1][point.y][point.x]);
 }
 
 Route VoxMap::route(Point src, Point dst) {
-    if (!isWalkable(src)) throw InvalidPoint(src);
-    if (!isWalkable(dst)) throw InvalidPoint(dst);
+    if (!isNavigable(src)) throw InvalidPoint(src);
+    if (!isNavigable(dst)) throw InvalidPoint(dst);
 
-    std::unordered_map<Point, Point> cameFrom;
-    std::unordered_map<Point, int> costSoFar;
-    std::priority_queue<std::pair<int, Point>, std::vector<std::pair<int, Point>>, std::greater<>> frontier;
+    std::queue<Point> toExplore;
+    std::unordered_map<Point, Point, PointHash> cameFrom;
+    std::unordered_map<Point, Move, PointHash> moveMap;
+    std::unordered_set<Point, PointHash> visited;
 
-    auto heuristic = [](const Point& a, const Point& b) {
-        return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
-    };
+    toExplore.push(src);
+    visited.insert(src);
 
-    frontier.push({0, src});
-    cameFrom[src] = src;
-    costSoFar[src] = 0;
+    std::vector<Move> directions = {Move::NORTH, Move::EAST, Move::SOUTH, Move::WEST};
+    std::vector<Point> deltas = {Point(0, -1, 0), Point(1, 0, 0), Point(0, 1, 0), Point(-1, 0, 0)};
 
-    while (!frontier.empty()) {
-        Point current = frontier.top().second;
-        frontier.pop();
+    while (!toExplore.empty()) {
+        Point current = toExplore.front();
+        toExplore.pop();
 
         if (current == dst) {
             Route route;
-            Point trace = dst;
-
-            while (trace != src) {
-                Point parent = cameFrom[trace];
-                if (trace.x == parent.x + 1) route.push_back(Move::EAST);
-                else if (trace.x == parent.x - 1) route.push_back(Move::WEST);
-                else if (trace.y == parent.y + 1) route.push_back(Move::SOUTH);
-                else if (trace.y == parent.y - 1) route.push_back(Move::NORTH);
-                trace = parent;
+            while (current != src) {
+                route.push_back(moveMap[current]);
+                current = cameFrom[current];
             }
-
             std::reverse(route.begin(), route.end());
             return route;
         }
 
-        for (const Point& next : getNeighbors(current)) {
-            int newCost = costSoFar[current] + 1;
-            if (costSoFar.find(next) == costSoFar.end() || newCost < costSoFar[next]) {
-                costSoFar[next] = newCost;
-                int priority = newCost + heuristic(next, dst);
-                frontier.push({priority, next});
+        for (size_t i = 0; i < directions.size(); ++i) {
+            Point next = current;
+            next.x += deltas[i].x;
+            next.y += deltas[i].y;
+            
+            while (isValidPoint(next) && !map[next.z][next.y][next.x]) {
+                next.z--;
+            }
+            next.z++;
+
+            if (isNavigable(next) && visited.find(next) == visited.end()) {
+                toExplore.push(next);
+                visited.insert(next);
                 cameFrom[next] = current;
+                moveMap[next] = directions[i];
             }
         }
     }
-
     throw NoRoute(src, dst);
 }
