@@ -35,6 +35,10 @@ bool VoxMap::isNavigable(const Point& point) const {
            (point.z > 0 && map[point.z - 1][point.y][point.x]);
 }
 
+bool VoxMap::canJump(const Point& current, const Point& next) const {
+    return next.z < height && !map[next.z][next.y][next.x];
+}
+
 Route VoxMap::route(Point src, Point dst) {
     if (!isNavigable(src)) throw InvalidPoint(src);
     if (!isNavigable(dst)) throw InvalidPoint(dst);
@@ -68,17 +72,19 @@ Route VoxMap::route(Point src, Point dst) {
             Point next = current;
             next.x += deltas[i].x;
             next.y += deltas[i].y;
-            
-            while (isValidPoint(next) && !map[next.z][next.y][next.x]) {
-                next.z--;
-            }
-            next.z++;
 
-            if (isNavigable(next) && visited.find(next) == visited.end()) {
-                toExplore.push(next);
-                visited.insert(next);
-                cameFrom[next] = current;
-                moveMap[next] = directions[i];
+            if (isValidPoint(next) && canJump(current, next) && isNavigable(next)) {
+                while (isValidPoint(next) && !map[next.z][next.y][next.x]) {
+                    next.z--;
+                }
+                next.z++;
+
+                if (isNavigable(next) && visited.find(next) == visited.end()) {
+                    toExplore.push(next);
+                    visited.insert(next);
+                    cameFrom[next] = current;
+                    moveMap[next] = directions[i];
+                }
             }
         }
     }

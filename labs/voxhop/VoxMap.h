@@ -15,6 +15,7 @@ class VoxMap {
 
     bool isValidPoint(const Point& point) const;
     bool isNavigable(const Point& point) const;
+    bool canJump(const Point& current, const Point& next) const;
 
 public:
     VoxMap(std::istream& stream);
