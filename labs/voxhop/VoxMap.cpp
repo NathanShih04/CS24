@@ -53,9 +53,9 @@ bool VoxMap::is_valid_point(const Point& point) const {
 
 bool VoxMap::is_valid_voxel(const Point& point) const {
   if (!is_valid_point(point)) return false;
-  if (voxels[point.y][point.z][point.x]) return false; // Must be empty
-  if (point.y == 0 || !voxels[point.y - 1][point.z][point.x]) return false; // Must have a full voxel below
-  return true;
+  if (voxels[point.z][point.y][point.x]) return false; // Must be empty
+  if (point.z == 0 || voxels[point.z - 1][point.y][point.x]) return true; // Must have a full voxel below
+  return false;
 }
 
 Route VoxMap::route(Point src, Point dst) {
@@ -108,9 +108,9 @@ Route VoxMap::route(Point src, Point dst) {
       if (!is_valid_point(next)) continue;
 
       // If the next point is empty, simulate falling
-      if (!voxels[next.y][next.z][next.x]) {
-        while (next.y > 0 && !voxels[next.y - 1][next.z][next.x]) {
-          next.y--;
+      if (!voxels[next.z][next.y][next.x]) {
+        while (next.z > 0 && !voxels[next.z - 1][next.y][next.x]) {
+          next.z--;
         }
         // If it falls out of the map or onto an invalid voxel, continue
         if (!is_valid_voxel(next)) continue;
