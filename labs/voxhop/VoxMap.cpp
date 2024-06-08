@@ -1,59 +1,86 @@
 #include "VoxMap.h"
-#include <stdexcept>
-#include <sstream>
+#include "Errors.h"
+#include <queue>
+#include <unordered_map>
+#include <unordered_set>
+#include <algorithm>
 
 VoxMap::VoxMap(std::istream& stream) {
-  // Read the map dimensions from the input stream
-  stream >> width >> height >> depth;
+    stream >> width >> depth >> height;
+    map.resize(height, std::vector<std::vector<bool>>(depth, std::vector<bool>(width)));
 
-  // Initialize the voxel map with the given dimensions
-  voxels.resize(height, std::vector<std::vector<bool>>(depth, std::vector<bool>(width, false)));
-
-  // Read the voxel data from the input stream
-  for (int h = 0; h < height; ++h) {
-    std::string line;
-    for (int d = 0; d < depth; ++d) {
-      stream >> line;
-      for (int w = 0; w < width / 4; ++w) {
-        char hex_char = line[w];
-        int value = std::stoi(std::string(1, hex_char), nullptr, 16);
-        for (int bit = 0; bit < 4; ++bit) {
-          voxels[h][d][w * 4 + bit] = (value & (1 << (3 - bit))) != 0;
+    for (int z = 0; z < height; ++z) {
+        std::string line;
+        for (int y = 0; y < depth; ++y) {
+            stream >> line;
+            for (int x = 0; x < width / 4; ++x) {
+                char hexDigit = line[x];
+                int value = (hexDigit >= '0' && hexDigit <= '9') ? hexDigit - '0' : hexDigit - 'A' + 10;
+                for (int bit = 0; bit < 4; ++bit) {
+                    map[z][y][x * 4 + bit] = (value & (8 >> bit)) != 0;
+                }
+            }
         }
-      }
     }
-  }
 }
 
-VoxMap::~VoxMap() {
-  // Destructor
+bool VoxMap::isValidPoint(const Point& point) const {
+    return point.x >= 0 && point.x < width &&
+           point.y >= 0 && point.y < depth &&
+           point.z >= 0 && point.z < height;
 }
 
-bool VoxMap::is_valid_point(const Point& point) const {
-  return point.x >= 0 && point.x < width &&
-         point.y >= 0 && point.y < height &&
-         point.z >= 0 && point.z < depth;
-}
-
-bool VoxMap::is_valid_voxel(const Point& point) const {
-  if (!is_valid_point(point)) return false;
-  if (!voxels[point.y][point.z][point.x]) return false; // Must be empty
-  if (point.y == 0 || !voxels[point.y - 1][point.z][point.x]) return false; // Must have a full voxel below
-  return true;
+bool VoxMap::isNavigable(const Point& point) const {
+    return isValidPoint(point) && !map[point.z][point.y][point.x] && 
+           (point.z > 0 && map[point.z - 1][point.y][point.x]);
 }
 
 Route VoxMap::route(Point src, Point dst) {
-  if (!is_valid_voxel(src)) {
-    throw InvalidPoint(src);
-  }
-  if (!is_valid_voxel(dst)) {
-    throw InvalidPoint(dst);
-  }
+    if (!isNavigable(src)) throw InvalidPoint(src);
+    if (!isNavigable(dst)) throw InvalidPoint(dst);
 
-  // Placeholder for the pathfinding algorithm
-  // Here we just simulate that no route is found
-  throw NoRoute(src, dst);
+    std::queue<Point> toExplore;
+    std::unordered_map<Point, Point, PointHash> cameFrom;
+    std::unordered_map<Point, Move, PointHash> moveMap;
+    std::unordered_set<Point, PointHash> visited;
 
-  // In a complete implementation, the algorithm would return a valid Route
-  // if one exists between the source and destination points.
+    toExplore.push(src);
+    visited.insert(src);
+
+    std::vector<Move> directions = {Move::NORTH, Move::EAST, Move::SOUTH, Move::WEST};
+    std::vector<Point> deltas = {Point(0, -1, 0), Point(1, 0, 0), Point(0, 1, 0), Point(-1, 0, 0)};
+
+    while (!toExplore.empty()) {
+        Point current = toExplore.front();
+        toExplore.pop();
+
+        if (current == dst) {
+            Route route;
+            while (current != src) {
+                route.push_back(moveMap[current]);
+                current = cameFrom[current];
+            }
+            std::reverse(route.begin(), route.end());
+            return route;
+        }
+
+        for (size_t i = 0; i < directions.size(); ++i) {
+            Point next = current;
+            next.x += deltas[i].x;
+            next.y += deltas[i].y;
+            
+            while (isValidPoint(next) && !map[next.z][next.y][next.x]) {
+                next.z--;
+            }
+            next.z++;
+
+            if (isNavigable(next) && visited.find(next) == visited.end()) {
+                toExplore.push(next);
+                visited.insert(next);
+                cameFrom[next] = current;
+                moveMap[next] = directions[i];
+            }
+        }
+    }
+    throw NoRoute(src, dst);
 }

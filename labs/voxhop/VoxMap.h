@@ -1,27 +1,26 @@
-
 #ifndef VOXMAP_H
 #define VOXMAP_H
 
 #include <istream>
 #include <vector>
+#include <unordered_set>
 #include "Point.h"
 #include "Route.h"
-#include "Errors.h"
 
 class VoxMap {
-  std::vector<std::vector<std::vector<bool>>> voxels;
-  int width;
-  int height;
-  int depth;
+    int width;
+    int depth;
+    int height;
+    std::vector<std::vector<std::vector<bool>>> map;
 
-  bool is_valid_point(const Point& point) const;
-  bool is_valid_voxel(const Point& point) const;
+    bool isValidPoint(const Point& point) const;
+    bool isNavigable(const Point& point) const;
 
 public:
-  VoxMap(std::istream& stream);
-  ~VoxMap();
+    VoxMap(std::istream& stream);
+    ~VoxMap() = default;
 
-  Route route(Point src, Point dst);
+    Route route(Point src, Point dst);
 };
 
 #endif
