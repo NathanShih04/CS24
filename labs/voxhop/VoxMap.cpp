@@ -15,7 +15,7 @@ VoxMap::VoxMap(std::istream &stream) {
     for (char c = 'a'; c <= 'f'; ++c)
         hexTable[c] = c - 'a' + 10;
 
-    for (int z = 0; z < height; ++ z) {
+    for (int z = 0; z < height; ++z) {
         for (int y = 0; y < depth; ++y) {
             std::string line;
             stream >> line;
@@ -70,10 +70,10 @@ int VoxMap::heuristic(const Point& a, const Point& b) const {
 }
 
 Route VoxMap::route(Point src, Point dst) {
-    if (!isWalkable(src)) {
+    if (!isWalkable(src) || src.z == 0) {
         throw InvalidPoint(src);
     }
-    if (!isWalkable(dst)) {
+    if (!isWalkable(dst) || dst.z == 0) {
         throw InvalidPoint(dst);
     }
 
