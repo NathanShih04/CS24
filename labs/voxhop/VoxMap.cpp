@@ -2,7 +2,6 @@
 #include "Errors.h"
 #include <vector>
 #include <queue>
-#include <unordered_set>
 #include <cstring>
 #include <algorithm>
 #include <cmath>
@@ -88,19 +87,20 @@ Route VoxMap::route(Point src, Point dst)
     if (!isNavigable(dst))
         throw InvalidPoint(dst);
 
+    const int mapSize = width * depth * height;
     std::priority_queue<AStarNode, std::vector<AStarNode>, std::greater<AStarNode>> toExplore;
-    std::unordered_set<int> visited; // Using unordered_set for dynamic size handling
-    std::vector<Point> cameFrom(width * depth * height);
-    std::vector<Move> moveMap(width * depth * height);
-    std::vector<int> costSoFar(width * depth * height, INT_MAX);
+    std::vector<bool> visited(mapSize, false);
+    std::vector<Point> cameFrom(mapSize);
+    std::vector<Move> moveMap(mapSize);
+    std::vector<int> costSoFar(mapSize, INT_MAX);
 
     toExplore.emplace(src, 0, heuristic(src, dst));
-    visited.insert(index(src.x, src.y, src.z));
+    visited[index(src.x, src.y, src.z)] = true;
     cameFrom[index(src.x, src.y, src.z)] = src;
     costSoFar[index(src.x, src.y, src.z)] = 0;
 
-    const std::vector<Move> directions = {Move::NORTH, Move::EAST, Move::SOUTH, Move::WEST};
-    const std::vector<Point> deltas = {Point(0, -1, 0), Point(1, 0, 0), Point(0, 1, 0), Point(-1, 0, 0)};
+    const Move directions[] = {Move::NORTH, Move::EAST, Move::SOUTH, Move::WEST};
+    const Point deltas[] = {Point(0, -1, 0), Point(1, 0, 0), Point(0, 1, 0), Point(-1, 0, 0)};
 
     while (!toExplore.empty())
     {
@@ -119,7 +119,7 @@ Route VoxMap::route(Point src, Point dst)
             return route;
         }
 
-        for (size_t i = 0; i < directions.size(); ++i)
+        for (int i = 0; i < 4; ++i)
         {
             Point next = current;
             next.x += deltas[i].x;
@@ -154,7 +154,7 @@ Route VoxMap::route(Point src, Point dst)
                 costSoFar[nextIndex] = newCost;
                 int priority = newCost + heuristic(next, dst);
                 toExplore.emplace(next, newCost, priority);
-                visited.insert(nextIndex);
+                visited[nextIndex] = true;
                 cameFrom[nextIndex] = current;
                 moveMap[nextIndex] = directions[i];
             }
