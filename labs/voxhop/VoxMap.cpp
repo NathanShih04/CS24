@@ -2,11 +2,9 @@
 #include "Errors.h"
 #include <unordered_map>
 #include <algorithm>
-#include <cmath>
 #include <vector>
 #include <queue>
 #include <limits>
-#include <stack>
 
 VoxMap::VoxMap(std::istream &stream) {
     stream >> width >> depth >> height;
@@ -49,31 +47,24 @@ inline bool VoxMap::isNavigable(const Point &point) const {
            (point.z > 0 && map[index(point.x, point.y, point.z - 1)]);
 }
 
-inline double heuristic(const Point &a, const Point &b) {
-    return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
-}
-
 Route VoxMap::route(Point src, Point dst) {
     if (!isNavigable(src))
         throw InvalidPoint(src);
     if (!isNavigable(dst))
         throw InvalidPoint(dst);
 
-    using PQElement = std::pair<double, Point>;
-    std::priority_queue<PQElement, std::vector<PQElement>, std::greater<>> toExplore;
+    std::queue<Point> toExplore;
     std::unordered_map<Point, Point, PointHash> cameFrom;
-    std::unordered_map<Point, double, PointHash> costSoFar;
     std::unordered_map<Point, Move, PointHash> moveMap;
 
-    toExplore.emplace(0, src);
+    toExplore.push(src);
     cameFrom[src] = src;
-    costSoFar[src] = 0;
 
     const std::vector<Move> directions = {Move::NORTH, Move::EAST, Move::SOUTH, Move::WEST};
     const std::vector<Point> deltas = {Point(0, -1, 0), Point(1, 0, 0), Point(0, 1, 0), Point(-1, 0, 0)};
 
     while (!toExplore.empty()) {
-        Point current = toExplore.top().second;
+        Point current = toExplore.front();
         toExplore.pop();
 
         if (current == dst) {
@@ -112,15 +103,10 @@ Route VoxMap::route(Point src, Point dst) {
                 continue; // Skip this direction if there is a block above the head in the next position
             }
 
-            if (isNavigable(next)) {
-                double newCost = costSoFar[current] + 1; // Each move costs 1
-                if (costSoFar.find(next) == costSoFar.end() || newCost < costSoFar[next]) {
-                    costSoFar[next] = newCost;
-                    double priority = newCost + heuristic(next, dst);
-                    toExplore.emplace(priority, next);
-                    cameFrom[next] = current;
-                    moveMap[next] = directions[i];
-                }
+            if (isNavigable(next) && cameFrom.find(next) == cameFrom.end()) {
+                toExplore.push(next);
+                cameFrom[next] = current;
+                moveMap[next] = directions[i];
             }
         }
     }
