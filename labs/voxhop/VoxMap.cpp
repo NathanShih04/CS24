@@ -2,6 +2,7 @@
 #include "Errors.h"
 #include <sstream>
 #include <algorithm>
+#include <limits> // Include this for std::numeric_limits
 
 VoxMap::VoxMap(std::istream &stream) {
     stream >> width >> depth >> height;
