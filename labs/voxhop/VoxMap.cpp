@@ -63,7 +63,6 @@ Route VoxMap::route(Point src, Point dst) {
     std::vector<Move> moveMap(MAX_SIZE);
 
     int srcIndex = index(src.x, src.y, src.z);
-    int dstIndex = index(dst.x, dst.y, dst.z);
 
     toExplore.push(src);
     visited.set(srcIndex);
