@@ -1,139 +1,129 @@
 #include "VoxMap.h"
 #include "Errors.h"
-#include <sstream>
-#include <algorithm>
-#include <limits>
-#include <queue>
-#include <unordered_map>
 
-// Ensure Point is hashable
-struct PointHash {
-    size_t operator()(const Point& p) const {
-        return std::hash<int>()(p.x) ^ std::hash<int>()(p.y) ^ std::hash<int>()(p.z);
-    }
-};
-
-VoxMap::VoxMap(std::istream &stream) : width(0), depth(0), height(0) {
-    if (!(stream >> width >> depth >> height)) {
-        throw std::runtime_error("Failed to read dimensions");
-    }
-
-    map.resize(width * depth * height);
-
-    std::vector<int> hexTable(256, -1);
-    for (char c = '0'; c <= '9'; ++c)
-        hexTable[c] = c - '0';
-    for (char c = 'A'; c <= 'F'; ++c)
-        hexTable[c] = c - 'A' + 10;
-    for (char c = 'a'; c <= 'f'; ++c)
-        hexTable[c] = c - 'a' + 10;
-
-    stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Skip to next line after dimensions
-
-    for (int z = 0; z < height; ++z) {
-        for (int y = 0; y < depth; ++y) {
-            std::string line;
-            if (!std::getline(stream, line)) {
-                throw std::runtime_error("Failed to read map data");
-            }
-
-            const char *linePtr = line.c_str();
-            int baseIndex = z * width * depth + y * width;
-
-            for (int x = 0; x < width / 4; ++x) {
-                int value = hexTable[static_cast<unsigned char>(linePtr[x])];
-                if (value == -1) {
-                    throw std::runtime_error("Invalid character in map data");
-                }
-
-                map[baseIndex + x * 4] = (value & 8) != 0;
-                map[baseIndex + x * 4 + 1] = (value & 4) != 0;
-                map[baseIndex + x * 4 + 2] = (value & 2) != 0;
-                map[baseIndex + x * 4 + 3] = (value & 1) != 0;
-            }
-        }
-        stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Skip empty line between tiers
-    }
+int VoxMap::index(int x, int y, int z) const {
+  return (z * depth * width) + (y * width) + x;
 }
 
-bool VoxMap::isValid(const Point& p) const {
-    return p.x >= 0 && p.x < width && p.y >= 0 && p.y < depth && p.z >= 0 && p.z < height;
+VoxMap::VoxMap(std::istream &stream) {
+  stream >> width >> depth >> height;
+  map.resize(width * depth * height);
+
+  std::vector<int> hexTable(256, 0);
+  for (char c = '0'; c <= '9'; ++c)
+    hexTable[c] = c - '0';
+  for (char c = 'A'; c <= 'F'; ++c)
+    hexTable[c] = c - 'A' + 10;
+  for (char c = 'a'; c <= 'f'; ++c)
+    hexTable[c] = c - 'a' + 10;
+
+  for (int z = 0; z < height; ++z) {
+    for (int y = 0; y < depth; ++y) {
+      std::string line;
+      stream >> line;
+      const char *linePtr = line.c_str();
+      for (int x = 0; x < width / 4; ++x) {
+        int value = hexTable[static_cast<unsigned char>(linePtr[x])];
+        int baseIndex = index(x * 4, y, z);
+        map[baseIndex] = (value & 8) != 0;
+        if (x * 4 + 1 < width)
+          map[baseIndex + 1] = (value & 4) != 0;
+        if (x * 4 + 2 < width)
+          map[baseIndex + 2] = (value & 2) != 0;
+        if (x * 4 + 3 < width)
+          map[baseIndex + 3] = (value & 1) != 0;
+      }
+    }
+  }
 }
 
-bool VoxMap::isWalkable(const Point& p) const {
-    return isValid(p) && !map[index(p.x, p.y, p.z)] && (p.z == 0 || map[index(p.x, p.y, p.z - 1)]);
+VoxMap::~VoxMap() {}
+
+bool VoxMap::isValidPoint(const Point& p) const {
+  return p.x >= 0 && p.x < width && p.y >= 0 && p.y < depth && p.z > 0 && p.z < height;
+}
+
+bool VoxMap::isValidVoxel(const Point& p) const {
+  if (!isValidPoint(p) || !isValidPoint(Point(p.x, p.y, p.z - 1))) return false;
+  return !map[index(p.x, p.y, p.z)] && map[index(p.x, p.y, p.z - 1)];
 }
 
 std::vector<Point> VoxMap::getNeighbors(const Point& p) const {
-    std::vector<Point> neighbors;
-    std::vector<std::pair<int, int>> directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-    for (const auto& [dx, dy] : directions) {
-        Point neighbor(p.x + dx, p.y + dy, p.z);
-        if (isValid(neighbor)) {
-            // Check for falling off a ledge
-            if (!map[index(neighbor.x, neighbor.y, neighbor.z)]) {
-                while (neighbor.z > 0 && !map[index(neighbor.x, neighbor.y, neighbor.z - 1)]) {
-                    --neighbor.z;
-                }
-                if (neighbor.z > 0 && isValid(neighbor)) {
-                    neighbors.push_back(neighbor);
-                }
-            } else if (isValid({p.x + dx, p.y + dy, p.z + 1}) && !map[index(p.x + dx, p.y + dy, p.z + 1)] && !map[index(p.x, p.y, p.z + 1)]) {
-                neighbors.push_back({p.x + dx, p.y + dy, p.z + 1});
-            }
-        }
+  static const std::vector<Point> directions{{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}};
+  std::vector<Point> neighbors;
+
+  for (const auto& dir : directions) {
+    Point next = {p.x + dir.x, p.y + dir.y, p.z};
+    int fallHeight = 0;
+    while (isValidPoint(next) && !map[index(next.x, next.y, next.z)]) {
+      next.z--;
+      fallHeight++;
     }
-    return neighbors;
+    next.z++;
+    if (fallHeight <= 1 && isValidVoxel(next)) {
+      neighbors.push_back(next);
+    }
+    next = {p.x + dir.x, p.y + dir.y, p.z};
+    if (isValidPoint(Point(next.x, next.y, next.z + 1)) && !map[index(next.x, next.y, next.z + 1)] &&
+        isValidPoint(Point(next.x, next.y, next.z + 2)) && !map[index(next.x, next.y, next.z + 2)]) {
+      next.z++;
+      if (isValidVoxel(next)) {
+        neighbors.push_back(next);
+      }
+    }
+  }
+  return neighbors;
 }
 
 int VoxMap::heuristic(const Point& a, const Point& b) const {
-    return abs(a.x - b.x) + abs(a.y - b.y) + abs(a.z - b.z);
+  return abs(a.x - b.x) + abs(a.y - b.y) + abs(a.z - b.z);
 }
 
 Route VoxMap::route(Point src, Point dst) {
-    if (!isWalkable(src) || src.z == 0) {
-        throw InvalidPoint(src);
-    }
-    if (!isWalkable(dst) || dst.z == 0) {
-        throw InvalidPoint(dst);
-    }
+  if (!isValidVoxel(src)) throw InvalidPoint(src);
+  if (!isValidVoxel(dst)) throw InvalidPoint(dst);
 
-    std::unordered_map<Point, Point, PointHash> cameFrom;
-    std::unordered_map<Point, int, PointHash> costSoFar;
-    std::priority_queue<std::pair<int, Point>, std::vector<std::pair<int, Point>>, std::greater<>> frontier;
+  std::unordered_map<Point, Point, PointHash> cameFrom;
+  std::unordered_map<Point, int, PointHash> gScore;
+  std::unordered_map<Point, int, PointHash> fScore;
 
-    frontier.emplace(0, src);
-    cameFrom[src] = src;
-    costSoFar[src] = 0;
+  auto cmp = [&fScore](const Point& a, const Point& b) {
+    return fScore[a] > fScore[b];
+  };
+  std::priority_queue<Point, std::vector<Point>, decltype(cmp)> openSet(cmp);
 
-    while (!frontier.empty()) {
-        Point current = frontier.top().second;
-        frontier.pop();
+  gScore[src] = 0;
+  fScore[src] = heuristic(src, dst);
+  openSet.push(src);
 
-        if (current == dst) {
-            Route route;
-            while (current != src) {
-                Point prev = cameFrom[current];
-                if (current.x > prev.x) route.push_back(Move::EAST);
-                else if (current.x < prev.x) route.push_back(Move::WEST);
-                else if (current.y > prev.y) route.push_back(Move::SOUTH);
-                else if (current.y < prev.y) route.push_back(Move::NORTH);
-                current = prev;
-            }
-            std::reverse(route.begin(), route.end());
-            return route;
-        }
+  while (!openSet.empty()) {
+    Point current = openSet.top();
+    openSet.pop();
 
-        for (const Point& neighbor : getNeighbors(current)) {
-            int newCost = costSoFar[current] + 1;
-            if (!costSoFar.count(neighbor) || newCost < costSoFar[neighbor]) {
-                costSoFar[neighbor] = newCost;
-                int priority = newCost + heuristic(neighbor, dst);
-                frontier.emplace(priority, neighbor);
-                cameFrom[neighbor] = current;
-            }
-        }
+    if (current == dst) {
+      Route route;
+      while (current != src) {
+        Point prev = cameFrom[current];
+        if (current.x > prev.x) route.push_back(Move::EAST);
+        else if (current.x < prev.x) route.push_back(Move::WEST);
+        else if (current.y > prev.y) route.push_back(Move::SOUTH);
+        else if (current.y < prev.y) route.push_back(Move::NORTH);
+        current = prev;
+      }
+      std::reverse(route.begin(), route.end());
+      return route;
     }
 
-    throw NoRoute(src, dst);
+    for (const Point& neighbor : getNeighbors(current)) {
+      int tentative_gScore = gScore[current] + 1;
+      if (tentative_gScore < gScore[neighbor] || gScore.find(neighbor) == gScore.end()) {
+        cameFrom[neighbor] = current;
+        gScore[neighbor] = tentative_gScore;
+        fScore[neighbor] = gScore[neighbor] + heuristic(neighbor, dst);
+        openSet.push(neighbor);
+      }
+    }
+  }
+
+  throw NoRoute(src, dst);
 }

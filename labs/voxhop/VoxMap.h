@@ -6,29 +6,29 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <queue>
+#include <algorithm>
 
 #include "Point.h"
 #include "Route.h"
+#include "Errors.h"
 
 class VoxMap {
-    int width, depth, height;
-    std::vector<bool> map;
+  // Member Variables
+  int width, depth, height;
+  std::vector<bool> map;
 
-    int index(int x, int y, int z) const {
-        return z * depth * width + y * width + x;
-    }
-
-    bool isValid(const Point& p) const;
-    bool isWalkable(const Point& p) const;
-
-    std::vector<Point> getNeighbors(const Point& p) const;
-    int heuristic(const Point& a, const Point& b) const;
+  // Helper Functions
+  bool isValidPoint(const Point& p) const;
+  bool isValidVoxel(const Point& p) const;
+  std::vector<Point> getNeighbors(const Point& p) const;
+  int heuristic(const Point& a, const Point& b) const;
+  int index(int x, int y, int z) const;
 
 public:
-    VoxMap(std::istream& stream);
-    ~VoxMap() = default;
+  VoxMap(std::istream& stream);
+  ~VoxMap();
 
-    Route route(Point src, Point dst);
+  Route route(Point src, Point dst);
 };
 
 #endif
