@@ -22,8 +22,11 @@ VoxMap::VoxMap(std::istream &stream) {
     for (int z = 0; z < height; ++z) {
         for (int y = 0; y < depth; ++y) {
             std::string line;
-            if (!std::getline(stream, line) || line.size() < static_cast<size_t>(width / 4)) {
-                throw std::runtime_error("Unexpected end of input or line too short while reading voxel data.");
+            if (!std::getline(stream, line)) {
+                throw std::runtime_error("Unexpected end of input while reading voxel data.");
+            }
+            if (line.size() < static_cast<size_t>(width / 4)) {
+                throw std::runtime_error("Line too short while reading voxel data.");
             }
             const char *linePtr = line.c_str();
             int baseIndex = z * width * depth + y * width;
@@ -39,6 +42,10 @@ VoxMap::VoxMap(std::istream &stream) {
                 if (x * 4 + 3 < width)
                     map[baseIndex + x * 4 + 3] = (value & 1) != 0;
             }
+        }
+        // Check if we are at the end of the stream to avoid an unnecessary ignore call
+        if (stream.eof()) {
+            break;
         }
         stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Skip empty line between tiers
     }
