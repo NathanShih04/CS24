@@ -15,23 +15,25 @@ VoxMap::VoxMap(std::istream &stream) {
     for (char c = 'a'; c <= 'f'; ++c)
         hexTable[c] = c - 'a' + 10;
 
+    stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Skip to next line after dimensions
+
     for (int z = 0; z < height; ++z) {
         for (int y = 0; y < depth; ++y) {
             std::string line;
-            stream >> line;
+            std::getline(stream, line);
             const char *linePtr = line.c_str();
+            int baseIndex = z * width * depth + y * width;
+
             for (int x = 0; x < width / 4; ++x) {
                 int value = hexTable[static_cast<unsigned char>(linePtr[x])];
-                int baseIndex = index(x * 4, y, z);
-                map[baseIndex] = (value & 8) != 0;
-                if (x * 4 + 1 < width)
-                    map[baseIndex + 1] = (value & 4) != 0;
-                if (x * 4 + 2 < width)
-                    map[baseIndex + 2] = (value & 2) != 0;
-                if (x * 4 + 3 < width)
-                    map[baseIndex + 3] = (value & 1) != 0;
+
+                map[baseIndex + x * 4] = (value & 8) != 0;
+                map[baseIndex + x * 4 + 1] = (value & 4) != 0;
+                map[baseIndex + x * 4 + 2] = (value & 2) != 0;
+                map[baseIndex + x * 4 + 3] = (value & 1) != 0;
             }
         }
+        stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Skip empty line between tiers
     }
 }
 
