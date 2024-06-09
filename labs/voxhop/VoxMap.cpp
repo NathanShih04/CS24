@@ -149,7 +149,7 @@ Route VoxMap::route(Point src, Point dst)
             int nextIndex = index(next.x, next.y, next.z);
             int newCost = costSoFar[index(current.x, current.y, current.z)] + 1;
 
-            if (isNavigable(next) && newCost < costSoFar[nextIndex])
+            if (isValidPoint(next) && isNavigable(next) && newCost < costSoFar[nextIndex])
             {
                 costSoFar[nextIndex] = newCost;
                 int priority = newCost + heuristic(next, dst);
