@@ -128,28 +128,26 @@ Route VoxMap::route(Point src, Point dst)
             if (!isValidPoint(next))
                 continue;
 
+            int nextZ = current.z;
             // Check if we can move horizontally without an overhead block
-            if (current.z + 1 < height && map[index(current.x, current.y, current.z + 1)])
-            {
-                continue;
-            }
-
-            int nextZ = next.z;
             while (nextZ >= 0 && !map[index(next.x, next.y, nextZ)])
             {
                 nextZ--;
             }
-            next.z = nextZ + 1;
+            nextZ++;
 
-            if (next.z < height - 1 && map[index(next.x, next.y, next.z + 1)])
-            {
+            if (nextZ < 0 || nextZ >= height || map[index(next.x, next.y, nextZ)])
                 continue;
-            }
+
+            next.z = nextZ;
+
+            if (!isNavigable(next))
+                continue;
 
             int nextIndex = index(next.x, next.y, next.z);
             int newCost = costSoFar[index(current.x, current.y, current.z)] + 1;
 
-            if (isValidPoint(next) && isNavigable(next) && newCost < costSoFar[nextIndex])
+            if (!visited[nextIndex] || newCost < costSoFar[nextIndex])
             {
                 costSoFar[nextIndex] = newCost;
                 int priority = newCost + heuristic(next, dst);
