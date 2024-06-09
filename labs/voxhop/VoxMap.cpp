@@ -2,11 +2,9 @@
 #include "Errors.h"
 #include <vector>
 #include <queue>
-#include <deque>
-#include <cstring>
 #include <algorithm>
 #include <cmath>
-#include <climits>
+#include <limits>
 
 VoxMap::VoxMap(std::istream &stream)
 {
@@ -59,7 +57,7 @@ inline bool VoxMap::isValidPoint(const Point &point) const
 inline bool VoxMap::isNavigable(const Point &point) const
 {
     return isValidPoint(point) && !map[index(point.x, point.y, point.z)] &&
-           (point.z > 0 && map[index(point.x, point.y, point.z - 1)]);
+           (point.z == 0 || map[index(point.x, point.y, point.z - 1)]);
 }
 
 Route VoxMap::route(Point src, Point dst)
