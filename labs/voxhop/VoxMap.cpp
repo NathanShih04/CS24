@@ -4,6 +4,7 @@
 #include <queue>
 #include <bitset>
 #include <algorithm>
+#include <iostream>
 
 const int MAX_WIDTH = 1024; // Adjust based on your specific requirements
 const int MAX_DEPTH = 1024; // Adjust based on your specific requirements
@@ -63,6 +64,9 @@ Route VoxMap::route(Point src, Point dst) {
     std::vector<Move> moveMap(MAX_SIZE);
 
     int srcIndex = index(src.x, src.y, src.z);
+    if (srcIndex >= MAX_SIZE) {
+        throw std::out_of_range("Source index out of bounds");
+    }
 
     toExplore.push(src);
     visited.set(srcIndex);
@@ -109,6 +113,10 @@ Route VoxMap::route(Point src, Point dst) {
             }
 
             int nextIndex = index(next.x, next.y, next.z);
+            if (nextIndex >= MAX_SIZE) {
+                throw std::out_of_range("Next index out of bounds");
+            }
+
             if (isNavigable(next) && !visited.test(nextIndex)) {
                 toExplore.push(next);
                 visited.set(nextIndex);
