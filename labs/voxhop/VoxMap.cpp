@@ -53,8 +53,10 @@ std::vector<Point> VoxMap::getNeighbors(const Point& p) const {
                 while (neighbor.z > 0 && !map[index(neighbor.x, neighbor.y, neighbor.z - 1)]) {
                     --neighbor.z;
                 }
-                neighbors.push_back(neighbor);
-            } else if (isValid({p.x + dx, p.y + dy, p.z + 1}) && !map[index(p.x + dx, p.y + dy, p.z + 1)]) {
+                if (isValid(neighbor)) {
+                    neighbors.push_back(neighbor);
+                }
+            } else if (isValid({p.x + dx, p.y + dy, p.z + 1}) && !map[index(p.x + dx, p.y + dy, p.z + 1)] && !map[index(p.x, p.y, p.z + 1)]) {
                 neighbors.push_back({p.x + dx, p.y + dy, p.z + 1});
             }
         }
