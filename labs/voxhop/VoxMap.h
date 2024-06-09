@@ -4,25 +4,26 @@
 #include <istream>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include <queue>
+#include <functional>
+
 #include "Point.h"
 #include "Route.h"
 
 class VoxMap {
-    int width;
-    int depth;
-    int height;
-    std::vector<uint8_t> map;
+  std::vector<std::vector<std::vector<bool>>> map;
+  int width, depth, height;
 
-    bool isValidPoint(const Point& point) const;
-    bool isNavigable(const Point& point) const;
-    int index(int x, int y, int z) const;
+  bool isValidVoxel(const Point& p) const;
+  bool isEmpty(const Point& p) const;
+  bool hasVoxelBelow(const Point& p) const;
 
 public:
-    VoxMap(std::istream& stream);
-    ~VoxMap() = default;
+  VoxMap(std::istream& stream);
+  ~VoxMap();
 
-    Route route(Point src, Point dst);
+  Route route(Point src, Point dst);
 };
 
 #endif
