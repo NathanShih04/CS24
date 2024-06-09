@@ -2,7 +2,6 @@
 #include "Errors.h"
 #include <stdexcept>
 #include <sstream>
-#include <algorithm>
 
 VoxMap::VoxMap(std::istream& stream) {
     if (!(stream >> width >> depth >> height)) {
@@ -11,6 +10,8 @@ VoxMap::VoxMap(std::istream& stream) {
     map.resize(height, std::vector<std::vector<bool>>(depth, std::vector<bool>(width)));
 
     std::string line;
+    std::getline(stream, line); // Read the newline character after dimensions
+
     for (int h = 0; h < height; ++h) {
         std::getline(stream, line); // Skip empty line
         for (int d = 0; d < depth; ++d) {
