@@ -69,12 +69,12 @@ Route VoxMap::route(Point src, Point dst)
     if (!isNavigable(dst))
         throw InvalidPoint(dst);
 
-    std::deque<Point> toExplore;
+    std::queue<Point> toExplore;
     std::vector<bool> visited(width * depth * height, false);
     std::vector<Point> cameFrom(width * depth * height);
     std::vector<Move> moveMap(width * depth * height);
 
-    toExplore.push_back(src);
+    toExplore.push(src);
     visited[index(src.x, src.y, src.z)] = true;
     cameFrom[index(src.x, src.y, src.z)] = src;
 
@@ -84,7 +84,7 @@ Route VoxMap::route(Point src, Point dst)
     while (!toExplore.empty())
     {
         Point current = toExplore.front();
-        toExplore.pop_front();
+        toExplore.pop();
 
         if (current == dst)
         {
@@ -129,7 +129,7 @@ Route VoxMap::route(Point src, Point dst)
 
             if (isNavigable(next) && !visited[nextIndex])
             {
-                toExplore.push_back(next);
+                toExplore.push(next);
                 visited[nextIndex] = true;
                 cameFrom[nextIndex] = current;
                 moveMap[nextIndex] = directions[i];
