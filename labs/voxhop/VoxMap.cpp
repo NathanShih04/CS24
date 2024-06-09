@@ -75,7 +75,7 @@ Route VoxMap::route(Point src, Point dst)
     std::unordered_map<Point, Point, PointHash> cameFrom;
     std::unordered_map<Point, int, PointHash> gScore;
     std::unordered_map<Point, int, PointHash> fScore;
-    
+
     auto cmp = [&fScore](const Point &a, const Point &b) {
         return fScore[a] > fScore[b];
     };
@@ -113,32 +113,41 @@ Route VoxMap::route(Point src, Point dst)
         for (const auto &dir : directions)
         {
             Point next = {current.x + dir.x, current.y + dir.y, current.z};
-            int fallHeight = 0;
 
-            // Check for falling
-            while (isValidPoint(next) && !map[index(next.x, next.y, next.z)])
+            // Check if we can move horizontally without an overhead block
+            if (current.z + 1 < height && map[index(current.x, current.y, current.z + 1)])
+            {
+                continue;
+            }
+
+            // Simulate falling
+            while (next.z > 0 && !map[index(next.x, next.y, next.z)] && isValidPoint(next))
             {
                 next.z--;
-                fallHeight++;
-                if (fallHeight > 1) break; // Ensure fall height is not greater than 1
             }
-            next.z++;
-            if (fallHeight <= 1 && isNavigable(next))
-            {
-                if (isValidPoint(Point(next.x, next.y, next.z + 1)) &&
-                    !map[index(next.x, next.y, next.z + 1)] && // No voxel directly above the current voxel
-                    isValidPoint(Point(next.x, next.y, next.z + 2)) &&
-                    !map[index(next.x, next.y, next.z + 2)]) { // No voxel directly above the destination voxel
-                    next.z++;
-                }
+            next.z++; // Move back to the last empty spot
 
-                if (!cameFrom.count(next) || gScore[current] + 1 < gScore[next])
-                {
-                    cameFrom[next] = current;
-                    gScore[next] = gScore[current] + 1;
-                    fScore[next] = gScore[next] + heuristic(next, dst);
-                    openSet.push(next);
-                }
+            // Check for falling constraints
+            if (next.z < current.z - 1 || !isNavigable(next))
+            {
+                continue;
+            }
+
+            // Simulate jumping up one voxel
+            if (isValidPoint(Point(next.x, next.y, next.z + 1)) &&
+                !map[index(next.x, next.y, next.z + 1)] && // No voxel directly above the current voxel
+                isValidPoint(Point(next.x, next.y, next.z + 2)) &&
+                !map[index(next.x, next.y, next.z + 2)])  // No voxel directly above the destination voxel
+            {
+                next.z++;
+            }
+
+            if (!cameFrom.count(next) || gScore[current] + 1 < gScore[next])
+            {
+                cameFrom[next] = current;
+                gScore[next] = gScore[current] + 1;
+                fScore[next] = gScore[next] + heuristic(next, dst);
+                openSet.push(next);
             }
         }
     }
