@@ -1,3 +1,4 @@
+
 #ifndef VOXMAP_H
 #define VOXMAP_H
 
@@ -8,18 +9,19 @@
 #include "Point.h"
 #include "Route.h"
 
-class VoxMap {
+class VoxMap
+{
     int width;
     int depth;
     int height;
     std::vector<uint8_t> map;
 
-    bool isValidPoint(const Point& point) const;
-    bool isNavigable(const Point& point) const;
+    bool isValidPoint(const Point &point) const;
+    bool isNavigable(const Point &point) const;
     int index(int x, int y, int z) const;
 
 public:
-    VoxMap(std::istream& stream);
+    VoxMap(std::istream &stream);
     ~VoxMap() = default;
 
     Route route(Point src, Point dst);
