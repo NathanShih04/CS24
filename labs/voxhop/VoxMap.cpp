@@ -2,14 +2,8 @@
 #include "Errors.h"
 #include <vector>
 #include <queue>
-#include <bitset>
+#include <cstring>
 #include <algorithm>
-#include <iostream>
-
-const int MAX_WIDTH = 1024; // Adjust based on your specific requirements
-const int MAX_DEPTH = 1024; // Adjust based on your specific requirements
-const int MAX_HEIGHT = 128; // Adjust based on your specific requirements
-const int MAX_SIZE = MAX_WIDTH * MAX_DEPTH * MAX_HEIGHT;
 
 VoxMap::VoxMap(std::istream &stream) {
     stream >> width >> depth >> height;
@@ -59,14 +53,13 @@ Route VoxMap::route(Point src, Point dst) {
         throw InvalidPoint(dst);
 
     std::queue<Point> toExplore;
-    std::bitset<MAX_SIZE> visited;
-    std::vector<Point> cameFrom(MAX_SIZE);
-    std::vector<Move> moveMap(MAX_SIZE);
+    std::vector<bool> visited(width * depth * height, false);
+    std::vector<Point> cameFrom(width * depth * height);
+    std::vector<Move> moveMap(width * depth * height);
 
-    int srcIndex = index(src.x, src.y, src.z);
     toExplore.push(src);
-    visited.set(srcIndex);
-    cameFrom[srcIndex] = src;
+    visited[index(src.x, src.y, src.z)] = true;
+    cameFrom[index(src.x, src.y, src.z)] = src;
 
     const std::vector<Move> directions = {Move::NORTH, Move::EAST, Move::SOUTH, Move::WEST};
     const std::vector<Point> deltas = {Point(0, -1, 0), Point(1, 0, 0), Point(0, 1, 0), Point(-1, 0, 0)};
@@ -78,9 +71,8 @@ Route VoxMap::route(Point src, Point dst) {
         if (current == dst) {
             Route route;
             while (current != src) {
-                int currentIndex = index(current.x, current.y, current.z);
-                route.push_back(moveMap[currentIndex]);
-                current = cameFrom[currentIndex];
+                route.push_back(moveMap[index(current.x, current.y, current.z)]);
+                current = cameFrom[index(current.x, current.y, current.z)];
             }
             std::reverse(route.begin(), route.end());
             return route;
@@ -110,9 +102,9 @@ Route VoxMap::route(Point src, Point dst) {
             }
 
             int nextIndex = index(next.x, next.y, next.z);
-            if (isNavigable(next) && !visited.test(nextIndex)) {
+            if (isNavigable(next) && !visited[nextIndex]) {
                 toExplore.push(next);
-                visited.set(nextIndex);
+                visited[nextIndex] = true;
                 cameFrom[nextIndex] = current;
                 moveMap[nextIndex] = directions[i];
             }
