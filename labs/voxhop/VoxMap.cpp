@@ -1,10 +1,12 @@
+
 #include "VoxMap.h"
 #include "Errors.h"
 #include <vector>
 #include <queue>
+#include <cstring>
 #include <algorithm>
 #include <cmath>
-#include <limits>
+#include <climits>
 
 VoxMap::VoxMap(std::istream &stream)
 {
@@ -51,18 +53,32 @@ inline bool VoxMap::isValidPoint(const Point &point) const
 {
     return point.x >= 0 && point.x < width &&
            point.y >= 0 && point.y < depth &&
-           point.z > 0 && point.z < height;
+           point.z >= 0 && point.z < height;
 }
 
 inline bool VoxMap::isNavigable(const Point &point) const
 {
     return isValidPoint(point) && !map[index(point.x, point.y, point.z)] &&
-           map[index(point.x, point.y, point.z - 1)];
+           (point.z > 0 && map[index(point.x, point.y, point.z - 1)]);
 }
+
+struct AStarNode
+{
+    Point point;
+    int cost;
+    int heuristic;
+
+    AStarNode(Point p, int c, int h) : point(p), cost(c), heuristic(h) {}
+
+    bool operator>(const AStarNode &other) const
+    {
+        return (cost + heuristic) > (other.cost + other.heuristic);
+    }
+};
 
 int heuristic(const Point &a, const Point &b)
 {
-    return abs(a.x - b.x) + abs(a.y - b.y) + abs(a.z - b.z);
+    return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
 }
 
 Route VoxMap::route(Point src, Point dst)
@@ -72,47 +88,43 @@ Route VoxMap::route(Point src, Point dst)
     if (!isNavigable(dst))
         throw InvalidPoint(dst);
 
-    std::unordered_map<Point, Point, PointHash> cameFrom;
-    std::unordered_map<Point, int, PointHash> gScore;
-    std::unordered_map<Point, int, PointHash> fScore;
+    std::priority_queue<AStarNode, std::vector<AStarNode>, std::greater<AStarNode>> toExplore;
+    std::vector<bool> visited(width * depth * height, false);
+    std::vector<Point> cameFrom(width * depth * height);
+    std::vector<Move> moveMap(width * depth * height);
 
-    auto cmp = [&fScore](const Point &a, const Point &b) {
-        return fScore[a] > fScore[b];
-    };
-    std::priority_queue<Point, std::vector<Point>, decltype(cmp)> openSet(cmp);
+    toExplore.emplace(src, 0, heuristic(src, dst));
+    visited[index(src.x, src.y, src.z)] = true;
+    cameFrom[index(src.x, src.y, src.z)] = src;
 
-    gScore[src] = 0;
-    fScore[src] = heuristic(src, dst);
-    openSet.push(src);
+    const std::vector<Move> directions = {Move::NORTH, Move::EAST, Move::SOUTH, Move::WEST};
+    const std::vector<Point> deltas = {Point(0, -1, 0), Point(1, 0, 0), Point(0, 1, 0), Point(-1, 0, 0)};
 
-    const std::vector<Point> directions = {
-        {1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}
-    };
-
-    while (!openSet.empty())
+    while (!toExplore.empty())
     {
-        Point current = openSet.top();
-        openSet.pop();
+        Point current = toExplore.top().point;
+        toExplore.pop();
 
         if (current == dst)
         {
             Route route;
             while (current != src)
             {
-                Point prev = cameFrom[current];
-                if (current.x > prev.x) route.push_back(Move::EAST);
-                else if (current.x < prev.x) route.push_back(Move::WEST);
-                else if (current.y > prev.y) route.push_back(Move::SOUTH);
-                else if (current.y < prev.y) route.push_back(Move::NORTH);
-                current = prev;
+                route.push_back(moveMap[index(current.x, current.y, current.z)]);
+                current = cameFrom[index(current.x, current.y, current.z)];
             }
             std::reverse(route.begin(), route.end());
             return route;
         }
 
-        for (const auto &dir : directions)
+        for (size_t i = 0; i < directions.size(); ++i)
         {
-            Point next = {current.x + dir.x, current.y + dir.y, current.z};
+            Point next = current;
+            next.x += deltas[i].x;
+            next.y += deltas[i].y;
+
+            if (!isValidPoint(next))
+                continue;
 
             // Check if we can move horizontally without an overhead block
             if (current.z + 1 < height && map[index(current.x, current.y, current.z + 1)])
@@ -120,37 +132,29 @@ Route VoxMap::route(Point src, Point dst)
                 continue;
             }
 
-            // Simulate falling
-            while (next.z > 0 && !map[index(next.x, next.y, next.z)] && isValidPoint(next))
+            int nextZ = next.z;
+            while (nextZ >= 0 && !map[index(next.x, next.y, nextZ)])
             {
-                next.z--;
+                nextZ--;
             }
-            next.z++; // Move back to the last empty spot
+            next.z = nextZ + 1;
 
-            // Check for falling constraints
-            if (next.z < current.z - 1 || !isNavigable(next))
+            if (next.z < height - 1 && map[index(next.x, next.y, next.z + 1)])
             {
                 continue;
             }
 
-            // Simulate jumping up one voxel
-            if (isValidPoint(Point(next.x, next.y, next.z + 1)) &&
-                !map[index(next.x, next.y, next.z + 1)] && // No voxel directly above the current voxel
-                isValidPoint(Point(next.x, next.y, next.z + 2)) &&
-                !map[index(next.x, next.y, next.z + 2)])  // No voxel directly above the destination voxel
-            {
-                next.z++;
-            }
+            int nextIndex = index(next.x, next.y, next.z);
 
-            if (!cameFrom.count(next) || gScore[current] + 1 < gScore[next])
+            if (isNavigable(next) && !visited[nextIndex])
             {
-                cameFrom[next] = current;
-                gScore[next] = gScore[current] + 1;
-                fScore[next] = gScore[next] + heuristic(next, dst);
-                openSet.push(next);
+                int priority = heuristic(next, dst);
+                toExplore.emplace(next, 0, priority);
+                visited[nextIndex] = true;
+                cameFrom[nextIndex] = current;
+                moveMap[nextIndex] = directions[i];
             }
         }
     }
-
     throw NoRoute(src, dst);
 }
