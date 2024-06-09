@@ -1,10 +1,9 @@
 #include "VoxMap.h"
 #include "Errors.h"
-#include <unordered_map>
-#include <algorithm>
 #include <vector>
 #include <queue>
-#include <limits>
+#include <cstring>
+#include <algorithm>
 
 VoxMap::VoxMap(std::istream &stream) {
     stream >> width >> depth >> height;
@@ -55,12 +54,12 @@ Route VoxMap::route(Point src, Point dst) {
 
     std::queue<Point> toExplore;
     std::vector<bool> visited(width * depth * height, false);
-    std::unordered_map<Point, Point, PointHash> cameFrom;
-    std::unordered_map<Point, Move, PointHash> moveMap;
+    std::vector<Point> cameFrom(width * depth * height);
+    std::vector<Move> moveMap(width * depth * height);
 
     toExplore.push(src);
     visited[index(src.x, src.y, src.z)] = true;
-    cameFrom[src] = src;
+    cameFrom[index(src.x, src.y, src.z)] = src;
 
     const std::vector<Move> directions = {Move::NORTH, Move::EAST, Move::SOUTH, Move::WEST};
     const std::vector<Point> deltas = {Point(0, -1, 0), Point(1, 0, 0), Point(0, 1, 0), Point(-1, 0, 0)};
@@ -72,8 +71,8 @@ Route VoxMap::route(Point src, Point dst) {
         if (current == dst) {
             Route route;
             while (current != src) {
-                route.push_back(moveMap[current]);
-                current = cameFrom[current];
+                route.push_back(moveMap[index(current.x, current.y, current.z)]);
+                current = cameFrom[index(current.x, current.y, current.z)];
             }
             std::reverse(route.begin(), route.end());
             return route;
@@ -106,8 +105,8 @@ Route VoxMap::route(Point src, Point dst) {
             if (isNavigable(next) && !visited[nextIndex]) {
                 toExplore.push(next);
                 visited[nextIndex] = true;
-                cameFrom[next] = current;
-                moveMap[next] = directions[i];
+                cameFrom[nextIndex] = current;
+                moveMap[nextIndex] = directions[i];
             }
         }
     }
