@@ -43,9 +43,8 @@ VoxMap::VoxMap(std::istream &stream) {
                     map[baseIndex + x * 4 + 3] = (value & 1) != 0;
             }
         }
-        // Check if we are at the end of the stream to avoid an unnecessary ignore call
-        if (stream.eof()) {
-            break;
+        if (stream.peek() == std::char_traits<char>::eof()) {
+            break; // No more data to read
         }
         stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Skip empty line between tiers
     }
