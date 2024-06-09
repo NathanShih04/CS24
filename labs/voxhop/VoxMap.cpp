@@ -3,21 +3,33 @@
 #include <sstream>
 #include <algorithm>
 
-VoxMap::VoxMap(std::istream& stream) {
+VoxMap::VoxMap(std::istream &stream) {
     stream >> width >> depth >> height;
+    map.resize(width * depth * height);
 
-    voxels.resize(height, std::vector<std::vector<bool>>(depth, std::vector<bool>(width)));
+    std::vector<int> hexTable(256, 0);
+    for (char c = '0'; c <= '9'; ++c)
+        hexTable[c] = c - '0';
+    for (char c = 'A'; c <= 'F'; ++c)
+        hexTable[c] = c - 'A' + 10;
+    for (char c = 'a'; c <= 'f'; ++c)
+        hexTable[c] = c - 'a' + 10;
 
     for (int z = 0; z < height; ++z) {
-        std::string line;
         for (int y = 0; y < depth; ++y) {
+            std::string line;
             stream >> line;
+            const char *linePtr = line.c_str();
             for (int x = 0; x < width / 4; ++x) {
-                char hex = line[x];
-                int value = (hex >= '0' && hex <= '9') ? hex - '0' : hex - 'A' + 10;
-                for (int i = 0; i < 4; ++i) {
-                    voxels[z][y][x * 4 + 3 - i] = (value & (1 << i)) != 0;
-                }
+                int value = hexTable[static_cast<unsigned char>(linePtr[x])];
+                int baseIndex = index(x * 4, y, z);
+                map[baseIndex] = (value & 8) != 0;
+                if (x * 4 + 1 < width)
+                    map[baseIndex + 1] = (value & 4) != 0;
+                if (x * 4 + 2 < width)
+                    map[baseIndex + 2] = (value & 2) != 0;
+                if (x * 4 + 3 < width)
+                    map[baseIndex + 3] = (value & 1) != 0;
             }
         }
     }
@@ -28,7 +40,7 @@ bool VoxMap::isValid(const Point& p) const {
 }
 
 bool VoxMap::isWalkable(const Point& p) const {
-    return isValid(p) && !voxels[p.z][p.y][p.x] && (p.z == 0 || voxels[p.z - 1][p.y][p.x]);
+    return isValid(p) && !map[index(p.x, p.y, p.z)] && (p.z == 0 || map[index(p.x, p.y, p.z - 1)]);
 }
 
 std::vector<Point> VoxMap::getNeighbors(const Point& p) const {
@@ -37,12 +49,12 @@ std::vector<Point> VoxMap::getNeighbors(const Point& p) const {
     for (auto& [dx, dy] : directions) {
         Point neighbor(p.x + dx, p.y + dy, p.z);
         if (isValid(neighbor)) {
-            if (!voxels[neighbor.z][neighbor.y][neighbor.x]) {
-                while (neighbor.z > 0 && !voxels[neighbor.z - 1][neighbor.y][neighbor.x]) {
+            if (!map[index(neighbor.x, neighbor.y, neighbor.z)]) {
+                while (neighbor.z > 0 && !map[index(neighbor.x, neighbor.y, neighbor.z - 1)]) {
                     --neighbor.z;
                 }
                 neighbors.push_back(neighbor);
-            } else if (isValid({p.x + dx, p.y + dy, p.z + 1}) && !voxels[p.z + 1][p.y + dy][p.x + dx]) {
+            } else if (isValid({p.x + dx, p.y + dy, p.z + 1}) && !map[index(p.x + dx, p.y + dy, p.z + 1)]) {
                 neighbors.push_back({p.x + dx, p.y + dy, p.z + 1});
             }
         }

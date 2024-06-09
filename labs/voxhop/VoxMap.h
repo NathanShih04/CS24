@@ -12,7 +12,11 @@
 
 class VoxMap {
     int width, depth, height;
-    std::vector<std::vector<std::vector<bool>>> voxels;
+    std::vector<bool> map;
+
+    int index(int x, int y, int z) const {
+        return z * depth * width + y * width + x;
+    }
 
     bool isValid(const Point& p) const;
     bool isWalkable(const Point& p) const;
