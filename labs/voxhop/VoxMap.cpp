@@ -2,16 +2,25 @@
 #include "Errors.h"
 #include <sstream>
 #include <algorithm>
-#include <limits> // Include this for std::numeric_limits
-#include <stdexcept> // Include this for std::runtime_error
+#include <limits>
+#include <queue>
+#include <unordered_map>
 
-VoxMap::VoxMap(std::istream &stream) {
-    if (!(stream >> width >> depth >> height)) {
-        throw std::runtime_error("Failed to read map dimensions.");
+// Ensure Point is hashable
+struct PointHash {
+    size_t operator()(const Point& p) const {
+        return std::hash<int>()(p.x) ^ std::hash<int>()(p.y) ^ std::hash<int>()(p.z);
     }
+};
+
+VoxMap::VoxMap(std::istream &stream) : width(0), depth(0), height(0) {
+    if (!(stream >> width >> depth >> height)) {
+        throw std::runtime_error("Failed to read dimensions");
+    }
+
     map.resize(width * depth * height);
 
-    std::vector<int> hexTable(256, 0);
+    std::vector<int> hexTable(256, -1);
     for (char c = '0'; c <= '9'; ++c)
         hexTable[c] = c - '0';
     for (char c = 'A'; c <= 'F'; ++c)
@@ -19,36 +28,31 @@ VoxMap::VoxMap(std::istream &stream) {
     for (char c = 'a'; c <= 'f'; ++c)
         hexTable[c] = c - 'a' + 10;
 
-    // Skip to the next line after dimensions
-    if (!stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n')) {
-        throw std::runtime_error("Failed to skip to the next line after dimensions.");
-    }
+    stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Skip to next line after dimensions
 
     for (int z = 0; z < height; ++z) {
         for (int y = 0; y < depth; ++y) {
             std::string line;
-            if (!std::getline(stream, line) || line.size() < static_cast<size_t>(width / 4)) {
-                throw std::runtime_error("Line too short or unexpected end of input while reading voxel data.");
+            if (!std::getline(stream, line)) {
+                throw std::runtime_error("Failed to read map data");
             }
+
             const char *linePtr = line.c_str();
             int baseIndex = z * width * depth + y * width;
 
             for (int x = 0; x < width / 4; ++x) {
                 int value = hexTable[static_cast<unsigned char>(linePtr[x])];
+                if (value == -1) {
+                    throw std::runtime_error("Invalid character in map data");
+                }
 
                 map[baseIndex + x * 4] = (value & 8) != 0;
-                if (x * 4 + 1 < width)
-                    map[baseIndex + x * 4 + 1] = (value & 4) != 0;
-                if (x * 4 + 2 < width)
-                    map[baseIndex + x * 4 + 2] = (value & 2) != 0;
-                if (x * 4 + 3 < width)
-                    map[baseIndex + x * 4 + 3] = (value & 1) != 0;
+                map[baseIndex + x * 4 + 1] = (value & 4) != 0;
+                map[baseIndex + x * 4 + 2] = (value & 2) != 0;
+                map[baseIndex + x * 4 + 3] = (value & 1) != 0;
             }
         }
-        // Skip empty line between tiers if it exists
-        if (stream.peek() == '\n') {
-            stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        }
+        stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Skip empty line between tiers
     }
 }
 
@@ -63,7 +67,7 @@ bool VoxMap::isWalkable(const Point& p) const {
 std::vector<Point> VoxMap::getNeighbors(const Point& p) const {
     std::vector<Point> neighbors;
     std::vector<std::pair<int, int>> directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-    for (auto& [dx, dy] : directions) {
+    for (const auto& [dx, dy] : directions) {
         Point neighbor(p.x + dx, p.y + dy, p.z);
         if (isValid(neighbor)) {
             // Check for falling off a ledge
