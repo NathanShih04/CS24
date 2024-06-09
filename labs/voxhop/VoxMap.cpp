@@ -6,6 +6,7 @@
 #include <vector>
 #include <queue>
 #include <limits>
+#include <stack>
 
 VoxMap::VoxMap(std::istream &stream) {
     stream >> width >> depth >> height;
