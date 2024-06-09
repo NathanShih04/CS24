@@ -13,7 +13,7 @@ class VoxMap
     int width;
     int depth;
     int height;
-    std::vector<uint8_t> map;
+    std::vector<bool> map;
 
     bool isValidPoint(const Point &point) const;
     bool isNavigable(const Point &point) const;
