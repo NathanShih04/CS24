@@ -6,7 +6,9 @@
 #include <stdexcept> // Include this for std::runtime_error
 
 VoxMap::VoxMap(std::istream &stream) {
-    stream >> width >> depth >> height;
+    if (!(stream >> width >> depth >> height)) {
+        throw std::runtime_error("Failed to read map dimensions.");
+    }
     map.resize(width * depth * height);
 
     std::vector<int> hexTable(256, 0);
@@ -17,16 +19,16 @@ VoxMap::VoxMap(std::istream &stream) {
     for (char c = 'a'; c <= 'f'; ++c)
         hexTable[c] = c - 'a' + 10;
 
-    stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Skip to next line after dimensions
+    // Skip to the next line after dimensions
+    if (!stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n')) {
+        throw std::runtime_error("Failed to skip to the next line after dimensions.");
+    }
 
     for (int z = 0; z < height; ++z) {
         for (int y = 0; y < depth; ++y) {
             std::string line;
-            if (!std::getline(stream, line)) {
-                throw std::runtime_error("Unexpected end of input while reading voxel data.");
-            }
-            if (line.size() < static_cast<size_t>(width / 4)) {
-                throw std::runtime_error("Line too short while reading voxel data.");
+            if (!std::getline(stream, line) || line.size() < static_cast<size_t>(width / 4)) {
+                throw std::runtime_error("Line too short or unexpected end of input while reading voxel data.");
             }
             const char *linePtr = line.c_str();
             int baseIndex = z * width * depth + y * width;
@@ -43,10 +45,10 @@ VoxMap::VoxMap(std::istream &stream) {
                     map[baseIndex + x * 4 + 3] = (value & 1) != 0;
             }
         }
-        if (stream.peek() == std::char_traits<char>::eof()) {
-            break; // No more data to read
+        // Skip empty line between tiers if it exists
+        if (stream.peek() == '\n') {
+            stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
-        stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Skip empty line between tiers
     }
 }
 
