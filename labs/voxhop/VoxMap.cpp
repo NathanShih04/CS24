@@ -27,8 +27,8 @@ VoxMap::VoxMap(std::istream &stream) {
             const char *linePtr = line.c_str();
             int baseIndex = z * width * depth + y * width;
 
-            for (int x = 0; x < width / 4; ++x) {
-                if (x >= line.size()) {
+            for (std::size_t x = 0; x < line.size(); ++x) { // Use std::size_t for the loop variable
+                if (x * 4 >= width) {
                     throw std::runtime_error("Hex string length mismatch.");
                 }
                 int value = hexTable[static_cast<unsigned char>(linePtr[x])];
