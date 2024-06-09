@@ -15,7 +15,7 @@ VoxMap::VoxMap(std::istream &stream) {
     for (char c = 'a'; c <= 'f'; ++c)
         hexTable[c] = c - 'a' + 10;
 
-    for (int z = 0; z < height; ++z) {
+    for (int z = 0; z < height; ++ z) {
         for (int y = 0; y < depth; ++y) {
             std::string line;
             stream >> line;
@@ -49,11 +49,12 @@ std::vector<Point> VoxMap::getNeighbors(const Point& p) const {
     for (auto& [dx, dy] : directions) {
         Point neighbor(p.x + dx, p.y + dy, p.z);
         if (isValid(neighbor)) {
+            // Check for falling off a ledge
             if (!map[index(neighbor.x, neighbor.y, neighbor.z)]) {
                 while (neighbor.z > 0 && !map[index(neighbor.x, neighbor.y, neighbor.z - 1)]) {
                     --neighbor.z;
                 }
-                if (isValid(neighbor)) {
+                if (neighbor.z > 0 && isValid(neighbor)) {
                     neighbors.push_back(neighbor);
                 }
             } else if (isValid({p.x + dx, p.y + dy, p.z + 1}) && !map[index(p.x + dx, p.y + dy, p.z + 1)] && !map[index(p.x, p.y, p.z + 1)]) {
