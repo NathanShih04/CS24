@@ -21,7 +21,9 @@ struct Point {
     }
 
     bool operator<(const Point& other) const {
-        return std::tie(x, y, z) < std::tie(other.x, other.y, other.z);
+        if (x != other.x) return x < other.x;
+        if (y != other.y) return y < other.y;
+        return z < other.z;
     }
 };
 
