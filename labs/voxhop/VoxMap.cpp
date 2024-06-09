@@ -3,6 +3,7 @@
 #include <sstream>
 #include <algorithm>
 #include <limits> // Include this for std::numeric_limits
+#include <stdexcept> // Include this for std::runtime_error
 
 VoxMap::VoxMap(std::istream &stream) {
     stream >> width >> depth >> height;
@@ -21,16 +22,13 @@ VoxMap::VoxMap(std::istream &stream) {
     for (int z = 0; z < height; ++z) {
         for (int y = 0; y < depth; ++y) {
             std::string line;
-            if (!std::getline(stream, line)) {
-                throw std::runtime_error("Unexpected end of input while reading voxel data.");
+            if (!std::getline(stream, line) || line.size() < static_cast<size_t>(width / 4)) {
+                throw std::runtime_error("Unexpected end of input or line too short while reading voxel data.");
             }
             const char *linePtr = line.c_str();
             int baseIndex = z * width * depth + y * width;
 
-            for (std::size_t x = 0; x < line.size(); ++x) { // Use std::size_t for the loop variable
-                if (x * 4 >= width) {
-                    throw std::runtime_error("Hex string length mismatch.");
-                }
+            for (int x = 0; x < width / 4; ++x) {
                 int value = hexTable[static_cast<unsigned char>(linePtr[x])];
 
                 map[baseIndex + x * 4] = (value & 8) != 0;
