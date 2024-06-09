@@ -64,10 +64,6 @@ Route VoxMap::route(Point src, Point dst) {
     std::vector<Move> moveMap(MAX_SIZE);
 
     int srcIndex = index(src.x, src.y, src.z);
-    if (srcIndex >= MAX_SIZE) {
-        throw std::out_of_range("Source index out of bounds");
-    }
-
     toExplore.push(src);
     visited.set(srcIndex);
     cameFrom[srcIndex] = src;
@@ -82,8 +78,9 @@ Route VoxMap::route(Point src, Point dst) {
         if (current == dst) {
             Route route;
             while (current != src) {
-                route.push_back(moveMap[index(current.x, current.y, current.z)]);
-                current = cameFrom[index(current.x, current.y, current.z)];
+                int currentIndex = index(current.x, current.y, current.z);
+                route.push_back(moveMap[currentIndex]);
+                current = cameFrom[currentIndex];
             }
             std::reverse(route.begin(), route.end());
             return route;
@@ -113,10 +110,6 @@ Route VoxMap::route(Point src, Point dst) {
             }
 
             int nextIndex = index(next.x, next.y, next.z);
-            if (nextIndex >= MAX_SIZE) {
-                throw std::out_of_range("Next index out of bounds");
-            }
-
             if (isNavigable(next) && !visited.test(nextIndex)) {
                 toExplore.push(next);
                 visited.set(nextIndex);
