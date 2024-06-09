@@ -54,10 +54,12 @@ Route VoxMap::route(Point src, Point dst) {
         throw InvalidPoint(dst);
 
     std::queue<Point> toExplore;
+    std::vector<bool> visited(width * depth * height, false);
     std::unordered_map<Point, Point, PointHash> cameFrom;
     std::unordered_map<Point, Move, PointHash> moveMap;
 
     toExplore.push(src);
+    visited[index(src.x, src.y, src.z)] = true;
     cameFrom[src] = src;
 
     const std::vector<Move> directions = {Move::NORTH, Move::EAST, Move::SOUTH, Move::WEST};
@@ -82,29 +84,28 @@ Route VoxMap::route(Point src, Point dst) {
             next.x += deltas[i].x;
             next.y += deltas[i].y;
 
-            // Check if next position is within bounds
             if (!isValidPoint(next))
                 continue;
 
-            // Check for a block above the current position before moving horizontally
+            // Check if we can move horizontally without an overhead block
             if (current.z + 1 < height && map[index(current.x, current.y, current.z + 1)]) {
-                continue; // Skip this direction if there is a block above the current position
+                continue;
             }
 
-            // Simulate falling down
             int nextZ = next.z;
             while (nextZ >= 0 && !map[index(next.x, next.y, nextZ)]) {
                 nextZ--;
             }
             next.z = nextZ + 1;
 
-            // Check for block above the head in the next position
             if (next.z < height - 1 && map[index(next.x, next.y, next.z + 1)]) {
-                continue; // Skip this direction if there is a block above the head in the next position
+                continue;
             }
 
-            if (isNavigable(next) && cameFrom.find(next) == cameFrom.end()) {
+            int nextIndex = index(next.x, next.y, next.z);
+            if (isNavigable(next) && !visited[nextIndex]) {
                 toExplore.push(next);
+                visited[nextIndex] = true;
                 cameFrom[next] = current;
                 moveMap[next] = directions[i];
             }
