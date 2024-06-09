@@ -19,14 +19,14 @@ VoxMap::VoxMap(std::istream &stream)
     for (char c = 'a'; c <= 'f'; ++c)
         hexTable[c] = c - 'a' + 10;
 
-    for (int z = 0; z < height; ++ z)
+    for (int z = 0; z < height; ++z)
     {
-        for (int y = 0; y < depth; ++ y)
+        for (int y = 0; y < depth; ++y)
         {
             std::string line;
             stream >> line;
             const char *linePtr = line.c_str();
-            for (int x = 0; x < width / 4; ++ x)
+            for (int x = 0; x < width / 4; ++x)
             {
                 int value = hexTable[static_cast<unsigned char>(linePtr[x])];
                 int baseIndex = index(x * 4, y, z);
@@ -131,8 +131,6 @@ Route VoxMap::route(Point src, Point dst)
                     !map[index(next.x, next.y, next.z + 2)]) { // No voxel directly above the destination voxel
                     next.z++;
                 }
-
-                int nextIndex = index(next.x, next.y, next.z);
 
                 if (!cameFrom.count(next) || gScore[current] + 1 < gScore[next])
                 {
