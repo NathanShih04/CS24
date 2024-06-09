@@ -2,6 +2,7 @@
 #include "Errors.h"
 #include <vector>
 #include <queue>
+#include <bitset>
 #include <cstring>
 #include <algorithm>
 #include <cmath>
@@ -75,7 +76,7 @@ struct AStarNode
     }
 };
 
-int heuristic(const Point &a, const Point &b)
+inline int heuristic(const Point &a, const Point &b)
 {
     return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
 }
@@ -88,13 +89,13 @@ Route VoxMap::route(Point src, Point dst)
         throw InvalidPoint(dst);
 
     std::priority_queue<AStarNode, std::vector<AStarNode>, std::greater<AStarNode>> toExplore;
-    std::vector<bool> visited(width * depth * height, false);
+    std::bitset<1000000> visited; // Adjust size accordingly based on your map size
     std::vector<Point> cameFrom(width * depth * height);
     std::vector<Move> moveMap(width * depth * height);
     std::vector<int> costSoFar(width * depth * height, INT_MAX);
 
     toExplore.emplace(src, 0, heuristic(src, dst));
-    visited[index(src.x, src.y, src.z)] = true;
+    visited.set(index(src.x, src.y, src.z));
     cameFrom[index(src.x, src.y, src.z)] = src;
     costSoFar[index(src.x, src.y, src.z)] = 0;
 
@@ -153,7 +154,7 @@ Route VoxMap::route(Point src, Point dst)
                 costSoFar[nextIndex] = newCost;
                 int priority = newCost + heuristic(next, dst);
                 toExplore.emplace(next, newCost, priority);
-                visited[nextIndex] = true;
+                visited.set(nextIndex);
                 cameFrom[nextIndex] = current;
                 moveMap[nextIndex] = directions[i];
             }
