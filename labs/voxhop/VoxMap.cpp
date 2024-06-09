@@ -1,127 +1,129 @@
+
 #include "VoxMap.h"
 #include "Errors.h"
-#include <stdexcept>
-#include <sstream>
+#include <unordered_map>
+#include <algorithm>
+#include <cmath>
+#include <vector>
+#include <queue>
+#include <limits>
+#include <stack>
 
-VoxMap::VoxMap(std::istream& stream) {
-    if (!(stream >> width >> depth >> height)) {
-        throw std::runtime_error("Failed to read map dimensions");
-    }
-    map.resize(height, std::vector<std::vector<bool>>(depth, std::vector<bool>(width)));
+VoxMap::VoxMap(std::istream &stream) {
+    stream >> width >> depth >> height;
+    map.resize(width * depth * height);
 
-    std::string line;
-    std::getline(stream, line); // Read the newline character after dimensions
+    std::vector<int> hexTable(256, 0);
+    for (char c = '0'; c <= '9'; ++c) hexTable[c] = c - '0';
+    for (char c = 'A'; c <= 'F'; ++c) hexTable[c] = c - 'A' + 10;
+    for (char c = 'a'; c <= 'f'; ++c) hexTable[c] = c - 'a' + 10;
 
-    for (int h = 0; h < height; ++h) {
-        std::getline(stream, line); // Skip empty line
-        for (int d = 0; d < depth; ++d) {
-            std::getline(stream, line);
-            if (line.empty()) {
-                throw std::runtime_error("Unexpected empty line in map data");
-            }
-            for (int w = 0; w < width / 4; ++w) {
-                char hex = line[w];
-                int val;
-                try {
-                    val = std::stoi(std::string(1, hex), nullptr, 16);
-                } catch (const std::invalid_argument& e) {
-                    throw std::runtime_error("Invalid hex character in map data");
-                }
-                for (int b = 0; b < 4; ++b) {
-                    map[h][d][4 * w + b] = val & (1 << (3 - b));
-                }
+    for (int z = 0; z < height; ++z) {
+        for (int y = 0; y < depth; ++y) {
+            std::string line;
+            stream >> line;
+            const char *linePtr = line.c_str();
+            for (int x = 0; x < width / 4; ++x) {
+                int value = hexTable[static_cast<unsigned char>(linePtr[x])];
+                int baseIndex = index(x * 4, y, z);
+                map[baseIndex] = (value & 8) != 0;
+                if (x * 4 + 1 < width) map[baseIndex + 1] = (value & 4) != 0;
+                if (x * 4 + 2 < width) map[baseIndex + 2] = (value & 2) != 0;
+                if (x * 4 + 3 < width) map[baseIndex + 3] = (value & 1) != 0;
             }
         }
     }
 }
 
-VoxMap::~VoxMap() {}
-
-bool VoxMap::isValidVoxel(const Point& p) const {
-    return p.x >= 0 && p.x < width && p.y >= 0 && p.y < depth && p.z >= 0 && p.z < height;
+inline int VoxMap::index(int x, int y, int z) const {
+    return z * width * depth + y * width + x;
 }
 
-bool VoxMap::isEmpty(const Point& p) const {
-    return isValidVoxel(p) && !map[p.z][p.y][p.x];
+inline bool VoxMap::isValidPoint(const Point &point) const {
+    return point.x >= 0 && point.x < width &&
+           point.y >= 0 && point.y < depth &&
+           point.z >= 0 && point.z < height;
 }
 
-bool VoxMap::hasVoxelBelow(const Point& p) const {
-    return p.z > 0 && map[p.z - 1][p.y][p.x];
+inline bool VoxMap::isNavigable(const Point &point) const {
+    return isValidPoint(point) && !map[index(point.x, point.y, point.z)] &&
+           (point.z > 0 && map[index(point.x, point.y, point.z - 1)]);
+}
+
+inline double heuristic(const Point &a, const Point &b) {
+    return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
 }
 
 Route VoxMap::route(Point src, Point dst) {
-    if (!isValidVoxel(src) || !isEmpty(src) || !hasVoxelBelow(src)) {
+    if (!isNavigable(src))
         throw InvalidPoint(src);
-    }
-    if (!isValidVoxel(dst) || !isEmpty(dst) || !hasVoxelBelow(dst)) {
+    if (!isNavigable(dst))
         throw InvalidPoint(dst);
-    }
 
-    std::unordered_set<Point, PointHash> closedSet;
+    using PQElement = std::pair<double, Point>;
+    std::priority_queue<PQElement, std::vector<PQElement>, std::greater<>> toExplore;
     std::unordered_map<Point, Point, PointHash> cameFrom;
-    std::unordered_map<Point, int, PointHash> gScore;
-    std::unordered_map<Point, int, PointHash> fScore;
+    std::unordered_map<Point, double, PointHash> costSoFar;
+    std::unordered_map<Point, Move, PointHash> moveMap;
 
-    auto heuristic = [](const Point& a, const Point& b) {
-        return abs(a.x - b.x) + abs(a.y - b.y) + abs(a.z - b.z);
-    };
+    toExplore.emplace(0, src);
+    cameFrom[src] = src;
+    costSoFar[src] = 0;
 
-    auto cmp = [&fScore](const Point& a, const Point& b) {
-        return fScore[a] > fScore[b];
-    };
+    const std::vector<Move> directions = {Move::NORTH, Move::EAST, Move::SOUTH, Move::WEST};
+    const std::vector<Point> deltas = {Point(0, -1, 0), Point(1, 0, 0), Point(0, 1, 0), Point(-1, 0, 0)};
 
-    std::priority_queue<Point, std::vector<Point>, decltype(cmp)> openSet(cmp);
-    openSet.push(src);
-    gScore[src] = 0;
-    fScore[src] = heuristic(src, dst);
-
-    const std::vector<Point> directions = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}};
-
-    while (!openSet.empty()) {
-        Point current = openSet.top();
-        openSet.pop();
+    while (!toExplore.empty()) {
+        Point current = toExplore.top().second;
+        toExplore.pop();
 
         if (current == dst) {
-            Route path;
+            Route route;
             while (current != src) {
-                Point prev = cameFrom[current];
-                if (current.x > prev.x) path.push_back(Move::EAST);
-                else if (current.x < prev.x) path.push_back(Move::WEST);
-                else if (current.y > prev.y) path.push_back(Move::SOUTH);
-                else if (current.y < prev.y) path.push_back(Move::NORTH);
-                current = prev;
+                route.push_back(moveMap[current]);
+                current = cameFrom[current];
             }
-            std::reverse(path.begin(), path.end());
-            return path;
+            std::reverse(route.begin(), route.end());
+            return route;
         }
 
-        closedSet.insert(current);
+        for (size_t i = 0; i < directions.size(); ++i) {
+            Point next = current;
+            next.x += deltas[i].x;
+            next.y += deltas[i].y;
 
-        for (const Point& dir : directions) {
-            Point neighbor = {current.x + dir.x, current.y + dir.y, current.z};
-
-            while (isValidVoxel(neighbor) && isEmpty(neighbor) && neighbor.z > 0 && !map[neighbor.z - 1][neighbor.y][neighbor.x]) {
-                neighbor.z--;
-            }
-
-            if (!isValidVoxel(neighbor) || !isEmpty(neighbor) || !hasVoxelBelow(neighbor)) {
+            // Check if next position is within bounds
+            if (!isValidPoint(next))
                 continue;
+
+            // Check for a block above the current position before moving horizontally
+            if (current.z + 1 < height && map[index(current.x, current.y, current.z + 1)]) {
+                continue; // Skip this direction if there is a block above the current position
             }
 
-            if (closedSet.find(neighbor) != closedSet.end()) {
-                continue;
+            // Simulate falling down
+            int nextZ = next.z;
+            while (nextZ >= 0 && !map[index(next.x, next.y, nextZ)]) {
+                nextZ--;
+            }
+            next.z = nextZ + 1;
+
+            // Check for block above the head in the next position
+            if (next.z < height - 1 && map[index(next.x, next.y, next.z + 1)]) {
+                continue; // Skip this direction if there is a block above the head in the next position
             }
 
-            int tentative_gScore = gScore[current] + 1;
-
-            if (gScore.find(neighbor) == gScore.end() || tentative_gScore < gScore[neighbor]) {
-                cameFrom[neighbor] = current;
-                gScore[neighbor] = tentative_gScore;
-                fScore[neighbor] = gScore[neighbor] + heuristic(neighbor, dst);
-                openSet.push(neighbor);
+            if (isNavigable(next)) {
+                double newCost = costSoFar[current] + 1; // Each move costs 1
+                if (costSoFar.find(next) == costSoFar.end() || newCost < costSoFar[next]) {
+                    costSoFar[next] = newCost;
+                    double priority = newCost + heuristic(next, dst);
+                    toExplore.emplace(priority, next);
+                    cameFrom[next] = current;
+                    moveMap[next] = directions[i];
+                }
             }
         }
     }
-
     throw NoRoute(src, dst);
 }
