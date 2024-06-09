@@ -40,7 +40,7 @@ VoxMap::VoxMap(std::istream &stream) {
 VoxMap::~VoxMap() {}
 
 bool VoxMap::isValidPoint(const Point& p) const {
-  return p.x >= 0 && p.x < width && p.y >= 0 && p.y < depth && p.z > 0 && p.z < height;
+  return p.x >= 0 && p.x < width && p.y >= 0 && p.y < depth && p.z >= 1 && p.z < height;
 }
 
 bool VoxMap::isValidVoxel(const Point& p) const {
@@ -55,17 +55,24 @@ std::vector<Point> VoxMap::getNeighbors(const Point& p) const {
   for (const auto& dir : directions) {
     Point next = {p.x + dir.x, p.y + dir.y, p.z};
     int fallHeight = 0;
+
+    // Check for falling
     while (isValidPoint(next) && !map[index(next.x, next.y, next.z)]) {
       next.z--;
       fallHeight++;
+      if (fallHeight > 1) break; // Ensure fall height is not greater than 1
     }
     next.z++;
     if (fallHeight <= 1 && isValidVoxel(next)) {
       neighbors.push_back(next);
     }
+
+    // Check for jumping
     next = {p.x + dir.x, p.y + dir.y, p.z};
-    if (isValidPoint(Point(next.x, next.y, next.z + 1)) && !map[index(next.x, next.y, next.z + 1)] &&
-        isValidPoint(Point(next.x, next.y, next.z + 2)) && !map[index(next.x, next.y, next.z + 2)]) {
+    if (isValidPoint(Point(next.x, next.y, next.z + 1)) &&
+        !map[index(next.x, next.y, next.z + 1)] && // No voxel directly above the current voxel
+        isValidPoint(Point(next.x, next.y, next.z + 2)) &&
+        !map[index(next.x, next.y, next.z + 2)]) { // No voxel directly above the destination voxel
       next.z++;
       if (isValidVoxel(next)) {
         neighbors.push_back(next);
