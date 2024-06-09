@@ -51,13 +51,13 @@ inline bool VoxMap::isValidPoint(const Point &point) const
 {
     return point.x >= 0 && point.x < width &&
            point.y >= 0 && point.y < depth &&
-           point.z >= 0 && point.z < height;
+           point.z > 0 && point.z < height;
 }
 
 inline bool VoxMap::isNavigable(const Point &point) const
 {
     return isValidPoint(point) && !map[index(point.x, point.y, point.z)] &&
-           (point.z == 0 || map[index(point.x, point.y, point.z - 1)]);
+           map[index(point.x, point.y, point.z - 1)];
 }
 
 Route VoxMap::route(Point src, Point dst)
@@ -112,7 +112,7 @@ Route VoxMap::route(Point src, Point dst)
             }
 
             int nextZ = next.z;
-            while (nextZ >= 0 && !map[index(next.x, next.y, nextZ)])
+            while (nextZ > 0 && !map[index(next.x, next.y, nextZ)])
             {
                 nextZ--;
             }
