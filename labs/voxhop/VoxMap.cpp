@@ -2,8 +2,13 @@
 #include "Errors.h"
 #include <vector>
 #include <queue>
-#include <cstring>
+#include <bitset>
 #include <algorithm>
+
+const int MAX_WIDTH = 1024; // Adjust based on your specific requirements
+const int MAX_DEPTH = 1024; // Adjust based on your specific requirements
+const int MAX_HEIGHT = 128; // Adjust based on your specific requirements
+const int MAX_SIZE = MAX_WIDTH * MAX_DEPTH * MAX_HEIGHT;
 
 VoxMap::VoxMap(std::istream &stream) {
     stream >> width >> depth >> height;
@@ -53,13 +58,16 @@ Route VoxMap::route(Point src, Point dst) {
         throw InvalidPoint(dst);
 
     std::queue<Point> toExplore;
-    std::vector<bool> visited(width * depth * height, false);
-    std::vector<Point> cameFrom(width * depth * height);
-    std::vector<Move> moveMap(width * depth * height);
+    std::bitset<MAX_SIZE> visited;
+    std::vector<Point> cameFrom(MAX_SIZE);
+    std::vector<Move> moveMap(MAX_SIZE);
+
+    int srcIndex = index(src.x, src.y, src.z);
+    int dstIndex = index(dst.x, dst.y, dst.z);
 
     toExplore.push(src);
-    visited[index(src.x, src.y, src.z)] = true;
-    cameFrom[index(src.x, src.y, src.z)] = src;
+    visited.set(srcIndex);
+    cameFrom[srcIndex] = src;
 
     const std::vector<Move> directions = {Move::NORTH, Move::EAST, Move::SOUTH, Move::WEST};
     const std::vector<Point> deltas = {Point(0, -1, 0), Point(1, 0, 0), Point(0, 1, 0), Point(-1, 0, 0)};
@@ -102,9 +110,9 @@ Route VoxMap::route(Point src, Point dst) {
             }
 
             int nextIndex = index(next.x, next.y, next.z);
-            if (isNavigable(next) && !visited[nextIndex]) {
+            if (isNavigable(next) && !visited.test(nextIndex)) {
                 toExplore.push(next);
-                visited[nextIndex] = true;
+                visited.set(nextIndex);
                 cameFrom[nextIndex] = current;
                 moveMap[nextIndex] = directions[i];
             }
