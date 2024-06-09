@@ -1,164 +1,103 @@
 #include "VoxMap.h"
 #include "Errors.h"
-#include <vector>
-#include <queue>
-#include <cstring>
+#include <sstream>
 #include <algorithm>
-#include <cmath>
-#include <climits>
 
-VoxMap::VoxMap(std::istream &stream)
-{
+VoxMap::VoxMap(std::istream& stream) {
     stream >> width >> depth >> height;
-    map.resize(width * depth * height);
 
-    std::vector<int> hexTable(256, 0);
-    for (char c = '0'; c <= '9'; ++c)
-        hexTable[c] = c - '0';
-    for (char c = 'A'; c <= 'F'; ++c)
-        hexTable[c] = c - 'A' + 10;
-    for (char c = 'a'; c <= 'f'; ++c)
-        hexTable[c] = c - 'a' + 10;
+    voxels.resize(height, std::vector<std::vector<bool>>(depth, std::vector<bool>(width)));
 
-    for (int z = 0; z < height; ++z)
-    {
-        for (int y = 0; y < depth; ++y)
-        {
-            std::string line;
+    for (int z = 0; z < height; ++z) {
+        std::string line;
+        for (int y = 0; y < depth; ++y) {
             stream >> line;
-            const char *linePtr = line.c_str();
-            for (int x = 0; x < width / 4; ++x)
-            {
-                int value = hexTable[static_cast<unsigned char>(linePtr[x])];
-                int baseIndex = index(x * 4, y, z);
-                map[baseIndex] = (value & 8) != 0;
-                if (x * 4 + 1 < width)
-                    map[baseIndex + 1] = (value & 4) != 0;
-                if (x * 4 + 2 < width)
-                    map[baseIndex + 2] = (value & 2) != 0;
-                if (x * 4 + 3 < width)
-                    map[baseIndex + 3] = (value & 1) != 0;
+            for (int x = 0; x < width / 4; ++x) {
+                char hex = line[x];
+                int value = (hex >= '0' && hex <= '9') ? hex - '0' : hex - 'A' + 10;
+                for (int i = 0; i < 4; ++i) {
+                    voxels[z][y][x * 4 + 3 - i] = (value & (1 << i)) != 0;
+                }
             }
         }
     }
 }
 
-inline int VoxMap::index(int x, int y, int z) const
-{
-    return z * width * depth + y * width + x;
+bool VoxMap::isValid(const Point& p) const {
+    return p.x >= 0 && p.x < width && p.y >= 0 && p.y < depth && p.z >= 0 && p.z < height;
 }
 
-inline bool VoxMap::isValidPoint(const Point &point) const
-{
-    return point.x >= 0 && point.x < width &&
-           point.y >= 0 && point.y < depth &&
-           point.z >= 0 && point.z < height;
+bool VoxMap::isWalkable(const Point& p) const {
+    return isValid(p) && !voxels[p.z][p.y][p.x] && (p.z == 0 || voxels[p.z - 1][p.y][p.x]);
 }
 
-inline bool VoxMap::isNavigable(const Point &point) const
-{
-    return isValidPoint(point) && !map[index(point.x, point.y, point.z)] &&
-           (point.z > 0 && map[index(point.x, point.y, point.z - 1)]);
-}
-
-struct AStarNode
-{
-    Point point;
-    int cost;
-    int heuristic;
-
-    AStarNode(Point p, int c, int h) : point(p), cost(c), heuristic(h) {}
-
-    bool operator>(const AStarNode &other) const
-    {
-        return (cost + heuristic) > (other.cost + other.heuristic);
+std::vector<Point> VoxMap::getNeighbors(const Point& p) const {
+    std::vector<Point> neighbors;
+    std::vector<std::pair<int, int>> directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    for (auto& [dx, dy] : directions) {
+        Point neighbor(p.x + dx, p.y + dy, p.z);
+        if (isValid(neighbor)) {
+            if (!voxels[neighbor.z][neighbor.y][neighbor.x]) {
+                while (neighbor.z > 0 && !voxels[neighbor.z - 1][neighbor.y][neighbor.x]) {
+                    --neighbor.z;
+                }
+                neighbors.push_back(neighbor);
+            } else if (isValid({p.x + dx, p.y + dy, p.z + 1}) && !voxels[p.z + 1][p.y + dy][p.x + dx]) {
+                neighbors.push_back({p.x + dx, p.y + dy, p.z + 1});
+            }
+        }
     }
-};
-
-inline int heuristic(const Point &a, const Point &b)
-{
-    return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
+    return neighbors;
 }
 
-Route VoxMap::route(Point src, Point dst)
-{
-    if (!isNavigable(src))
+int VoxMap::heuristic(const Point& a, const Point& b) const {
+    return abs(a.x - b.x) + abs(a.y - b.y) + abs(a.z - b.z);
+}
+
+Route VoxMap::route(Point src, Point dst) {
+    if (!isWalkable(src)) {
         throw InvalidPoint(src);
-    if (!isNavigable(dst))
+    }
+    if (!isWalkable(dst)) {
         throw InvalidPoint(dst);
+    }
 
-    const int mapSize = width * depth * height;
-    std::priority_queue<AStarNode, std::vector<AStarNode>, std::greater<AStarNode>> toExplore;
-    std::vector<bool> visited(mapSize, false);
-    std::vector<Point> cameFrom(mapSize);
-    std::vector<Move> moveMap(mapSize);
-    std::vector<int> costSoFar(mapSize, INT_MAX);
+    std::unordered_map<Point, Point, PointHash> cameFrom;
+    std::unordered_map<Point, int, PointHash> costSoFar;
+    std::priority_queue<std::pair<int, Point>, std::vector<std::pair<int, Point>>, std::greater<>> frontier;
 
-    toExplore.emplace(src, 0, heuristic(src, dst));
-    visited[index(src.x, src.y, src.z)] = true;
-    cameFrom[index(src.x, src.y, src.z)] = src;
-    costSoFar[index(src.x, src.y, src.z)] = 0;
+    frontier.emplace(0, src);
+    cameFrom[src] = src;
+    costSoFar[src] = 0;
 
-    const Move directions[] = {Move::NORTH, Move::EAST, Move::SOUTH, Move::WEST};
-    const Point deltas[] = {Point(0, -1, 0), Point(1, 0, 0), Point(0, 1, 0), Point(-1, 0, 0)};
+    while (!frontier.empty()) {
+        Point current = frontier.top().second;
+        frontier.pop();
 
-    while (!toExplore.empty())
-    {
-        Point current = toExplore.top().point;
-        toExplore.pop();
-
-        if (current == dst)
-        {
+        if (current == dst) {
             Route route;
-            while (current != src)
-            {
-                route.push_back(moveMap[index(current.x, current.y, current.z)]);
-                current = cameFrom[index(current.x, current.y, current.z)];
+            while (current != src) {
+                Point prev = cameFrom[current];
+                if (current.x > prev.x) route.push_back(Move::EAST);
+                else if (current.x < prev.x) route.push_back(Move::WEST);
+                else if (current.y > prev.y) route.push_back(Move::SOUTH);
+                else if (current.y < prev.y) route.push_back(Move::NORTH);
+                current = prev;
             }
             std::reverse(route.begin(), route.end());
             return route;
         }
 
-        for (int i = 0; i < 4; ++i)
-        {
-            Point next = current;
-            next.x += deltas[i].x;
-            next.y += deltas[i].y;
-
-            if (!isValidPoint(next))
-                continue;
-
-            // Check if we can move horizontally without an overhead block
-            if (current.z + 1 < height && map[index(current.x, current.y, current.z + 1)])
-            {
-                continue;
-            }
-
-            int nextZ = next.z;
-            while (nextZ >= 0 && !map[index(next.x, next.y, nextZ)])
-            {
-                nextZ--;
-            }
-            next.z = nextZ + 1;
-
-            if (next.z < height - 1 && map[index(next.x, next.y, next.z + 1)])
-            {
-                continue;
-            }
-
-            int nextIndex = index(next.x, next.y, next.z);
-            int newCost = costSoFar[index(current.x, current.y, current.z)] + 1;
-
-            if (isValidPoint(next) && isNavigable(next) && newCost < costSoFar[nextIndex])
-            {
-                costSoFar[nextIndex] = newCost;
-                int priority = newCost + heuristic(next, dst);
-                toExplore.emplace(next, newCost, priority);
-                visited[nextIndex] = true;
-                cameFrom[nextIndex] = current;
-                moveMap[nextIndex] = directions[i];
+        for (const Point& neighbor : getNeighbors(current)) {
+            int newCost = costSoFar[current] + 1;
+            if (!costSoFar.count(neighbor) || newCost < costSoFar[neighbor]) {
+                costSoFar[neighbor] = newCost;
+                int priority = newCost + heuristic(neighbor, dst);
+                frontier.emplace(priority, neighbor);
+                cameFrom[neighbor] = current;
             }
         }
     }
+
     throw NoRoute(src, dst);
 }
