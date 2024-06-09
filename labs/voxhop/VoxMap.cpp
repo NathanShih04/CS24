@@ -2,8 +2,9 @@
 #include "Errors.h"
 #include <vector>
 #include <queue>
-#include <cstring>
+#include <unordered_map>
 #include <algorithm>
+#include <cmath>
 
 VoxMap::VoxMap(std::istream &stream) {
     stream >> width >> depth >> height;
@@ -46,33 +47,39 @@ inline bool VoxMap::isNavigable(const Point &point) const {
            (point.z > 0 && map[index(point.x, point.y, point.z - 1)]);
 }
 
+double heuristic(const Point &a, const Point &b) {
+    // Manhattan distance as the heuristic
+    return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
+}
+
 Route VoxMap::route(Point src, Point dst) {
     if (!isNavigable(src))
         throw InvalidPoint(src);
     if (!isNavigable(dst))
         throw InvalidPoint(dst);
 
-    std::queue<Point> toExplore;
-    std::vector<bool> visited(width * depth * height, false);
-    std::vector<Point> cameFrom(width * depth * height);
-    std::vector<Move> moveMap(width * depth * height);
+    typedef std::pair<double, Point> PQElement;
+    std::priority_queue<PQElement, std::vector<PQElement>, std::greater<PQElement>> toExplore;
+    std::unordered_map<Point, Point, PointHash> cameFrom;
+    std::unordered_map<Point, double, PointHash> costSoFar;
+    std::unordered_map<Point, Move, PointHash> moveMap;
 
-    toExplore.push(src);
-    visited[index(src.x, src.y, src.z)] = true;
-    cameFrom[index(src.x, src.y, src.z)] = src;
+    toExplore.emplace(0, src);
+    cameFrom[src] = src;
+    costSoFar[src] = 0;
 
     const std::vector<Move> directions = {Move::NORTH, Move::EAST, Move::SOUTH, Move::WEST};
     const std::vector<Point> deltas = {Point(0, -1, 0), Point(1, 0, 0), Point(0, 1, 0), Point(-1, 0, 0)};
 
     while (!toExplore.empty()) {
-        Point current = toExplore.front();
+        Point current = toExplore.top().second;
         toExplore.pop();
 
         if (current == dst) {
             Route route;
             while (current != src) {
-                route.push_back(moveMap[index(current.x, current.y, current.z)]);
-                current = cameFrom[index(current.x, current.y, current.z)];
+                route.push_back(moveMap[current]);
+                current = cameFrom[current];
             }
             std::reverse(route.begin(), route.end());
             return route;
@@ -101,12 +108,15 @@ Route VoxMap::route(Point src, Point dst) {
                 continue;
             }
 
-            int nextIndex = index(next.x, next.y, next.z);
-            if (isNavigable(next) && !visited[nextIndex]) {
-                toExplore.push(next);
-                visited[nextIndex] = true;
-                cameFrom[nextIndex] = current;
-                moveMap[nextIndex] = directions[i];
+            if (isNavigable(next)) {
+                double newCost = costSoFar[current] + 1; // Each move costs 1
+                if (costSoFar.find(next) == costSoFar.end() || newCost < costSoFar[next]) {
+                    costSoFar[next] = newCost;
+                    double priority = newCost + heuristic(next, dst);
+                    toExplore.emplace(priority, next);
+                    cameFrom[next] = current;
+                    moveMap[next] = directions[i];
+                }
             }
         }
     }
