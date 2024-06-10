@@ -71,7 +71,7 @@ struct AStarNode
 
     bool operator>(const AStarNode &other) const
     {
-        return (cost + heuristic) > (other.cost + other.heuristic);
+        return (cost + heuristic) > (other.cost + heuristic);
     }
 };
 
@@ -125,28 +125,44 @@ Route VoxMap::route(Point src, Point dst)
             if (!isValidPoint(next))
                 continue;
 
-            // Check if we can move horizontally without an overhead block
-            if (current.z + 1 < height && map[index(current.x, current.y, current.z + 1)])
+            // Check for flat surface movement first
+            if (next.z == current.z && isNavigable(next) && !visited[index(next.x, next.y, next.z)])
             {
+                int nextIndex = index(next.x, next.y, next.z);
+                int priority = heuristic(next, dst);
+                toExplore.emplace(next, 0, priority);
+                visited[nextIndex] = true;
+                cameFrom[nextIndex] = current;
+                moveMap[nextIndex] = directions[i];
                 continue;
             }
 
+            // Check for overhead blocks and jumps
+            if (current.z + 1 < height && !map[index(current.x, current.y, current.z + 1)])
+            {
+                next.z = current.z + 1;
+                if (isNavigable(next) && !visited[index(next.x, next.y, next.z)])
+                {
+                    int nextIndex = index(next.x, next.y, next.z);
+                    int priority = heuristic(next, dst);
+                    toExplore.emplace(next, 0, priority);
+                    visited[nextIndex] = true;
+                    cameFrom[nextIndex] = current;
+                    moveMap[nextIndex] = directions[i];
+                    continue;
+                }
+            }
+
+            // Check for drops
             int nextZ = next.z;
-            while (nextZ >= 0 && !map[index(next.x, next.y, nextZ)])
+            while (nextZ > 0 && !map[index(next.x, next.y, nextZ - 1)])
             {
                 nextZ--;
             }
-            next.z = nextZ + 1;
-
-            if (next.z < height - 1 && map[index(next.x, next.y, next.z + 1)])
+            next.z = nextZ;
+            if (isNavigable(next) && !visited[index(next.x, next.y, next.z)])
             {
-                continue;
-            }
-
-            int nextIndex = index(next.x, next.y, next.z);
-
-            if (isNavigable(next) && !visited[nextIndex])
-            {
+                int nextIndex = index(next.x, next.y, next.z);
                 int priority = heuristic(next, dst);
                 toExplore.emplace(next, 0, priority);
                 visited[nextIndex] = true;
