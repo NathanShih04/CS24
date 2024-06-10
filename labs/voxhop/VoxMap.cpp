@@ -1,3 +1,4 @@
+
 #include "VoxMap.h"
 #include "Errors.h"
 #include <vector>
@@ -61,25 +62,6 @@ inline bool VoxMap::isNavigable(const Point &point) const
            (point.z > 0 && map[index(point.x, point.y, point.z - 1)]);
 }
 
-struct AStarNode
-{
-    Point point;
-    int cost;
-    int heuristic;
-
-    AStarNode(Point p, int c, int h) : point(p), cost(c), heuristic(h) {}
-
-    bool operator>(const AStarNode &other) const
-    {
-        return (cost + heuristic) > (other.cost + heuristic);
-    }
-};
-
-int heuristic(const Point &a, const Point &b)
-{
-    return std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
-}
-
 Route VoxMap::route(Point src, Point dst)
 {
     if (!isNavigable(src))
@@ -87,12 +69,12 @@ Route VoxMap::route(Point src, Point dst)
     if (!isNavigable(dst))
         throw InvalidPoint(dst);
 
-    std::priority_queue<AStarNode, std::vector<AStarNode>, std::greater<AStarNode>> toExplore;
+    std::queue<Point> toExplore;
     std::vector<bool> visited(width * depth * height, false);
     std::vector<Point> cameFrom(width * depth * height);
     std::vector<Move> moveMap(width * depth * height);
 
-    toExplore.emplace(src, 0, heuristic(src, dst));
+    toExplore.push(src);
     visited[index(src.x, src.y, src.z)] = true;
     cameFrom[index(src.x, src.y, src.z)] = src;
 
@@ -101,7 +83,7 @@ Route VoxMap::route(Point src, Point dst)
 
     while (!toExplore.empty())
     {
-        Point current = toExplore.top().point;
+        Point current = toExplore.front();
         toExplore.pop();
 
         if (current == dst)
@@ -125,56 +107,54 @@ Route VoxMap::route(Point src, Point dst)
             if (!isValidPoint(next))
                 continue;
 
-            // Check if we can move horizontally without an overhead block
-            if (current.z + 1 < height && map[index(current.x, current.y, current.z + 1)])
+            // Check for Flat Move
+            if (isNavigable(next))
             {
-                continue;
-            }
-
-            // Check if it's a flat surface
-            if (isNavigable(Point(next.x, next.y, current.z)) && !visited[index(next.x, next.y, current.z)])
-            {
-                next.z = current.z;
                 int nextIndex = index(next.x, next.y, next.z);
-                int priority = heuristic(next, dst);
-                toExplore.emplace(next, 0, priority);
-                visited[nextIndex] = true;
-                cameFrom[nextIndex] = current;
-                moveMap[nextIndex] = directions[i];
-                continue;
-            }
-
-            // Check for jumps
-            if (current.z + 1 < height && !map[index(current.x, current.y, current.z + 1)] && isNavigable(Point(next.x, next.y, current.z + 1)))
-            {
-                next.z = current.z + 1;
-                int nextIndex = index(next.x, next.y, next.z);
-                int priority = heuristic(next, dst);
-                toExplore.emplace(next, 0, priority);
-                visited[nextIndex] = true;
-                cameFrom[nextIndex] = current;
-                moveMap[nextIndex] = directions[i];
-                continue;
-            }
-
-            // Check for drops
-            int nextZ = current.z;
-            while (nextZ > 0 && !map[index(next.x, next.y, nextZ - 1)])
-            {
-                nextZ--;
-            }
-            if (nextZ < current.z)
-            {
-                next.z = nextZ + 1;
-                int nextIndex = index(next.x, next.y, next.z);
-                if (isNavigable(next) && !visited[nextIndex])
+                if (!visited[nextIndex])
                 {
-                    int priority = heuristic(next, dst);
-                    toExplore.emplace(next, 0, priority);
+                    toExplore.push(next);
+                    visited[nextIndex] = true;
+                    cameFrom[nextIndex] = current;
+                    moveMap[nextIndex] = directions[i];
+                    continue;
+                }
+            }
+
+            // Check for Fall Down (ensure no wall in front)
+            Point fall = next;
+            while (fall.z > 0 && !map[index(fall.x, fall.y, fall.z - 1)] && !map[index(fall.x, fall.y, fall.z)])
+            {
+                fall.z--;
+                int fallIndex = index(fall.x, fall.y, fall.z);
+                if (isNavigable(fall) && !visited[fallIndex])
+                {
+                    toExplore.push(fall);
+                    visited[fallIndex] = true;
+                    cameFrom[fallIndex] = current;
+                    moveMap[fallIndex] = directions[i];
+                }
+            }
+
+            // Check for Jump Up (ensure no block overhead)
+            next.z = current.z + 1;
+            if (next.z < height && isNavigable(next) && !map[index(next.x, next.y, next.z)] &&
+                (current.z + 1 >= height || !map[index(current.x, current.y, current.z + 1)]))
+            {
+                int nextIndex = index(next.x, next.y, next.z);
+                if (!visited[nextIndex])
+                {
+                    toExplore.push(next);
                     visited[nextIndex] = true;
                     cameFrom[nextIndex] = current;
                     moveMap[nextIndex] = directions[i];
                 }
+            }
+
+            // Check for Can't Move
+            if (next.z < height && map[index(next.x, next.y, next.z)])
+            {
+                continue; // There is a block directly overhead, can't move.
             }
         }
     }
